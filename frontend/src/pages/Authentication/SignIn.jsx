@@ -35,6 +35,13 @@ const SignIn = () => {
 
       console.log("✅ User signed in successfully. Redirecting...");
 
+      // ✅ Fix: Only show pending approval message if approved is **explicitly false**
+      if (data.user.role === "Partner" && data.user.approved === false) {
+        console.log("❌ User is pending approval.");
+        setError("Your account is pending admin approval.");
+        return;
+      }
+
       // ✅ Admin Redirect
       if (data.user.role === "Admin") {
         console.log("✅ Redirecting Admin to /admin/dashboard");

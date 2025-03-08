@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import logo from "../../assets/logo.png"; // Update path if needed
+import logo from "../../assets/logo.png"; // Ensure the path is correct
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -13,6 +13,7 @@ const SignUp = () => {
     confirmPassword: "",
   });
 
+  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
@@ -27,18 +28,19 @@ const SignUp = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setMessage("");
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match.");
+      setError("❌ Passwords do not match.");
       return;
     }
 
     if (!validatePassword(formData.password)) {
-      setError("Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.");
+      setError("❌ Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.");
       return;
     }
 
-    console.log("Sending sign-up request:", formData);
+    console.log("🔹 Sending sign-up request:", formData);
 
     try {
       const response = await fetch("http://localhost:3000/api/auth/signup", {
@@ -48,14 +50,13 @@ const SignUp = () => {
       });
 
       const data = await response.json();
-      console.log("Sign-up response received:", data);
+      console.log("🔹 Sign-up response received:", data);
 
       if (!response.ok) throw new Error(data.message);
 
-      console.log("User registered successfully. Redirecting to sign-in...");
-      navigate("/signin");
+      setMessage("✅ Your registration is pending admin approval. You will be notified once approved.");
     } catch (err) {
-      console.error("Sign-up error:", err.message);
+      console.error("❌ Sign-up error:", err.message);
       setError(err.message);
     }
   };
@@ -72,6 +73,7 @@ const SignUp = () => {
         <h2 className="text-2xl font-semibold text-center text-[#001524ff]">CNC World Tour</h2>
         <p className="text-gray-600 text-center mb-4">Register as a partner</p>
 
+        {message && <p className="text-green-500 text-sm text-center">{message}</p>}
         {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-3">
@@ -97,7 +99,10 @@ const SignUp = () => {
 
           <input type="password" name="confirmPassword" placeholder="Confirm Password" className="w-full px-4 py-2 border rounded-md" onChange={handleChange} required />
 
-          <button className="w-full bg-[#fea116ff] text-white py-2 rounded-md hover:bg-[#e69510ff]">
+          <button 
+            type="submit"
+            className="w-full bg-[#fea116ff] text-white py-2 rounded-md hover:bg-[#e69510ff] transition"
+          >
             Sign Up
           </button>
         </form>
