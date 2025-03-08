@@ -5,7 +5,7 @@ import User from "../models/User.js";
 
 const router = express.Router();
 
-// ✅ User Sign-up (Registers Partners)
+// ✅ User Sign-up (Registers Partners - Requires Approval)
 router.post("/signup", async (req, res) => {
   try {
     const { fullName, restaurantName, address, phone, email, password } = req.body;
@@ -22,7 +22,7 @@ router.post("/signup", async (req, res) => {
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create new user with "Partner" role
+    // Create new user with "Partner" role and "approved: false"
     const newUser = new User({
       fullName,
       restaurantName,
@@ -31,19 +31,20 @@ router.post("/signup", async (req, res) => {
       email,
       password: hashedPassword,
       role: "Partner",
+      approved: false, // ✅ Requires admin approval
     });
 
     await newUser.save();
-    console.log("✅ New user registered successfully:", newUser.email);
+    console.log("✅ New partner registration submitted for approval:", newUser.email);
     
-    res.status(201).json({ message: "User registered successfully!" });
+    res.status(201).json({ message: "Registration submitted for approval. Admin will review your request." });
   } catch (error) {
     console.error("❌ Sign-up error:", error);
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
 
-// ✅ User Sign-in (Handles both Admin and Partners)
+// ✅ User Sign-in (Handles both Admin and Approved Partners)
 router.post("/signin", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -72,6 +73,12 @@ router.post("/signin", async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials." });
     }
 
+    // ✅ Check if the user is approved
+    if (!user.approved) {
+      console.log("❌ Sign-in failed: User not approved by admin.");
+      return res.status(403).json({ message: "Your account is pending approval by the admin." });
+    }
+
     // Compare password with hashed password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
@@ -79,7 +86,7 @@ router.post("/signin", async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials." });
     }
 
-    // Generate token for user
+    // Generate token for approved user
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "2h" });
 
     console.log("✅ User signed in successfully:", user.email);
