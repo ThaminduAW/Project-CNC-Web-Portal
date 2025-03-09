@@ -57,4 +57,17 @@ router.post("/", async (req, res) => {
   }
 });
 
+// ✅ Fetch all upcoming reservations
+router.get("/", async (req, res) => {
+  try {
+    const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
+    const reservations = await Reservation.find({ date: { $gte: today } }).sort({ date: 1 });
+
+    res.json(reservations);
+  } catch (error) {
+    console.error("Error fetching reservations:", error);
+    res.status(500).json({ message: "Server error fetching reservations." });
+  }
+});
+
 export default router;

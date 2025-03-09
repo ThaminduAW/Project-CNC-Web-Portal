@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   role: { type: String, default: "Partner" },
-  approved: { type: Boolean, default: false }, // ✅ New Field for Approval
+  approved: { type: Boolean, default: false },
 }, { timestamps: true });
 
 const User = mongoose.model("User", userSchema);
