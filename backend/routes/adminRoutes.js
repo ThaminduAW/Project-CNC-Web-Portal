@@ -1,5 +1,6 @@
 import express from "express";
 import User from "../models/User.js";
+import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -82,7 +83,7 @@ router.post("/signin", async (req, res) => {
 });
 
 // ✅ GET - Fetch all partners (approved & pending)
-router.get("/partners", async (req, res) => {
+router.get("/partners", authMiddleware, async (req, res) => {
   try {
     const partners = await User.find({ role: "Partner" });
     res.json(partners);
@@ -93,7 +94,7 @@ router.get("/partners", async (req, res) => {
 });
 
 // ✅ PATCH - Approve a partner
-router.patch("/partners/approve/:id", async (req, res) => {
+router.patch("/partners/approve/:id", authMiddleware, async (req, res) => {
   try {
     const updatedPartner = await User.findByIdAndUpdate(
       req.params.id,

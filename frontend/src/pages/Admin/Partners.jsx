@@ -14,7 +14,7 @@ const Partners = () => {
 
   const fetchPartners = async () => {
     try {
-      const response = await fetch("http://localhost:3000/api/admin/partners");
+      const response = await fetch("http://localhost:3000/api/admin/partners", { method: "GET", headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` } });
       if (!response.ok) throw new Error("Failed to fetch partners");
 
       const data = await response.json();
@@ -28,7 +28,7 @@ const Partners = () => {
 
   const handleApprove = async (id) => {
     try {
-      await fetch(`http://localhost:3000/api/admin/partners/approve/${id}`, { method: "PATCH" });
+      await fetch(`http://localhost:3000/api/admin/partners/approve/${id}`, { method: "PATCH", headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` } });
       fetchPartners();
     } catch (err) {
       console.error("Error approving partner:", err);
