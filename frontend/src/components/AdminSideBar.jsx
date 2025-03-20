@@ -57,7 +57,7 @@ const AdminSideBar = () => {
           </li>
           <li>
             <Link to="/admin/events" className="flex items-center px-6 py-2 hover:bg-[#0098c9ff] transition">
-              <FaCalendarAlt className="mr-2" /> Events
+              <FaCalendarAlt className="mr-2" /> Reservations
             </Link>
           </li>
           <li>
