@@ -1,173 +1,273 @@
 import { useState, useEffect } from "react";
-import AdminSideBar from "../../components/AdminSideBar"; // Ensure correct path
+import AdminSideBar from "../../components/AdminSideBar";
 
 const Partners = () => {
   const [partners, setPartners] = useState([]);
+  const [newPartner, setNewPartner] = useState({
+    fullName: "",
+    restaurantName: "",
+    address: "",
+    phone: "",
+    email: "",
+    password: "",
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [editingPartner, setEditingPartner] = useState(null);
-  const [updatedData, setUpdatedData] = useState({ fullName: "", restaurantName: "", address: "", phone: "" });
 
+  // Fetch all partners from the backend
   useEffect(() => {
+    const fetchPartners = async () => {
+      try {
+        const token = localStorage.getItem("token"); // Get the auth token from localStorage
+        if (!token) {
+          setError("Please login to access this page");
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch("http://localhost:3000/api/admin/partners", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            setError("Please login to access this page");
+            setLoading(false);
+            return;
+          }
+          throw new Error("Failed to fetch partners");
+        }
+
+        const data = await response.json();
+        setPartners(data);
+      } catch (err) {
+        console.error("Error fetching partners:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchPartners();
   }, []);
 
-  const fetchPartners = async () => {
+  // Handle Partner Approval
+  const handleApprove = async (partnerId) => {
     try {
-      const response = await fetch("http://localhost:3000/api/admin/partners", { method: "GET", headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` } });
-      if (!response.ok) throw new Error("Failed to fetch partners");
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Please login to access this page");
+        return;
+      }
+
+      const response = await fetch(`http://localhost:3000/api/admin/partners/approve/${partnerId}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to approve partner");
+      }
 
       const data = await response.json();
-      setPartners(data);
-      setLoading(false);
-    } catch (err) {
-      setError(err.message);
-      setLoading(false);
-    }
-  };
-
-  const handleApprove = async (id) => {
-    try {
-      await fetch(`http://localhost:3000/api/admin/partners/approve/${id}`, { method: "PATCH", headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` } });
-      fetchPartners();
+      setPartners((prev) =>
+        prev.map((partner) => (partner._id === partnerId ? { ...partner, approved: true } : partner))
+      );
+      console.log("Partner Approved:", data);
     } catch (err) {
       console.error("Error approving partner:", err);
+      setError(err.message);
     }
   };
 
-  const handleDecline = async (id) => {
+  // Handle Partner Deletion
+  const handleDelete = async (partnerId) => {
     try {
-      await fetch(`http://localhost:3000/api/admin/partners/decline/${id}`, { method: "DELETE" });
-      fetchPartners();
-    } catch (err) {
-      console.error("Error declining partner:", err);
-    }
-  };
-
-  const handleEdit = (partner) => {
-    setEditingPartner(partner._id);
-    setUpdatedData({
-      fullName: partner.fullName,
-      restaurantName: partner.restaurantName,
-      address: partner.address || "",
-      phone: partner.phone || "",
-    });
-  };
-
-  const handleUpdate = async (id) => {
-    try {
-      await fetch(`http://localhost:3000/api/admin/partners/update/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedData),
-      });
-      setEditingPartner(null);
-      fetchPartners();
-    } catch (err) {
-      console.error("Error updating partner:", err);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this partner?")) {
-      try {
-        await fetch(`http://localhost:3000/api/admin/partners/delete/${id}`, { method: "DELETE" });
-        fetchPartners();
-      } catch (err) {
-        console.error("Error deleting partner:", err);
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Please login to access this page");
+        return;
       }
+
+      const response = await fetch(`http://localhost:3000/api/admin/partners/delete/${partnerId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete partner");
+      }
+
+      setPartners((prev) => prev.filter((partner) => partner._id !== partnerId));
+      console.log("Partner Deleted");
+    } catch (err) {
+      console.error("Error deleting partner:", err);
+      setError(err.message);
     }
   };
+
+  // Handle Input Change for Adding Partner
+  const handleChange = (e) => {
+    setNewPartner({ ...newPartner, [e.target.name]: e.target.value });
+  };
+
+  // Handle Admin Adding a New Partner
+  const handleAddPartner = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Please login to access this page");
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch("http://localhost:3000/api/admin/partners/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(newPartner),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Failed to add partner");
+      }
+
+      const data = await response.json();
+      setPartners((prev) => [...prev, data.newPartner]);
+      setNewPartner({
+        fullName: "",
+        restaurantName: "",
+        address: "",
+        phone: "",
+        email: "",
+        password: "",
+      });
+      console.log("New Partner Added:", data.newPartner);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex bg-[#fdfcdcff] text-[#001524ff]">
+        <AdminSideBar />
+        <div className="flex-1 p-8">
+          <h1 className="text-3xl font-bold text-center mb-6">Loading...</h1>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex bg-[#fdfcdcff] text-[#001524ff]">
+        <AdminSideBar />
+        <div className="flex-1 p-8">
+          <h1 className="text-3xl font-bold text-center mb-6">Error</h1>
+          <p className="text-red-500 text-center">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex">
-      {/* Admin Sidebar */}
+    <div className="flex bg-[#fdfcdcff] text-[#001524ff]">
       <AdminSideBar />
+      <div className="flex-1 p-8">
+        <h1 className="text-3xl font-bold text-center mb-6">Manage Partners</h1>
 
-      {/* Main Content */}
-      <div className="p-6 flex-1">
-        <h1 className="text-3xl font-bold">Manage Partners</h1>
-
-        {loading && <p className="text-gray-600 mt-4">Loading...</p>}
-        {error && <p className="text-red-500 mt-4">{error}</p>}
-
-        {!loading && !error && (
-          <div className="mt-6">
-            <h2 className="text-2xl font-semibold">Pending Approvals</h2>
-            <ul>
-              {partners.filter((p) => !p.approved).map((partner) => (
-                <li key={partner._id} className="flex justify-between p-4 bg-gray-100 rounded-md mt-2">
-                  <div>
-                    <p><strong>{partner.restaurantName}</strong></p>
-                    <p>👤 {partner.fullName} | 📧 {partner.email}</p>
-                  </div>
-                  <div>
-                    <button onClick={() => handleApprove(partner._id)} className="bg-green-500 text-white px-3 py-1 rounded mr-2">
-                      Approve
-                    </button>
-                    <button onClick={() => handleDecline(partner._id)} className="bg-red-500 text-white px-3 py-1 rounded">
-                      Decline
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-
-            {/* Table for Approved Partners */}
-            <h2 className="text-2xl font-semibold mt-8">Approved Partners</h2>
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white shadow-md rounded-lg">
-                <thead className="bg-[#0098c9ff] text-white">
-                  <tr>
-                    <th className="py-2 px-4">Full Name</th>
-                    <th className="py-2 px-4">Restaurant</th>
-                    <th className="py-2 px-4">Address</th>
-                    <th className="py-2 px-4">Phone</th>
-                    <th className="py-2 px-4">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {partners.filter((p) => p.approved).map((partner) => (
-                    <tr key={partner._id} className="border-t text-center">
-                      {editingPartner === partner._id ? (
-                        <>
-                          <td className="py-2 px-4">
-                            <input type="text" value={updatedData.fullName} onChange={(e) => setUpdatedData({ ...updatedData, fullName: e.target.value })} className="w-full px-2 py-1 border rounded-md" />
-                          </td>
-                          <td className="py-2 px-4">
-                            <input type="text" value={updatedData.restaurantName} onChange={(e) => setUpdatedData({ ...updatedData, restaurantName: e.target.value })} className="w-full px-2 py-1 border rounded-md" />
-                          </td>
-                          <td className="py-2 px-4">
-                            <input type="text" value={updatedData.address} onChange={(e) => setUpdatedData({ ...updatedData, address: e.target.value })} className="w-full px-2 py-1 border rounded-md" />
-                          </td>
-                          <td className="py-2 px-4">
-                            <input type="text" value={updatedData.phone} onChange={(e) => setUpdatedData({ ...updatedData, phone: e.target.value })} className="w-full px-2 py-1 border rounded-md" />
-                          </td>
-                          <td className="py-2 px-4">
-                            <button onClick={() => handleUpdate(partner._id)} className="bg-blue-500 text-white px-3 py-1 rounded mr-2">Save</button>
-                            <button onClick={() => setEditingPartner(null)} className="bg-gray-400 text-white px-3 py-1 rounded">Cancel</button>
-                          </td>
-                        </>
+        {/* Partner List */}
+        <div className="overflow-x-auto bg-white shadow-md rounded-lg p-6">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-[#0098c9ff] text-white">
+                <th className="p-3">Full Name</th>
+                <th className="p-3">Restaurant</th>
+                <th className="p-3">Email</th>
+                <th className="p-3">Phone</th>
+                <th className="p-3">Status</th>
+                <th className="p-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {partners && partners.length > 0 ? (
+                partners.map((partner) => (
+                  <tr key={partner._id} className="border-b">
+                    <td className="p-3">{partner.fullName}</td>
+                    <td className="p-3">{partner.restaurantName}</td>
+                    <td className="p-3">{partner.email}</td>
+                    <td className="p-3">{partner.phone || "N/A"}</td>
+                    <td className="p-3">
+                      {partner.approved ? (
+                        <span className="text-green-600 font-semibold">Approved</span>
                       ) : (
-                        <>
-                          <td className="py-2 px-4">{partner.fullName}</td>
-                          <td className="py-2 px-4">{partner.restaurantName}</td>
-                          <td className="py-2 px-4">{partner.address}</td>
-                          <td className="py-2 px-4">{partner.phone}</td>
-                          <td className="py-2 px-4">
-                            <button onClick={() => handleEdit(partner)} className="bg-yellow-500 text-white px-3 py-1 rounded mr-2">Edit</button>
-                            <button onClick={() => handleDelete(partner._id)} className="bg-red-500 text-white px-3 py-1 rounded">Delete</button>
-                          </td>
-                        </>
+                        <span className="text-red-600 font-semibold">Pending</span>
                       )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                    </td>
+                    <td className="p-3 space-x-2">
+                      {!partner.approved && (
+                        <button
+                          className="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-700 transition"
+                          onClick={() => handleApprove(partner._id)}
+                        >
+                          Approve
+                        </button>
+                      )}
+                      <button
+                        className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-700 transition"
+                        onClick={() => handleDelete(partner._id)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" className="p-3 text-center">
+                    No partners found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
 
-          </div>
-        )}
+        {/* Add New Partner Form */}
+        <div className="mt-10 bg-white shadow-md rounded-lg p-6">
+          <h2 className="text-2xl font-semibold text-center mb-4">Add New Partner</h2>
+
+          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+
+          <form onSubmit={handleAddPartner} className="space-y-4">
+            <input type="text" name="fullName" placeholder="Full Name" className="w-full px-4 py-2 border rounded-md" onChange={handleChange} required />
+            <input type="text" name="restaurantName" placeholder="Restaurant Name" className="w-full px-4 py-2 border rounded-md" onChange={handleChange} required />
+            <input type="text" name="address" placeholder="Address (Optional)" className="w-full px-4 py-2 border rounded-md" onChange={handleChange} />
+            <input type="tel" name="phone" placeholder="Phone Number (Optional)" className="w-full px-4 py-2 border rounded-md" onChange={handleChange} />
+            <input type="email" name="email" placeholder="Email" className="w-full px-4 py-2 border rounded-md" onChange={handleChange} required />
+            <input type="password" name="password" placeholder="Password" className="w-full px-4 py-2 border rounded-md" onChange={handleChange} required />
+
+            <button className="w-full bg-[#fea116ff] text-white py-2 rounded-md hover:bg-[#e69510ff] transition" disabled={loading}>
+              {loading ? "Adding Partner..." : "Add Partner"}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
