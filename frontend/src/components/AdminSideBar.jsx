@@ -72,7 +72,7 @@ const AdminSideBar = () => {
           </li>
           <li>
             <Link to="/admin/settings" className="flex items-center px-6 py-2 hover:bg-[#0098c9ff] transition">
-              <FaCog className="mr-2" /> Settings
+              <FaCog className="mr-2" /> Settings new
             </Link>
           </li>
         </ul>
