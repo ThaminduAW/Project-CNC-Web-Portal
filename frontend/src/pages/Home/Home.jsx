@@ -30,7 +30,7 @@ const Home = () => {
 
       {/* Featured Restaurants Section */}
       <section className="py-12 px-6 md:px-12">
-        <h2 className="text-3xl font-bold text-center">Explore CNC World Tour Partner Restaurants</h2>
+        <h2 className="text-3xl font-bold text-center">Explore our Tour Partner Restaurants</h2>
         <p className="text-center text-gray-600 mt-2">Experience the best seafood dishes from around the world.</p>
 
         {loading ? (
