@@ -5,18 +5,23 @@ import Restaurants from "./pages/Home/Restaurants";
 import Reservation from "./pages/Home/Reservation";
 import About from "./pages/Home/About";
 import Contact from "./pages/Home/Contact";
+import Events from "./pages/Home/Events";
+
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import Partners from "./pages/Admin/Partners";
-import PartnerEvents from "./pages/Admin/PartnerEvents";
+import AdminPartnerEvents from "./pages/Admin/PartnerEvents";
 import Messages from "./pages/Admin/Messages";
 import AdminSettings from "./pages/Admin/AdminSettings";
+
 import PartnerDashboard from "./pages/Partners/PartnerDashboard";
-import Events from "./pages/Partners/Events";
+import PartnerEvents from "./pages/Partners/PartnerEvents";
 import Menu from "./pages/Partners/Menu";
 import PartnerMessages from "./pages/Partners/PartnerMessages";
 import PartnerSettings from "./pages/Partners/PartnerSettings";
+
 import SignIn from "./pages/Authentication/SignIn";
 import SignUp from "./pages/Authentication/SignUp";
+
 import NotFound from "./components/NotFound"; 
 
 const App = () => {
@@ -26,6 +31,7 @@ const App = () => {
                 {/* Home Routes */}
                 <Route path="/" element={<Home />} />
                 <Route path="/restaurants" element={<Restaurants />} />
+                <Route path="/events" element={<Events />} />
                 <Route path="/reservation" element={<Reservation />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
@@ -33,7 +39,7 @@ const App = () => {
                 {/* Admin Routes */}
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
                 <Route path="/admin/partners" element={<Partners />} />
-                <Route path="/admin/events" element={<PartnerEvents />} />
+                <Route path="/admin/events" element={<AdminPartnerEvents />} />
                 <Route path="/admin/messages" element={<Messages />} />
                 <Route path="/admin/settings" element={<AdminSettings />} />
 

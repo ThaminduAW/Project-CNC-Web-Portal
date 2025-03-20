@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { FaUser, FaUsers, FaCalendarAlt, FaEnvelope, FaCog, FaSignOutAlt } from "react-icons/fa";
+import { FaUser, FaUsers, FaCalendarAlt, FaEnvelope, FaCog, FaSignOutAlt, FaHome } from "react-icons/fa";
 import logo from "../assets/logo.png"; // Ensure path is correct
 import defaultProfile from "../assets/default-profile.png"; // Default profile image
 
@@ -73,8 +73,14 @@ const AdminSideBar = () => {
         </ul>
       </nav>
 
-      {/* Sign Out Button */}
-      <div className="p-4 border-t border-gray-700">
+      {/* Return to Home Page & Sign Out Buttons */}
+      <div className="p-4 border-t border-gray-700 space-y-2">
+        <Link 
+          to="/" 
+          className="w-full flex items-center justify-center bg-[#0098c9ff] hover:bg-[#0084b3ff] transition py-2 rounded-md"
+        >
+          <FaHome className="mr-2" /> Return to Home Page
+        </Link>
         <button 
           onClick={handleSignOut} 
           className="w-full flex items-center justify-center bg-red-600 hover:bg-red-700 transition py-2 rounded-md"
