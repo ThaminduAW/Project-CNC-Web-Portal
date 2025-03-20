@@ -18,6 +18,9 @@ import AdminSideBar from '../../components/AdminSideBar';
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
   marginBottom: theme.spacing(3),
+  backgroundColor: 'white',
+  borderRadius: '0.5rem',
+  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
 }));
 
 const AdminSettings = () => {
@@ -113,27 +116,29 @@ const AdminSettings = () => {
   };
 
   return (
-    <div className="flex">
+    <div className="flex bg-[#fdfcdcff] text-[#001524ff]">
       <AdminSideBar />
       <div className="flex-1 p-8">
         <Container maxWidth="md">
-          <Typography variant="h4" gutterBottom>
-            Admin Profile Settings
-          </Typography>
+          <div className="flex justify-between items-center mb-6">
+            <Typography variant="h4" className="text-3xl font-bold">
+              Admin Profile Settings
+            </Typography>
+          </div>
 
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert severity="error" sx={{ mb: 2, borderRadius: '0.5rem' }}>
               {error}
             </Alert>
           )}
 
           {success && (
-            <Alert severity="success" sx={{ mb: 2 }}>
+            <Alert severity="success" sx={{ mb: 2, borderRadius: '0.5rem' }}>
               {success}
             </Alert>
           )}
 
-          <Paper sx={{ p: 3 }}>
+          <StyledPaper>
             <Grid container spacing={3}>
               <Grid item xs={12} sm={6}>
                 <TextField
@@ -143,6 +148,16 @@ const AdminSettings = () => {
                   value={admin.firstName}
                   onChange={handleInputChange}
                   disabled={!isEditing}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '&:hover fieldset': {
+                        borderColor: '#fea116ff',
+                      },
+                    },
+                    '& .MuiFocused fieldset': {
+                      borderColor: '#fea116ff',
+                    },
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -153,6 +168,16 @@ const AdminSettings = () => {
                   value={admin.lastName}
                   onChange={handleInputChange}
                   disabled={!isEditing}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '&:hover fieldset': {
+                        borderColor: '#fea116ff',
+                      },
+                    },
+                    '& .MuiFocused fieldset': {
+                      borderColor: '#fea116ff',
+                    },
+                  }}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -164,6 +189,16 @@ const AdminSettings = () => {
                   value={admin.email}
                   onChange={handleInputChange}
                   disabled={!isEditing}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '&:hover fieldset': {
+                        borderColor: '#fea116ff',
+                      },
+                    },
+                    '& .MuiFocused fieldset': {
+                      borderColor: '#fea116ff',
+                    },
+                  }}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -174,6 +209,16 @@ const AdminSettings = () => {
                   value={admin.phoneNumber}
                   onChange={handleInputChange}
                   disabled={!isEditing}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '&:hover fieldset': {
+                        borderColor: '#fea116ff',
+                      },
+                    },
+                    '& .MuiFocused fieldset': {
+                      borderColor: '#fea116ff',
+                    },
+                  }}
                 />
               </Grid>
 
@@ -186,6 +231,16 @@ const AdminSettings = () => {
                     type="password"
                     value={admin.currentPassword}
                     onChange={handleInputChange}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '&:hover fieldset': {
+                          borderColor: '#fea116ff',
+                        },
+                      },
+                      '& .MuiFocused fieldset': {
+                        borderColor: '#fea116ff',
+                      },
+                    }}
                   />
                 </Grid>
               ) : (
@@ -198,6 +253,16 @@ const AdminSettings = () => {
                       type="password"
                       value={admin.newPassword}
                       onChange={handleInputChange}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '&:hover fieldset': {
+                            borderColor: '#fea116ff',
+                          },
+                        },
+                        '& .MuiFocused fieldset': {
+                          borderColor: '#fea116ff',
+                        },
+                      }}
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -208,6 +273,16 @@ const AdminSettings = () => {
                       type="password"
                       value={admin.confirmPassword}
                       onChange={handleInputChange}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '&:hover fieldset': {
+                            borderColor: '#fea116ff',
+                          },
+                        },
+                        '& .MuiFocused fieldset': {
+                          borderColor: '#fea116ff',
+                        },
+                      }}
                     />
                   </Grid>
                 </>
@@ -218,8 +293,16 @@ const AdminSettings = () => {
                   {!isEditing ? (
                     <Button
                       variant="contained"
-                      color="primary"
                       onClick={handleStartEditing}
+                      sx={{
+                        backgroundColor: '#fea116ff',
+                        '&:hover': {
+                          backgroundColor: '#e69510ff',
+                        },
+                        textTransform: 'none',
+                        borderRadius: '0.5rem',
+                        padding: '0.5rem 1.5rem',
+                      }}
                     >
                       Edit Profile
                     </Button>
@@ -232,13 +315,32 @@ const AdminSettings = () => {
                           setError('');
                           setSuccess('');
                         }}
+                        sx={{
+                          borderColor: '#fea116ff',
+                          color: '#fea116ff',
+                          '&:hover': {
+                            borderColor: '#e69510ff',
+                            backgroundColor: 'rgba(254, 161, 22, 0.04)',
+                          },
+                          textTransform: 'none',
+                          borderRadius: '0.5rem',
+                          padding: '0.5rem 1.5rem',
+                        }}
                       >
                         Cancel
                       </Button>
                       <Button
                         variant="contained"
-                        color="primary"
                         onClick={handleSave}
+                        sx={{
+                          backgroundColor: '#fea116ff',
+                          '&:hover': {
+                            backgroundColor: '#e69510ff',
+                          },
+                          textTransform: 'none',
+                          borderRadius: '0.5rem',
+                          padding: '0.5rem 1.5rem',
+                        }}
                       >
                         Save Changes
                       </Button>
@@ -247,7 +349,7 @@ const AdminSettings = () => {
                 </Box>
               </Grid>
             </Grid>
-          </Paper>
+          </StyledPaper>
         </Container>
       </div>
     </div>
