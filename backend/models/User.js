@@ -7,10 +7,8 @@ const userSchema = new mongoose.Schema({
   phone: { type: String },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { type: String, default: "Partner" },
-  approved: { type: Boolean, default: false },
+  role: { type: String, enum: ["Admin", "Partner"], required: true },
+  approved: { type: Boolean, default: false }, // Ensures partners need admin approval
 }, { timestamps: true });
 
-const User = mongoose.model("User", userSchema);
-
-export default User;
+export default mongoose.model("User", userSchema);

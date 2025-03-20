@@ -1,4 +1,5 @@
 import express from "express";
+import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
@@ -143,6 +144,41 @@ router.delete("/partners/delete/:id", async (req, res) => {
   } catch (error) {
     console.error("Error deleting partner:", error);
     res.status(500).json({ message: "Server error" });
+  }
+});
+
+// ✅ Admin Adds a New Partner
+router.post("/partners/add", async (req, res) => {
+  try {
+    const { fullName, restaurantName, address, phone, email, password } =
+      req.body;
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "Email already in use." });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newPartner = new User({
+      fullName,
+      restaurantName,
+      address: address || "",
+      phone: phone || "",
+      email,
+      password: hashedPassword,
+      role: "Partner",
+      approved: true, // Admin-added partners are automatically approved
+    });
+
+    await newPartner.save();
+
+    res
+      .status(201)
+      .json({ message: "Partner added successfully.", newPartner });
+  } catch (error) {
+    console.error("Error adding partner:", error);
+    res.status(500).json({ message: "Server error adding partner." });
   }
 });
 
