@@ -2,6 +2,7 @@ import express from "express";
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import authMiddleware from "../middleware/authMiddleware.js";
+import nodemailer from "nodemailer";
 
 const router = express.Router();
 
@@ -102,6 +103,31 @@ router.patch("/partners/approve/:id", authMiddleware, async (req, res) => {
       { approved: true },
       { new: true }
     );
+
+    // Send approval email notification
+    try {
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: updatedPartner.email,
+        subject: "Your Partner Account Has Been Approved - CNC World Tour",
+        text: `Dear ${updatedPartner.fullName},\n\nWe are pleased to inform you that your partner account has been approved. You can now log in to your partner dashboard and start managing your restaurant.\n\nRestaurant Name: ${updatedPartner.restaurantName}\n\nPlease visit http://localhost:5173/signin to access your account.\n\nBest regards,\nCNC World Tour Team`,
+      };
+
+      await transporter.sendMail(mailOptions);
+      console.log("Approval email sent successfully to:", updatedPartner.email);
+    } catch (emailError) {
+      console.error("Failed to send approval email:", emailError);
+      // Continue execution even if email fails
+    }
+
     res.json(updatedPartner);
   } catch (error) {
     console.error("Error approving partner:", error);
