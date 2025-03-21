@@ -9,7 +9,8 @@ import Events from "./pages/Home/Events";
 
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import Partners from "./pages/Admin/Partners";
-import AdminPartnerEvents from "./pages/Admin/PartnerEvents";
+import PartnerReservations from "./pages/Admin/PartnerReservations";
+import AdminPartnerEvents from "./pages/Admin/AdminPartnerEvents";
 import Messages from "./pages/Admin/Messages";
 import AdminSettings from "./pages/Admin/AdminSettings";
 
@@ -39,6 +40,7 @@ const App = () => {
                 {/* Admin Routes */}
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
                 <Route path="/admin/partners" element={<Partners />} />
+                <Route path="/admin/reservations" element={<PartnerReservations />} />
                 <Route path="/admin/events" element={<AdminPartnerEvents />} />
                 <Route path="/admin/messages" element={<Messages />} />
                 <Route path="/admin/settings" element={<AdminSettings />} />
