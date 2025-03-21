@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { FaUser, FaUsers, FaCalendarAlt, FaEnvelope, FaCog, FaSignOutAlt, FaHome } from "react-icons/fa";
+import { FaUser, FaUsers, FaCalendarAlt, FaEnvelope, FaCog, FaSignOutAlt, FaHome, FaCalendarCheck } from "react-icons/fa";
 import logo from "../assets/logo.png"; // Ensure path is correct
 import defaultProfile from "../assets/default-profile.png"; // Default profile image
 
@@ -58,6 +58,11 @@ const AdminSideBar = () => {
           <li>
             <Link to="/admin/events" className="flex items-center px-6 py-2 hover:bg-[#0098c9ff] transition">
               <FaCalendarAlt className="mr-2" /> Events
+            </Link>
+          </li>
+          <li>
+            <Link to="/admin/reservations" className="flex items-center px-6 py-2 hover:bg-[#0098c9ff] transition">
+              <FaCalendarCheck className="mr-2" /> Customer Reservations
             </Link>
           </li>
           <li>

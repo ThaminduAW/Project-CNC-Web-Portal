@@ -44,8 +44,8 @@ const PartnerEvents = () => {
 
       {/* Main Content */}
       <div className="flex-1 p-6">
-        <h1 className="text-3xl font-bold text-[#001524ff]">Upcoming Partner Events</h1>
-        <p className="text-gray-600 mb-6">View upcoming reservations made by customers.</p>
+        <h1 className="text-3xl font-bold text-[#001524ff]">Partner Reservations</h1>
+        <p className="text-gray-600 mb-6">View and manage all customer reservations across partner restaurants.</p>
 
         {/* Restaurant Filter */}
         <div className="mb-6">
