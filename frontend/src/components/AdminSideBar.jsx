@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { FaUser, FaUsers, FaCalendarAlt, FaEnvelope, FaCog, FaSignOutAlt, FaHome, FaCalendarCheck } from "react-icons/fa";
 import logo from "../assets/logo.png"; // Ensure path is correct
@@ -6,7 +6,10 @@ import defaultProfile from "../assets/default-profile.png"; // Default profile i
 
 const AdminSideBar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [admin, setAdmin] = useState({ fullName: "Admin", role: "Admin", profilePhoto: defaultProfile });
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showBadge, setShowBadge] = useState(true);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -20,6 +23,43 @@ const AdminSideBar = () => {
       navigate("/signin"); // Redirect if not admin
     }
   }, [navigate]);
+
+  // Reset badge when navigating to messages
+  useEffect(() => {
+    if (location.pathname === '/admin/messages') {
+      setShowBadge(false);
+    } else {
+      setShowBadge(true);
+    }
+  }, [location.pathname]);
+
+  // Fetch unread message count
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const response = await fetch("http://localhost:3000/api/messages/unread", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) throw new Error("Failed to fetch unread count");
+
+        const data = await response.json();
+        setUnreadCount(data.count);
+      } catch (error) {
+        console.error("Error fetching unread count:", error);
+      }
+    };
+
+    fetchUnreadCount();
+    // Poll for new messages every 30 seconds
+    const interval = setInterval(fetchUnreadCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleSignOut = () => {
     localStorage.removeItem("user");
@@ -65,9 +105,16 @@ const AdminSideBar = () => {
               <FaCalendarCheck className="mr-2" /> Customer Reservations
             </Link>
           </li>
-          <li>
+          <li className="relative">
             <Link to="/admin/messages" className="flex items-center px-6 py-2 hover:bg-[#0098c9ff] transition">
               <FaEnvelope className="mr-2" /> Messages
+              {showBadge && unreadCount > 0 && (
+                <span 
+                  className="absolute right-4 top-1/2 -mt-2 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1 transform scale-100 transition-transform duration-200 ease-in-out animate-badge-pop"
+                >
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
             </Link>
           </li>
           <li>
