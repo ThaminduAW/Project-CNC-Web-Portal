@@ -1,55 +1,46 @@
 import express from "express";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// ✅ User Sign-in (Fix: Approved Users Can Sign In)
+// Create default admin if not exists
+const createDefaultAdmin = async () => {
+  try {
+    const adminEmail = "cnc.client@admin.com";
+    const existingAdmin = await User.findOne({ email: adminEmail });
+    
+    if (!existingAdmin) {
+      const hashedPassword = await bcrypt.hash("Client123=", 10);
+      const admin = new User({
+        fullName: "Admin",
+        email: adminEmail,
+        password: hashedPassword,
+        role: "Admin",
+        approved: true
+      });
+      await admin.save();
+      console.log("✅ Default admin account created");
+    }
+  } catch (error) {
+    console.error("Error creating default admin:", error);
+  }
+};
+
+createDefaultAdmin();
+
+// ✅ User Sign-in
 router.post("/signin", async (req, res) => {
   try {
     const { email, password } = req.body;
     console.log("🔹 Received sign-in request for email:", email);
 
-    // 🔸 Admin Sign-In
-    if (email === "cnc.client@admin.com") {
-      if (password !== "Client123=") {
-        console.log("❌ Admin login failed: Invalid password.");
-        return res.status(400).json({ message: "Invalid admin credentials." });
-      }
-
-      const token = jwt.sign(
-        { id: "admin", role: "Admin" },
-        process.env.JWT_SECRET,
-        { expiresIn: "2h" }
-      );
-
-      console.log("✅ Admin logged in successfully.");
-      return res.status(200).json({
-        token,
-        user: {
-          id: "admin",
-          fullName: "Admin",
-          email,
-          role: "Admin",
-          approved: true,
-        },
-      });
-    }
-
-    // 🔸 Partner Sign-In
     const user = await User.findOne({ email });
     if (!user) {
       console.log("❌ Sign-in failed: Email not found.");
       return res.status(400).json({ message: "Invalid credentials." });
-    }
-
-    // ✅ Fix: Only prevent sign-in if the user is **NOT** approved
-    if (user.role === "Partner" && user.approved === false) {
-      console.log("❌ Sign-in failed: User not approved by admin.");
-      return res
-        .status(403)
-        .json({ message: "Your account is pending admin approval." });
     }
 
     // Compare password with hashed password
@@ -57,6 +48,12 @@ router.post("/signin", async (req, res) => {
     if (!isMatch) {
       console.log("❌ Sign-in failed: Incorrect password.");
       return res.status(400).json({ message: "Invalid credentials." });
+    }
+
+    // For partners, check approval status
+    if (user.role === "Partner" && !user.approved) {
+      console.log("❌ Sign-in failed: User not approved by admin.");
+      return res.status(403).json({ message: "Your account is pending admin approval." });
     }
 
     // Generate token for user
@@ -72,9 +69,10 @@ router.post("/signin", async (req, res) => {
       user: {
         id: user._id,
         fullName: user.fullName,
-        email,
+        email: user.email,
         role: user.role,
         approved: user.approved,
+        restaurantName: user.restaurantName
       },
     });
   } catch (error) {
@@ -179,6 +177,18 @@ router.post("/partners/add", async (req, res) => {
   } catch (error) {
     console.error("Error adding partner:", error);
     res.status(500).json({ message: "Server error adding partner." });
+  }
+});
+
+// Get list of admins
+router.get("/list", authMiddleware, async (req, res) => {
+  try {
+    const admins = await User.find({ role: "Admin" })
+      .select("fullName email _id");
+    res.json(admins);
+  } catch (error) {
+    console.error("Error fetching admins:", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
