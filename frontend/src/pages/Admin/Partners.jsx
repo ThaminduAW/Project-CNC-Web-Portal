@@ -64,7 +64,7 @@ const Partners = () => {
       }
 
       const response = await fetch(`http://localhost:3000/api/admin/partners/approve/${partnerId}`, {
-        method: "PUT",
+        method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
         },
