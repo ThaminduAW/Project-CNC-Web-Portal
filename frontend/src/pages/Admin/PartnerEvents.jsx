@@ -5,6 +5,7 @@ const PartnerEvents = () => {
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedRestaurant, setSelectedRestaurant] = useState("all");
 
   // Fetch upcoming reservations
   useEffect(() => {
@@ -28,6 +29,14 @@ const PartnerEvents = () => {
     fetchReservations();
   }, []);
 
+  // Get unique restaurant names for the filter
+  const restaurantNames = [...new Set(reservations.map(res => res.restaurant))];
+
+  // Filter reservations based on selected restaurant
+  const filteredReservations = selectedRestaurant === "all"
+    ? reservations
+    : reservations.filter(res => res.restaurant === selectedRestaurant);
+
   return (
     <div className="flex bg-[#fdfcdcff] min-h-screen">
       {/* Admin Sidebar */}
@@ -38,12 +47,32 @@ const PartnerEvents = () => {
         <h1 className="text-3xl font-bold text-[#001524ff]">Upcoming Partner Events</h1>
         <p className="text-gray-600 mb-6">View upcoming reservations made by customers.</p>
 
+        {/* Restaurant Filter */}
+        <div className="mb-6">
+          <label htmlFor="restaurant-filter" className="block text-sm font-medium text-gray-700 mb-2">
+            Filter by Restaurant:
+          </label>
+          <select
+            id="restaurant-filter"
+            value={selectedRestaurant}
+            onChange={(e) => setSelectedRestaurant(e.target.value)}
+            className="block w-full max-w-xs px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0098c9ff] focus:border-[#0098c9ff]"
+          >
+            <option value="all">All Restaurants</option>
+            {restaurantNames.map((restaurant) => (
+              <option key={restaurant} value={restaurant}>
+                {restaurant}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {loading ? (
           <p className="text-center text-gray-500">Loading reservations...</p>
         ) : error ? (
           <p className="text-center text-red-500">{error}</p>
-        ) : reservations.length === 0 ? (
-          <p className="text-center text-gray-500">No upcoming reservations found.</p>
+        ) : filteredReservations.length === 0 ? (
+          <p className="text-center text-gray-500">No reservations found for the selected restaurant.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full bg-white shadow-md rounded-lg overflow-hidden">
@@ -57,7 +86,7 @@ const PartnerEvents = () => {
                 </tr>
               </thead>
               <tbody>
-                {reservations.map((reservation) => (
+                {filteredReservations.map((reservation) => (
                   <tr key={reservation._id} className="border-b hover:bg-gray-100 transition">
                     <td className="p-3">{reservation.name}</td>
                     <td className="p-3">{reservation.restaurant}</td>
