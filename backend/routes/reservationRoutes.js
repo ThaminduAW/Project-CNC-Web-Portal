@@ -22,33 +22,38 @@ router.post("/", async (req, res) => {
     await newReservation.save();
 
     // Email Configuration
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+    try {
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
 
-    // Confirmation Email to the Visitor
-    const visitorMailOptions = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "Reservation Confirmation - CNC World Tour",
-      text: `Hello ${name},\n\nYour reservation at ${restaurant} is confirmed for ${date} at ${time}.\n\nSpecial Instructions: ${instructions || "None"}\n\nThank you for booking with CNC World Tour!`,
-    };
+      // Confirmation Email to the Visitor
+      const visitorMailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "Reservation Confirmation - CNC World Tour",
+        text: `Hello ${name},\n\nYour reservation at ${restaurant} is confirmed for ${date} at ${time}.\n\nSpecial Instructions: ${instructions || "None"}\n\nThank you for booking with CNC World Tour!`,
+      };
 
-    await transporter.sendMail(visitorMailOptions);
+      await transporter.sendMail(visitorMailOptions);
 
-    // Email Notification to the Partner
-    const partnerMailOptions = {
-      from: process.env.EMAIL_USER,
-      to: partner.email,
-      subject: "New Reservation at Your Restaurant",
-      text: `Hello ${partner.fullName},\n\nA new reservation has been made at your restaurant.\n\nDetails:\nName: ${name}\nEmail: ${email}\nDate: ${date}\nTime: ${time}\nContact: ${contact || "Not provided"}\n\nInstructions: ${instructions || "None"}`,
-    };
+      // Email Notification to the Partner
+      const partnerMailOptions = {
+        from: process.env.EMAIL_USER,
+        to: partner.email,
+        subject: "New Reservation at Your Restaurant",
+        text: `Hello ${partner.fullName},\n\nA new reservation has been made at your restaurant.\n\nDetails:\nName: ${name}\nEmail: ${email}\nDate: ${date}\nTime: ${time}\nContact: ${contact || "Not provided"}\n\nInstructions: ${instructions || "None"}`,
+      };
 
-    await transporter.sendMail(partnerMailOptions);
+      await transporter.sendMail(partnerMailOptions);
+    } catch (emailError) {
+      console.error("Email sending failed:", emailError);
+      // Continue execution even if email fails
+    }
 
     res.status(201).json({ message: "Reservation confirmed!" });
   } catch (error) {
