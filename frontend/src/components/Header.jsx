@@ -21,6 +21,7 @@ const Header = () => {
           <Link to="/" className="hover:text-[#fea116ff] transition">Home</Link>
           <Link to="/restaurants" className="hover:text-[#fea116ff] transition">Restaurants</Link>
           <Link to="/events" className="hover:text-[#fea116ff] transition">Events</Link>
+          <Link to="/offers" className="hover:text-[#fea116ff] transition">Offers</Link>
           <Link to="/reservation" className="hover:text-[#fea116ff] transition">Reservation</Link>
           <Link to="/about" className="hover:text-[#fea116ff] transition">About</Link>
           <Link to="/contact" className="hover:text-[#fea116ff] transition">Contact</Link>
@@ -56,6 +57,7 @@ const Header = () => {
           <Link to="/" className="hover:text-[#fea116ff]" onClick={() => setIsOpen(false)}>Home</Link>
           <Link to="/restaurants" className="hover:text-[#fea116ff]" onClick={() => setIsOpen(false)}>Restaurants</Link>
           <Link to="/events" className="hover:text-[#fea116ff]" onClick={() => setIsOpen(false)}>Events</Link>
+          <Link to="/offers" className="hover:text-[#fea116ff]" onClick={() => setIsOpen(false)}>Offers</Link>
           <Link to="/reservation" className="hover:text-[#fea116ff]" onClick={() => setIsOpen(false)}>Reservation</Link>
           <Link to="/about" className="hover:text-[#fea116ff]" onClick={() => setIsOpen(false)}>About</Link>
           <Link to="/contact" className="hover:text-[#fea116ff]" onClick={() => setIsOpen(false)}>Contact</Link>
