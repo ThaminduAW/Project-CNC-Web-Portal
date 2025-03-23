@@ -1,12 +1,15 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { FaUser, FaUsers, FaCalendarAlt, FaEnvelope, FaCog, FaSignOutAlt, FaHome, FaCalendarCheck } from "react-icons/fa";
+import { FaUser, FaUsers, FaCalendarAlt, FaEnvelope, FaCog, FaSignOutAlt, FaHome, FaComments, FaBuilding } from "react-icons/fa";
 import logo from "../assets/logo.png"; // Ensure path is correct
 import defaultProfile from "../assets/default-profile.png"; // Default profile image
 
 const AdminSideBar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [admin, setAdmin] = useState({ fullName: "Admin", role: "Admin", profilePhoto: defaultProfile });
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showBadge, setShowBadge] = useState(true);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -21,11 +24,56 @@ const AdminSideBar = () => {
     }
   }, [navigate]);
 
+  // Reset badge when navigating to messages
+  useEffect(() => {
+    if (location.pathname === '/admin/messages') {
+      setShowBadge(false);
+    } else {
+      setShowBadge(true);
+    }
+  }, [location.pathname]);
+
+  // Fetch unread message count
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const response = await fetch("http://localhost:3000/api/messages/unread", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) throw new Error("Failed to fetch unread count");
+
+        const data = await response.json();
+        setUnreadCount(data.count);
+      } catch (error) {
+        console.error("Error fetching unread count:", error);
+      }
+    };
+
+    fetchUnreadCount();
+    // Poll for new messages every 30 seconds
+    const interval = setInterval(fetchUnreadCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   const handleSignOut = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     navigate("/signin");
   };
+
+  const menuItems = [
+    { path: "/admin/dashboard", icon: FaHome, label: "Dashboard" },
+    { path: "/admin/partners", icon: FaBuilding, label: "Partners" },
+    { path: "/admin/users", icon: FaUsers, label: "Users" },
+    { path: "/admin/messages", icon: FaComments, label: "Messages", badge: showBadge && unreadCount },
+    { path: "/admin/settings", icon: FaCog, label: "Settings" },
+  ];
 
   return (
     <div className="h-screen w-64 bg-[#001524ff] text-white flex flex-col shadow-lg">
@@ -44,38 +92,28 @@ const AdminSideBar = () => {
 
       {/* Navigation Menu */}
       <nav className="flex-1 mt-4">
-        <ul className="space-y-2">
-          <li>
-            <Link to="/admin/dashboard" className="flex items-center px-6 py-2 hover:bg-[#0098c9ff] transition">
-              <FaUser className="mr-2" /> Admin Dashboard
+        {menuItems.map((item) => (
+          <div key={item.path} className="relative">
+            <Link
+              to={item.path}
+              className={`flex items-center px-6 py-3 hover:bg-[#0098c9ff] transition-colors relative ${
+                location.pathname === item.path
+                  ? "bg-[#0084b3ff] text-white"
+                  : "text-gray-300"
+              }`}
+            >
+              <item.icon className="w-5 h-5" />
+              <span className="ml-3">{item.label}</span>
+              {item.badge > 0 && (
+                <span 
+                  className="absolute right-4 top-1/2 -mt-2 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1 transform scale-100 transition-transform duration-200 ease-in-out animate-badge-pop"
+                >
+                  {item.badge > 99 ? '99+' : item.badge}
+                </span>
+              )}
             </Link>
-          </li>
-          <li>
-            <Link to="/admin/partners" className="flex items-center px-6 py-2 hover:bg-[#0098c9ff] transition">
-              <FaUsers className="mr-2" /> Partners
-            </Link>
-          </li>
-          <li>
-            <Link to="/admin/events" className="flex items-center px-6 py-2 hover:bg-[#0098c9ff] transition">
-              <FaCalendarAlt className="mr-2" /> Events
-            </Link>
-          </li>
-          <li>
-            <Link to="/admin/reservations" className="flex items-center px-6 py-2 hover:bg-[#0098c9ff] transition">
-              <FaCalendarCheck className="mr-2" /> Customer Reservations
-            </Link>
-          </li>
-          <li>
-            <Link to="/admin/messages" className="flex items-center px-6 py-2 hover:bg-[#0098c9ff] transition">
-              <FaEnvelope className="mr-2" /> Messages
-            </Link>
-          </li>
-          <li>
-            <Link to="/admin/settings" className="flex items-center px-6 py-2 hover:bg-[#0098c9ff] transition">
-              <FaCog className="mr-2" /> Settings
-            </Link>
-          </li>
-        </ul>
+          </div>
+        ))}
       </nav>
 
       {/* Return to Home Page & Sign Out Buttons */}
