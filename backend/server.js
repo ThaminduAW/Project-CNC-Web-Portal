@@ -7,6 +7,7 @@ import contactRoutes from "./routes/contactRoutes.js";
 import partnerRoutes from "./routes/partnerRoutes.js";
 import reservationRoutes from "./routes/reservationRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import messageRoutes from "./routes/messageRoutes.js";
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.use("/api/contact", contactRoutes);
 app.use("/api/partners", partnerRoutes);
 app.use("/api/reservations", reservationRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/messages", messageRoutes);
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI, {

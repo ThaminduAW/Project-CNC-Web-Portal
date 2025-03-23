@@ -44,39 +44,16 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-// ✅ User Sign-in (Handles both Admin and Approved Partners)
+// ✅ User Sign-in
 router.post("/signin", async (req, res) => {
   try {
     const { email, password } = req.body;
     console.log("🔹 Received sign-in request for email:", email);
 
-    // 🔸 Admin Sign-In
-    if (email === "cnc.client@admin.com") {
-      if (password !== "Client123=") {
-        console.log("❌ Admin login failed: Invalid password.");
-        return res.status(400).json({ message: "Invalid admin credentials." });
-      }
-
-      const token = jwt.sign({ id: "admin", role: "Admin" }, process.env.JWT_SECRET, { expiresIn: "2h" });
-
-      console.log("✅ Admin logged in successfully.");
-      return res.status(200).json({
-        token,
-        user: { id: "admin", fullName: "Admin", email, role: "Admin" },
-      });
-    }
-
-    // 🔸 Partner Sign-In
     const user = await User.findOne({ email });
     if (!user) {
       console.log("❌ Sign-in failed: Email not found.");
       return res.status(400).json({ message: "Invalid credentials." });
-    }
-
-    // ✅ Check if the user is approved
-    if (!user.approved) {
-      console.log("❌ Sign-in failed: User not approved by admin.");
-      return res.status(403).json({ message: "Your account is pending approval by the admin." });
     }
 
     // Compare password with hashed password
@@ -86,13 +63,34 @@ router.post("/signin", async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials." });
     }
 
-    // Generate token for approved user
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "2h" });
+    // For partners, check approval status
+    if (user.role === "Partner" && !user.approved) {
+      console.log("❌ Sign-in failed: User not approved by admin.");
+      return res.status(403).json({ message: "Your account is pending admin approval." });
+    }
+
+    // Generate token for user with proper ID
+    const token = jwt.sign(
+      { 
+        id: user._id.toString(), // Ensure ID is a string
+        role: user.role,
+        approved: user.approved 
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "2h" }
+    );
 
     console.log("✅ User signed in successfully:", user.email);
     res.status(200).json({
       token,
-      user: { id: user._id, fullName: user.fullName, email, role: user.role },
+      user: {
+        id: user._id.toString(), // Ensure ID is a string
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        approved: user.approved,
+        restaurantName: user.restaurantName
+      },
     });
   } catch (error) {
     console.error("❌ Sign-in error:", error);

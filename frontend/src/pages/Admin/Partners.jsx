@@ -14,12 +14,13 @@ const Partners = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [success, setSuccess] = useState("");
 
   // Fetch all partners from the backend
   useEffect(() => {
     const fetchPartners = async () => {
       try {
-        const token = localStorage.getItem("token"); // Get the auth token from localStorage
+        const token = localStorage.getItem("token");
         if (!token) {
           setError("Please login to access this page");
           setLoading(false);
@@ -32,20 +33,23 @@ const Partners = () => {
           },
         });
 
-        if (!response.ok) {
-          if (response.status === 401) {
-            setError("Please login to access this page");
-            setLoading(false);
-            return;
-          }
-          throw new Error("Failed to fetch partners");
+        let data;
+        try {
+          data = await response.json();
+        } catch (jsonError) {
+          throw new Error("Unable to connect to the server. Please make sure the server is running.");
         }
 
-        const data = await response.json();
+        if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error("Please login to access this page");
+          }
+          throw new Error(data.message || "Failed to fetch partners");
+        }
+
         setPartners(data);
       } catch (err) {
-        console.error("Error fetching partners:", err);
-        setError(err.message);
+        setError(err.message || "An error occurred while fetching partners");
       } finally {
         setLoading(false);
       }
@@ -66,22 +70,38 @@ const Partners = () => {
       const response = await fetch(`http://localhost:3000/api/admin/partners/approve/${partnerId}`, {
         method: "PATCH",
         headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify({ approved: true })
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to approve partner");
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        throw new Error("Unable to connect to the server. Please make sure the server is running.");
       }
 
-      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to approve partner");
+      }
+
+      // Update the partners list with the approved partner
       setPartners((prev) =>
-        prev.map((partner) => (partner._id === partnerId ? { ...partner, approved: true } : partner))
+        prev.map((partner) =>
+          partner._id === partnerId
+            ? { ...partner, approved: true }
+            : partner
+        )
       );
-      console.log("Partner Approved:", data);
+
+      setSuccess("Partner approved successfully!");
+      setTimeout(() => setSuccess(""), 3000);
+
     } catch (err) {
-      console.error("Error approving partner:", err);
-      setError(err.message);
+      setError(err.message || "An error occurred while approving the partner");
+      setTimeout(() => setError(""), 3000);
     }
   };
 
@@ -202,6 +222,18 @@ const Partners = () => {
           </button>
         </div>
 
+        {/* Success and Error Messages */}
+        {success && (
+          <div className="mb-4 p-4 bg-green-50 border border-green-200 text-green-600 rounded-lg">
+            {success}
+          </div>
+        )}
+        {error && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-600 rounded-lg">
+            {error}
+          </div>
+        )}
+
         {/* Partner List */}
         <div className="overflow-x-auto bg-white shadow-md rounded-lg p-6">
           <table className="w-full text-left border-collapse">
@@ -218,16 +250,20 @@ const Partners = () => {
             <tbody>
               {partners && partners.length > 0 ? (
                 partners.map((partner) => (
-                  <tr key={partner._id} className="border-b">
+                  <tr key={partner._id} className="border-b hover:bg-gray-50 transition-colors">
                     <td className="p-3">{partner.fullName}</td>
                     <td className="p-3">{partner.restaurantName}</td>
                     <td className="p-3">{partner.email}</td>
                     <td className="p-3">{partner.phone || "N/A"}</td>
                     <td className="p-3">
                       {partner.approved ? (
-                        <span className="text-green-600 font-semibold">Approved</span>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          Approved
+                        </span>
                       ) : (
-                        <span className="text-red-600 font-semibold">Pending</span>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                          Pending
+                        </span>
                       )}
                     </td>
                     <td className="p-3 space-x-2">
@@ -250,7 +286,7 @@ const Partners = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="p-3 text-center">
+                  <td colSpan="6" className="p-3 text-center text-gray-500">
                     No partners found
                   </td>
                 </tr>
