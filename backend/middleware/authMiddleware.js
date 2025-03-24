@@ -18,9 +18,12 @@ const authMiddleware = async (req, res, next) => {
       return res.status(401).json({ message: "Access denied. Invalid token format." });
     }
 
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("✅ Token verified:", decoded);
+    // Prevent repeated logs for token verification
+    if (!req.tokenVerified) {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      console.log("✅ Token verified:", decoded);
+      req.tokenVerified = true; // Set flag to true
+    }
 
     // For admin users, we don't need to fetch from database
     if (decoded.role === "Admin" && decoded.id === "admin") {
