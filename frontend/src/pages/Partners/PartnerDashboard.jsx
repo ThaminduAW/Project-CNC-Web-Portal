@@ -1,21 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import PartnerSideBar from "../../components/PartnerSideBar";
-import { Card, Row, Col, Typography, List, Avatar, Divider, Spin, message } from 'antd';
-import 'antd/dist/reset.css';
+import { FaCalendarAlt, FaUsers, FaClock, FaStore, FaStar, FaPhone, FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa';
 import axios from 'axios';
-import {
-  CalendarOutlined,
-  UserOutlined,
-  ClockCircleOutlined,
-  ShopOutlined
-} from '@ant-design/icons';
 
-const { Title, Text } = Typography;
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 const PartnerDashboard = () => {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [dashboardData, setDashboardData] = useState({
     totalReservations: 0,
     pendingReservations: 0,
@@ -32,28 +24,36 @@ const PartnerDashboard = () => {
     recentActivities: []
   });
 
-  // Get partner ID from localStorage or context
+  // Get partner ID from localStorage
   const getPartnerId = () => {
-    // Replace this with your actual auth context or storage method
-    const partnerData = JSON.parse(localStorage.getItem('partnerData'));
-    return partnerData?.id;
+    const userData = JSON.parse(localStorage.getItem('user'));
+    return userData?.id;
   };
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
       const partnerId = getPartnerId();
+      const token = localStorage.getItem('token');
       
       if (!partnerId) {
-        message.error('Partner ID not found. Please login again.');
+        setError('Partner ID not found. Please login again.');
         return;
       }
 
-      // Fetch all data in a single API call
-      const response = await axios.get(`${API_URL}/partners/${partnerId}/dashboard`);
+      if (!token) {
+        setError('Authentication token not found. Please login again.');
+        return;
+      }
+
+      const response = await axios.get(`${API_URL}/partners/${partnerId}/dashboard`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       setDashboardData(response.data);
     } catch (error) {
-      message.error('Failed to fetch dashboard data. Please try again later.');
+      setError('Failed to fetch dashboard data. Please try again later.');
       console.error('Dashboard data fetch error:', error);
     } finally {
       setLoading(false);
@@ -62,127 +62,178 @@ const PartnerDashboard = () => {
 
   useEffect(() => {
     fetchDashboardData();
-    // Set up polling for real-time updates (every 30 seconds)
     const interval = setInterval(fetchDashboardData, 30000);
     return () => clearInterval(interval);
   }, []);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <Spin size="large" />
+      <div className="flex bg-[#fdfcdcff] text-[#001524ff]">
+        <PartnerSideBar />
+        <div className="flex-1 p-8">
+          <div className="flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#fea116ff]"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex bg-[#fdfcdcff] text-[#001524ff]">
+        <PartnerSideBar />
+        <div className="flex-1 p-8">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <p className="text-red-600 text-center">{error}</p>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex">
+    <div className="flex bg-[#fdfcdcff] text-[#001524ff]">
       <PartnerSideBar />
-      <div className="flex-1 p-6">
-        <Title level={2}>Dashboard</Title>
+      <div className="flex-1 p-8">
+        <h1 className="text-3xl font-bold mb-8">
+          Welcome to <span className="text-[#fea116ff]">Partner Dashboard</span>
+        </h1>
         
         {/* Statistics Cards */}
-        <Row gutter={[16, 16]} className="mb-8">
-          <Col xs={24} sm={12} lg={6}>
-            <Card>
-              <div className="flex items-center">
-                <CalendarOutlined className="text-2xl text-blue-500 mr-4" />
-                <div>
-                  <Text className="text-gray-500">Total Reservations</Text>
-                  <div className="text-2xl font-bold">{dashboardData.totalReservations}</div>
-                </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Total Reservations</h3>
+                <p className="text-3xl font-bold text-[#0098c9ff]">{dashboardData.totalReservations}</p>
               </div>
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Card>
-              <div className="flex items-center">
-                <ClockCircleOutlined className="text-2xl text-orange-500 mr-4" />
-                <div>
-                  <Text className="text-gray-500">Pending Reservations</Text>
-                  <div className="text-2xl font-bold">{dashboardData.pendingReservations}</div>
-                </div>
-              </div>
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Card>
-              <div className="flex items-center">
-                <ShopOutlined className="text-2xl text-green-500 mr-4" />
-                <div>
-                  <Text className="text-gray-500">Total Events</Text>
-                  <div className="text-2xl font-bold">{dashboardData.totalEvents}</div>
-                </div>
-              </div>
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Card>
-              <div className="flex items-center">
-                <UserOutlined className="text-2xl text-purple-500 mr-4" />
-                <div>
-                  <Text className="text-gray-500">Total Customers</Text>
-                  <div className="text-2xl font-bold">{dashboardData.totalCustomers}</div>
-                </div>
-              </div>
-            </Card>
-          </Col>
-        </Row>
-
-        {/* Restaurant Profile */}
-        <Card title="Restaurant Profile" className="mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Text strong>Name:</Text> {dashboardData.profile.name}
-            </div>
-            <div>
-              <Text strong>Address:</Text> {dashboardData.profile.address}
-            </div>
-            <div>
-              <Text strong>Phone:</Text> {dashboardData.profile.phone}
-            </div>
-            <div>
-              <Text strong>Email:</Text> {dashboardData.profile.email}
-            </div>
-            <div>
-              <Text strong>Cuisine:</Text> {dashboardData.profile.cuisine}
-            </div>
-            <div>
-              <Text strong>Rating:</Text> {dashboardData.profile.rating} / 5
+              <FaCalendarAlt className="text-4xl text-[#0098c9ff] opacity-50" />
             </div>
           </div>
-        </Card>
+          <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Pending Reservations</h3>
+                <p className="text-3xl font-bold text-orange-500">{dashboardData.pendingReservations}</p>
+              </div>
+              <FaClock className="text-4xl text-orange-500 opacity-50" />
+            </div>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Total Events</h3>
+                <p className="text-3xl font-bold text-green-600">{dashboardData.totalEvents}</p>
+              </div>
+              <FaStore className="text-4xl text-green-600 opacity-50" />
+            </div>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Total Customers</h3>
+                <p className="text-3xl font-bold text-purple-600">{dashboardData.totalCustomers}</p>
+              </div>
+              <FaUsers className="text-4xl text-purple-600 opacity-50" />
+            </div>
+          </div>
+        </div>
+
+        {/* Restaurant Profile */}
+        <div className="bg-white p-6 rounded-lg shadow-lg mb-8">
+          <h2 className="text-xl font-bold mb-6 flex items-center">
+            <FaStore className="text-2xl text-[#fea116ff] mr-2" />
+            Restaurant Profile
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div className="flex items-center">
+                <FaStore className="text-gray-500 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-500">Name</p>
+                  <p className="font-semibold">{dashboardData.profile.name}</p>
+                </div>
+              </div>
+              <div className="flex items-center">
+                <FaMapMarkerAlt className="text-gray-500 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-500">Address</p>
+                  <p className="font-semibold">{dashboardData.profile.address}</p>
+                </div>
+              </div>
+              <div className="flex items-center">
+                <FaPhone className="text-gray-500 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-500">Phone</p>
+                  <p className="font-semibold">{dashboardData.profile.phone}</p>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-center">
+                <FaEnvelope className="text-gray-500 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-500">Email</p>
+                  <p className="font-semibold">{dashboardData.profile.email}</p>
+                </div>
+              </div>
+              <div className="flex items-center">
+                <FaStore className="text-gray-500 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-500">Cuisine</p>
+                  <p className="font-semibold">{dashboardData.profile.cuisine}</p>
+                </div>
+              </div>
+              <div className="flex items-center">
+                <FaStar className="text-gray-500 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-500">Rating</p>
+                  <p className="font-semibold">{dashboardData.profile.rating} / 5</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Recent Activities */}
-        <Card title="Recent Activities">
-          <List
-            itemLayout="horizontal"
-            dataSource={dashboardData.recentActivities}
-            renderItem={item => (
-              <List.Item>
-                <List.Item.Meta
-                  avatar={
-                    <Avatar icon={
-                      item.type === "reservation" ? <CalendarOutlined /> :
-                      item.type === "event" ? <ShopOutlined /> :
-                      <UserOutlined />
-                    } />
-                  }
-                  title={item.description}
-                  description={item.time}
-                />
+        <div className="bg-white p-6 rounded-lg shadow-lg">
+          <h2 className="text-xl font-bold mb-6 flex items-center">
+            <FaCalendarAlt className="text-2xl text-[#fea116ff] mr-2" />
+            Recent Activities
+          </h2>
+          <div className="space-y-4">
+            {dashboardData.recentActivities.map((activity, index) => (
+              <div 
+                key={index}
+                className="flex items-center justify-between border-b pb-4 last:border-b-0 hover:bg-gray-50 p-2 rounded-lg transition-colors duration-200"
+              >
                 <div>
-                  <span className={`px-2 py-1 rounded-full text-sm ${
-                    item.status === "pending" ? "bg-yellow-100 text-yellow-800" :
-                    "bg-green-100 text-green-800"
-                  }`}>
-                    {item.status}
-                  </span>
+                  <p className="font-semibold text-gray-800">
+                    {activity.type === "reservation" ? (
+                      <span className="text-green-600">✓ {activity.description}</span>
+                    ) : (
+                      <span className="text-orange-500">• {activity.description}</span>
+                    )}
+                  </p>
+                  <p className="text-gray-600">{activity.time}</p>
                 </div>
-              </List.Item>
+                <span className={`text-sm px-3 py-1 rounded-full ${
+                  activity.status === "pending" 
+                    ? "bg-yellow-100 text-yellow-800" 
+                    : "bg-green-100 text-green-800"
+                }`}>
+                  {activity.status}
+                </span>
+              </div>
+            ))}
+            {dashboardData.recentActivities.length === 0 && (
+              <div className="text-center py-8">
+                <p className="text-gray-500">No recent activities</p>
+              </div>
             )}
-          />
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

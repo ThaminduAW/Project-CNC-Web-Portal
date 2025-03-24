@@ -10,10 +10,13 @@ const Partners = () => {
     phone: "",
     email: "",
     password: "",
+    url: "",
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedPartner, setSelectedPartner] = useState(null);
   const [success, setSuccess] = useState("");
 
   // Fetch all partners from the backend
@@ -152,21 +155,59 @@ const Partners = () => {
         return;
       }
 
+      // Validate all required fields
+      if (!newPartner.fullName || !newPartner.restaurantName || !newPartner.address || 
+          !newPartner.phone || !newPartner.email || !newPartner.password || !newPartner.url) {
+        setError("All fields are required");
+        setLoading(false);
+        return;
+      }
+
+      // Validate URL format
+      try {
+        new URL(newPartner.url);
+      } catch (err) {
+        setError("Please enter a valid URL (e.g., https://www.example.com)");
+        setLoading(false);
+        return;
+      }
+
+      // Validate password
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      if (!passwordRegex.test(newPartner.password)) {
+        setError("Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.");
+        setLoading(false);
+        return;
+      }
+
+      // Prepare the partner data
+      const partnerData = {
+        fullName: newPartner.fullName.trim(),
+        restaurantName: newPartner.restaurantName.trim(),
+        address: newPartner.address.trim(),
+        phone: newPartner.phone.trim(),
+        email: newPartner.email.trim(),
+        password: newPartner.password,
+        url: newPartner.url.trim(),
+        role: "Partner",
+        approved: true
+      };
+
       const response = await fetch("http://localhost:3000/api/admin/partners/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(newPartner),
+        body: JSON.stringify(partnerData),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const data = await response.json();
         throw new Error(data.message || "Failed to add partner");
       }
 
-      const data = await response.json();
       setPartners((prev) => [...prev, data.newPartner]);
       setNewPartner({
         fullName: "",
@@ -175,14 +216,23 @@ const Partners = () => {
         phone: "",
         email: "",
         password: "",
+        url: "",
       });
       setShowModal(false);
-      console.log("New Partner Added:", data.newPartner);
+      setSuccess("Partner added successfully!");
+      setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
-      setError(err.message);
+      console.error("Error adding partner:", err);
+      setError(err.message || "An error occurred while adding the partner");
     } finally {
       setLoading(false);
     }
+  };
+
+  // Handle View Details
+  const handleViewDetails = (partner) => {
+    setSelectedPartner(partner);
+    setShowDetailsModal(true);
   };
 
   if (loading) {
@@ -239,8 +289,8 @@ const Partners = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[#0098c9ff] text-white">
-                <th className="p-3">Full Name</th>
                 <th className="p-3">Restaurant</th>
+                <th className="p-3">Contact Person</th>
                 <th className="p-3">Email</th>
                 <th className="p-3">Phone</th>
                 <th className="p-3">Status</th>
@@ -251,8 +301,8 @@ const Partners = () => {
               {partners && partners.length > 0 ? (
                 partners.map((partner) => (
                   <tr key={partner._id} className="border-b hover:bg-gray-50 transition-colors">
-                    <td className="p-3">{partner.fullName}</td>
                     <td className="p-3">{partner.restaurantName}</td>
+                    <td className="p-3">{partner.fullName}</td>
                     <td className="p-3">{partner.email}</td>
                     <td className="p-3">{partner.phone || "N/A"}</td>
                     <td className="p-3">
@@ -267,6 +317,12 @@ const Partners = () => {
                       )}
                     </td>
                     <td className="p-3 space-x-2">
+                      <button
+                        className="bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition"
+                        onClick={() => handleViewDetails(partner)}
+                      >
+                        View Details
+                      </button>
                       {!partner.approved && (
                         <button
                           className="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-700 transition"
@@ -295,7 +351,89 @@ const Partners = () => {
           </table>
         </div>
 
-        {/* Modal */}
+        {/* View Details Modal */}
+        {showDetailsModal && selectedPartner && (
+          <div className="fixed inset-0 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl p-8 w-full max-w-2xl shadow-2xl border border-gray-200">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-[#001524ff]">Partner Details</h2>
+                <button
+                  onClick={() => setShowDetailsModal(false)}
+                  className="text-gray-500 hover:text-gray-700 transition-colors duration-200"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-500">Restaurant Name</h3>
+                    <p className="text-lg text-[#001524ff]">{selectedPartner.restaurantName}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-500">Contact Person</h3>
+                    <p className="text-lg text-[#001524ff]">{selectedPartner.fullName}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-500">Email</h3>
+                    <p className="text-lg text-[#001524ff]">{selectedPartner.email}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-500">Phone</h3>
+                    <p className="text-lg text-[#001524ff]">{selectedPartner.phone || "N/A"}</p>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-500">Address</h3>
+                    <p className="text-lg text-[#001524ff]">{selectedPartner.address}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-500">Restaurant URL</h3>
+                    <a 
+                      href={selectedPartner.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-lg text-[#0098c9ff] hover:text-[#0087b8ff] break-all"
+                    >
+                      {selectedPartner.url}
+                    </a>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-500">Registration Date</h3>
+                    <p className="text-lg text-[#001524ff]">
+                      {new Date(selectedPartner.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-500">Status</h3>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      selectedPartner.approved 
+                        ? "bg-green-100 text-green-800"
+                        : "bg-yellow-100 text-yellow-800"
+                    }`}>
+                      {selectedPartner.approved ? "Approved" : "Pending"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8 pt-6 border-t flex justify-end space-x-4">
+                <button
+                  onClick={() => setShowDetailsModal(false)}
+                  className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Add Partner Modal */}
         {showModal && (
           <div className="fixed inset-0 flex items-center justify-center z-50">
             <div className="bg-white rounded-xl p-8 w-full max-w-md shadow-2xl border border-gray-200">
@@ -319,7 +457,7 @@ const Partners = () => {
 
               <form onSubmit={handleAddPartner} className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name <span className="text-red-500">*</span></label>
                   <input
                     type="text"
                     name="fullName"
@@ -331,7 +469,7 @@ const Partners = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Restaurant Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Restaurant Name <span className="text-red-500">*</span></label>
                   <input
                     type="text"
                     name="restaurantName"
@@ -343,29 +481,31 @@ const Partners = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Address <span className="text-red-500">*</span></label>
                   <input
                     type="text"
                     name="address"
-                    placeholder="Enter address (Optional)"
+                    placeholder="Enter address"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent transition-all duration-200"
                     onChange={handleChange}
+                    required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number <span className="text-red-500">*</span></label>
                   <input
                     type="tel"
                     name="phone"
-                    placeholder="Enter phone number (Optional)"
+                    placeholder="Enter phone number"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent transition-all duration-200"
                     onChange={handleChange}
+                    required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email <span className="text-red-500">*</span></label>
                   <input
                     type="email"
                     name="email"
@@ -377,7 +517,19 @@ const Partners = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Restaurant URL <span className="text-red-500">*</span></label>
+                  <input
+                    type="url"
+                    name="url"
+                    placeholder="https://www.example.com"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent transition-all duration-200"
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Password <span className="text-red-500">*</span></label>
                   <input
                     type="password"
                     name="password"
