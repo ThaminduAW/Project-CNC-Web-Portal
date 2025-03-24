@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import logo from "../../assets/logo.png"; // Ensure the path is correct
+import logo from "../../assets/logo.png";
+import { motion } from "framer-motion";
 
 const SignIn = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -35,17 +36,14 @@ const SignIn = () => {
         throw new Error(data.message || "Failed to sign in");
       }
 
-      // Check for partner approval status
       if (data.user.role === "Partner" && data.user.approved === false) {
         setError("Your account is pending admin approval. Please try again later.");
         return;
       }
 
-      // Store user data in localStorage only if approved or admin
       localStorage.setItem("user", JSON.stringify(data.user));
       localStorage.setItem("token", data.token);
 
-      // Redirect based on role
       if (data.user.role === "Admin") {
         navigate("/admin/dashboard");
       } else if (data.user.role === "Partner") {
@@ -61,55 +59,82 @@ const SignIn = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA]">
-      <div className="bg-white p-8 rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.1)] w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#fdfcdcff] to-[#ffffff]">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md mx-4 border border-[#fdfcdcff]"
+      >
         <div className="flex flex-col items-center mb-8">
-          <img src={logo} alt="CNC Logo" className="h-16 mb-4" />
-          <h2 className="text-2xl font-bold text-[#2C3E50]">Welcome Back!</h2>
-          <p className="text-gray-600 mt-2">Sign in to your account</p>
+          <motion.img 
+            src={logo} 
+            alt="CNC Logo" 
+            className="h-20 mb-6"
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          />
+          <h2 className="text-3xl font-bold text-[#001524ff] mb-2">Welcome Back!</h2>
+          <p className="text-[#333333ff] text-lg">Sign in to your account</p>
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6">
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-lg mb-6"
+          >
             {error}
-          </div>
+          </motion.div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-[#333333ff]">
               Email Address
             </label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3498DB] focus:border-transparent transition-all duration-200"
-              placeholder="Enter your email"
-              required
-            />
+            <div className="relative">
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border-2 border-[#fdfcdcff] rounded-xl focus:ring-2 focus:ring-[#0098c9ff] focus:border-transparent transition-all duration-200 pl-12"
+                placeholder="Enter your email"
+                required
+              />
+              <svg className="absolute left-4 top-3.5 h-5 w-5 text-[#333333ff]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+              </svg>
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-[#333333ff]">
               Password
             </label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3498DB] focus:border-transparent transition-all duration-200"
-              placeholder="Enter your password"
-              required
-            />
+            <div className="relative">
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border-2 border-[#fdfcdcff] rounded-xl focus:ring-2 focus:ring-[#0098c9ff] focus:border-transparent transition-all duration-200 pl-12"
+                placeholder="Enter your password"
+                required
+              />
+              <svg className="absolute left-4 top-3.5 h-5 w-5 text-[#333333ff]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
           </div>
 
-          <button
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             type="submit"
             disabled={loading}
-            className="w-full bg-[#3498DB] text-white py-2 rounded-lg hover:bg-[#2980B9] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-gradient-to-r from-[#fea116ff] to-[#e69510ff] text-white py-3 rounded-xl hover:from-[#e69510ff] hover:to-[#fea116ff] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
           >
             {loading ? (
               <span className="flex items-center justify-center">
@@ -122,21 +147,29 @@ const SignIn = () => {
             ) : (
               "Sign In"
             )}
-          </button>
+          </motion.button>
         </form>
 
-        <div className="text-center mt-4">
-          <p className="text-sm">
+        <div className="text-center mt-8 space-y-3">
+          <p className="text-sm text-[#333333ff]">
             Not a registered partner?{" "}
-            <span className="text-[#0098c9ff] cursor-pointer" onClick={() => navigate("/signup")}>
+            <motion.span 
+              whileHover={{ scale: 1.05 }}
+              className="text-[#0098c9ff] font-semibold cursor-pointer hover:text-[#0087b8ff] transition-colors"
+              onClick={() => navigate("/signup")}
+            >
               Sign Up
-            </span>
+            </motion.span>
           </p>
-          <p className="text-sm text-gray-500 cursor-pointer mt-2" onClick={() => navigate("/")}>
+          <motion.p 
+            whileHover={{ scale: 1.05 }}
+            className="text-sm text-[#333333ff] cursor-pointer hover:text-[#001524ff] transition-colors"
+            onClick={() => navigate("/")}
+          >
             Return to home
-          </p>
+          </motion.p>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
