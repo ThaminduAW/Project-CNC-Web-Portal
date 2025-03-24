@@ -62,12 +62,20 @@ router.post("/", async (req, res) => {
   }
 });
 
-// ✅ Fetch all upcoming reservations
+// GET - Fetch all reservations (for admin view)
 router.get("/", async (req, res) => {
   try {
-    const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
-    const reservations = await Reservation.find({ date: { $gte: today } }).sort({ date: 1 });
+    // Check if the request is from admin
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      // If no token, return only upcoming reservations (public view)
+      const today = new Date().toISOString().split("T")[0];
+      const reservations = await Reservation.find({ date: { $gte: today } }).sort({ date: 1 });
+      return res.json(reservations);
+    }
 
+    // For admin, return all reservations
+    const reservations = await Reservation.find().sort({ date: -1, time: -1 });
     res.json(reservations);
   } catch (error) {
     console.error("Error fetching reservations:", error);
