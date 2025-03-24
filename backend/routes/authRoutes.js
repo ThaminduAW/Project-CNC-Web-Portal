@@ -8,9 +8,15 @@ const router = express.Router();
 // ✅ User Sign-up (Registers Partners - Requires Approval)
 router.post("/signup", async (req, res) => {
   try {
-    const { fullName, restaurantName, address, phone, email, password } = req.body;
+    const { fullName, restaurantName, address, phone, email, password, url } = req.body;
 
     console.log("🔹 Received sign-up request:", req.body);
+
+    // Validate required fields
+    if (!url) {
+      console.log("❌ Sign-up failed: URL is required.");
+      return res.status(400).json({ message: "Restaurant URL is required." });
+    }
 
     // Check if the email is already registered
     const existingUser = await User.findOne({ email });
@@ -30,6 +36,7 @@ router.post("/signup", async (req, res) => {
       phone: phone || "",
       email,
       password: hashedPassword,
+      url, // URL is required, no fallback needed
       role: "Partner",
       approved: false, // ✅ Requires admin approval
     });
