@@ -36,24 +36,20 @@ createDefaultAdmin();
 router.post("/signin", async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log("🔹 Received sign-in request for email:", email);
 
     const user = await User.findOne({ email });
     if (!user) {
-      console.log("❌ Sign-in failed: Email not found.");
       return res.status(400).json({ message: "Invalid credentials." });
     }
 
     // Compare password with hashed password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      console.log("❌ Sign-in failed: Incorrect password.");
       return res.status(400).json({ message: "Invalid credentials." });
     }
 
     // For partners, check approval status
     if (user.role === "Partner" && !user.approved) {
-      console.log("❌ Sign-in failed: User not approved by admin.");
       return res.status(403).json({ message: "Your account is pending admin approval." });
     }
 
@@ -64,7 +60,6 @@ router.post("/signin", async (req, res) => {
       { expiresIn: "2h" }
     );
 
-    console.log("✅ User signed in successfully:", user.email);
     res.status(200).json({
       token,
       user: {
@@ -77,7 +72,7 @@ router.post("/signin", async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("❌ Sign-in error:", error);
+    console.error("Sign-in error:", error);
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
@@ -174,8 +169,19 @@ router.delete("/partners/delete/:id", async (req, res) => {
 // ✅ Admin Adds a New Partner
 router.post("/partners/add", async (req, res) => {
   try {
-    const { fullName, restaurantName, address, phone, email, password } =
-      req.body;
+    const { fullName, restaurantName, address, phone, email, password, url } = req.body;
+
+    // Validate required fields
+    if (!fullName || !restaurantName || !address || !phone || !email || !password || !url) {
+      return res.status(400).json({ message: "All fields are required." });
+    }
+
+    // Validate URL format
+    try {
+      new URL(url);
+    } catch (err) {
+      return res.status(400).json({ message: "Please enter a valid URL." });
+    }
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -187,19 +193,52 @@ router.post("/partners/add", async (req, res) => {
     const newPartner = new User({
       fullName,
       restaurantName,
-      address: address || "",
-      phone: phone || "",
+      address,
+      phone,
       email,
       password: hashedPassword,
+      url,
       role: "Partner",
       approved: true, // Admin-added partners are automatically approved
     });
 
     await newPartner.save();
 
-    res
-      .status(201)
-      .json({ message: "Partner added successfully.", newPartner });
+    // Send welcome email to the new partner
+    try {
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "Welcome to CNC World Tour - Your Partner Account is Ready",
+        text: `Dear ${fullName},\n\nWelcome to CNC World Tour! Your partner account has been created and is ready to use.\n\nRestaurant Name: ${restaurantName}\n\nYou can now log in to your partner dashboard and start managing your restaurant.\n\nPlease visit http://localhost:5173/signin to access your account.\n\nBest regards,\nCNC World Tour Team`,
+      };
+
+      await transporter.sendMail(mailOptions);
+      console.log("Welcome email sent successfully to:", email);
+    } catch (emailError) {
+      console.error("Failed to send welcome email:", emailError);
+      // Continue execution even if email fails
+    }
+
+    res.status(201).json({ 
+      message: "Partner added successfully.", 
+      newPartner: {
+        _id: newPartner._id,
+        fullName: newPartner.fullName,
+        restaurantName: newPartner.restaurantName,
+        email: newPartner.email,
+        role: newPartner.role,
+        approved: newPartner.approved
+      }
+    });
   } catch (error) {
     console.error("Error adding partner:", error);
     res.status(500).json({ message: "Server error adding partner." });
