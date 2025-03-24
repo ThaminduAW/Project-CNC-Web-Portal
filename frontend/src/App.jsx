@@ -19,6 +19,7 @@ import PartnerEvents from "./pages/Partners/PartnerEvents";
 import Menu from "./pages/Partners/Menu";
 import PartnerMessages from "./pages/Partners/PartnerMessages";
 import PartnerSettings from "./pages/Partners/PartnerSettings";
+import Reservations from "./pages/Partners/Reservations";
 
 import SignIn from "./pages/Authentication/SignIn";
 import SignUp from "./pages/Authentication/SignUp";
@@ -47,8 +48,9 @@ const App = () => {
 
                 {/* Partner Routes */}
                 <Route path="/partner/dashboard" element={<PartnerDashboard />} />
-                <Route path="/partner/events" element={<Events />} />
+                <Route path="/partner/events" element={<PartnerEvents />} />
                 <Route path="/partner/menu" element={<Menu />} />
+                <Route path="/partner/reservations" element={<Reservations />} />
                 <Route path="/partner/messages" element={<PartnerMessages />} />
                 <Route path="/partner/settings" element={<PartnerSettings />} />
 
