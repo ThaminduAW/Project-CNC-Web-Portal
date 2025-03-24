@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import AdminSideBar from "../../components/AdminSideBar";
 
-const PartnerEvents = () => {
+const PartnerReservations = () => {
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedRestaurant, setSelectedRestaurant] = useState("all");
 
-  // Fetch upcoming reservations
   useEffect(() => {
     const fetchReservations = async () => {
       try {
@@ -29,27 +28,20 @@ const PartnerEvents = () => {
     fetchReservations();
   }, []);
 
-  // Get unique restaurant names for the filter
   const restaurantNames = [...new Set(reservations.map(res => res.restaurant))];
-
-  // Filter reservations based on selected restaurant
   const filteredReservations = selectedRestaurant === "all"
     ? reservations
     : reservations.filter(res => res.restaurant === selectedRestaurant);
 
   return (
     <div className="flex bg-[#fdfcdcff] min-h-screen">
-      {/* Admin Sidebar */}
       <AdminSideBar />
-
-      {/* Main Content */}
       <div className="flex-1 p-6">
         <h1 className="text-3xl font-bold text-[#001524ff]">Partner Reservations</h1>
-        <p className="text-gray-600 mb-6">View and manage all customer reservations across partner restaurants.</p>
+        <p className="mb-6 text-gray-600">View and manage all customer reservations across partner restaurants.</p>
 
-        {/* Restaurant Filter */}
         <div className="mb-6">
-          <label htmlFor="restaurant-filter" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="restaurant-filter" className="block mb-2 text-sm font-medium text-gray-700">
             Filter by Restaurant:
           </label>
           <select
@@ -75,7 +67,7 @@ const PartnerEvents = () => {
           <p className="text-center text-gray-500">No reservations found for the selected restaurant.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full bg-white shadow-md rounded-lg overflow-hidden">
+            <table className="w-full overflow-hidden bg-white rounded-lg shadow-md">
               <thead className="bg-[#0098c9ff] text-white">
                 <tr>
                   <th className="p-3 text-left">Customer Name</th>
@@ -87,7 +79,7 @@ const PartnerEvents = () => {
               </thead>
               <tbody>
                 {filteredReservations.map((reservation) => (
-                  <tr key={reservation._id} className="border-b hover:bg-gray-100 transition">
+                  <tr key={reservation._id} className="transition border-b hover:bg-gray-100">
                     <td className="p-3">{reservation.name}</td>
                     <td className="p-3">{reservation.restaurant}</td>
                     <td className="p-3">{new Date(reservation.date).toLocaleDateString()}</td>
@@ -104,4 +96,4 @@ const PartnerEvents = () => {
   );
 };
 
-export default PartnerEvents;
+export default PartnerReservations;
