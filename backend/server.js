@@ -9,6 +9,7 @@ import reservationRoutes from "./routes/reservationRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
 
+// Load environment variables from .env file
 dotenv.config();
 
 const app = express();
@@ -26,7 +27,7 @@ app.use("/api/reservations", reservationRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/messages", messageRoutes);
 
-// MongoDB Connection
+// Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
