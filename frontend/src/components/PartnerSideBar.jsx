@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { FaUser, FaCalendarAlt, FaEnvelope, FaCog, FaSignOutAlt, FaHome, FaUtensils, FaComments } from "react-icons/fa";
+import { FaUser, FaCalendarAlt, FaEnvelope, FaCog, FaSignOutAlt, FaHome, FaUtensils, FaComments, FaCalendarCheck } from "react-icons/fa";
 import logo from "../assets/logo.png";
 import defaultProfile from "../assets/default-profile.png";
 
@@ -77,6 +77,7 @@ const PartnerSideBar = () => {
     { path: "/partner/dashboard", icon: FaHome, label: "Dashboard" },
     { path: "/partner/menu", icon: FaUtensils, label: "Menu" },
     { path: "/partner/events", icon: FaCalendarAlt, label: "Events" },
+    { path: "/partner/reservations", icon: FaCalendarCheck, label: "Reservations" },
     { path: "/partner/messages", icon: FaComments, label: "Messages", badge: showBadge && unreadCount },
     { path: "/partner/settings", icon: FaCog, label: "Settings" },
   ];
