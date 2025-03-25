@@ -28,12 +28,10 @@ router.get("/", authMiddleware, async (req, res) => {
 // Get unread message count
 router.get("/unread", authMiddleware, async (req, res) => {
   try {
-    console.log("Fetching unread count for user:", req.user._id);
     const count = await Message.countDocuments({
       receiver: req.user._id,
       read: false
     });
-    console.log("Unread count:", count);
     res.json({ count });
   } catch (error) {
     console.error("Error counting unread messages:", error);
@@ -119,8 +117,8 @@ router.patch("/read/:senderId", authMiddleware, async (req, res) => {
 // Get conversation with a specific user
 router.get("/conversation/:userId", authMiddleware, async (req, res) => {
   try {
-    console.log("🔹 Fetching conversation with user:", req.params.userId);
-    console.log("Current user:", req.user);
+    // console.log("🔹 Fetching conversation with user:", req.params.userId);
+    // console.log("Current user:", req.user);
 
     const messages = await Message.find({
       $or: [
@@ -132,7 +130,7 @@ router.get("/conversation/:userId", authMiddleware, async (req, res) => {
     .populate('receiver', 'fullName role')
     .sort({ createdAt: 1 });
 
-    console.log(`✅ Found ${messages.length} messages in conversation`);
+    // console.log(`✅ Found ${messages.length} messages in conversation`);
 
     // Mark messages as read when conversation is opened
     await Message.updateMany(
