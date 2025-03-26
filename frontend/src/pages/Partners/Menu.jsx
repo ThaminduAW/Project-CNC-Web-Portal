@@ -291,6 +291,8 @@ const Menu = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="bg-white rounded-lg shadow-md overflow-hidden"
+              whileHover={{ scale: 1.05 }}
+              onClick={() => navigate(`/experience/${experience.id}`)}
             >
               {experience.images && experience.images[0] && (
                 <img
@@ -305,7 +307,6 @@ const Menu = () => {
                 <div className="flex items-center justify-between">
                   <span className="text-blue-600 font-semibold">${experience.price}</span>
                   <button
-                    onClick={() => navigate(`/experience/${experience.id}`)}
                     className="text-blue-600 hover:text-blue-800"
                   >
                     View Details →
@@ -320,4 +321,4 @@ const Menu = () => {
   );
 };
 
-export default Menu; 
+export default Menu;
