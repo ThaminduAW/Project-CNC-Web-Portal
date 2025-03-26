@@ -10,16 +10,7 @@ const PartnerReservations = () => {
   useEffect(() => {
     const fetchReservations = async () => {
       try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          throw new Error("Authentication required");
-        }
-
-        const response = await fetch("http://localhost:3000/api/reservations", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await fetch("http://localhost:3000/api/reservations");
         const data = await response.json();
 
         if (!response.ok) {
@@ -80,8 +71,6 @@ const PartnerReservations = () => {
               <thead className="bg-[#0098c9ff] text-white">
                 <tr>
                   <th className="p-3 text-left">Customer Name</th>
-                  <th className="p-3 text-left">Contact</th>
-                  <th className="p-3 text-left">Email</th>
                   <th className="p-3 text-left">Restaurant</th>
                   <th className="p-3 text-left">Date</th>
                   <th className="p-3 text-left">Time</th>
@@ -92,8 +81,6 @@ const PartnerReservations = () => {
                 {filteredReservations.map((reservation) => (
                   <tr key={reservation._id} className="transition border-b hover:bg-gray-100">
                     <td className="p-3">{reservation.name}</td>
-                    <td className="p-3">{reservation.contact || "N/A"}</td>
-                    <td className="p-3">{reservation.email}</td>
                     <td className="p-3">{reservation.restaurant}</td>
                     <td className="p-3">{new Date(reservation.date).toLocaleDateString()}</td>
                     <td className="p-3">{reservation.time}</td>
