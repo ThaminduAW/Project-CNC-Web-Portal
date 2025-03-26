@@ -8,6 +8,7 @@ const Menu = () => {
   const navigate = useNavigate();
   const [experiences, setExperiences] = useState([]);
   const [showForm, setShowForm] = useState(false);
+  const [storageWarning, setStorageWarning] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -19,12 +20,47 @@ const Menu = () => {
   const [errors, setErrors] = useState({});
   const [selectedDates, setSelectedDates] = useState([]);
 
+  // Function to check storage usage
+  const checkStorageUsage = () => {
+    try {
+      const total = 0;
+      for (let key in localStorage) {
+        if (localStorage.hasOwnProperty(key)) {
+          total += localStorage[key].length + key.length;
+        }
+      }
+      // If we're using more than 80% of storage, show warning
+      if (total > 4 * 1024 * 1024) { // 4MB threshold
+        setStorageWarning(true);
+      } else {
+        setStorageWarning(false);
+      }
+    } catch (error) {
+      console.error('Error checking storage usage:', error);
+    }
+  };
+
+  // Function to clean up old experiences
+  const cleanupOldExperiences = () => {
+    try {
+      const storedExperiences = JSON.parse(localStorage.getItem('experiences') || '[]');
+      // Keep only the 20 most recent experiences
+      const recentExperiences = storedExperiences
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 20);
+      localStorage.setItem('experiences', JSON.stringify(recentExperiences));
+      setExperiences(recentExperiences);
+    } catch (error) {
+      console.error('Error cleaning up experiences:', error);
+    }
+  };
+
   useEffect(() => {
-    // Load experiences from localStorage
     const loadExperiences = () => {
       try {
         const storedExperiences = JSON.parse(localStorage.getItem('experiences') || '[]');
         setExperiences(storedExperiences);
+        checkStorageUsage();
       } catch (error) {
         console.error('Error loading experiences:', error);
       }
@@ -97,20 +133,55 @@ const Menu = () => {
       createdAt: new Date().toISOString()
     };
 
-    const updatedExperiences = [...experiences, newExperience];
-    localStorage.setItem('experiences', JSON.stringify(updatedExperiences));
-    setExperiences(updatedExperiences);
-    setShowForm(false);
-    setFormData({
-      title: '',
-      description: '',
-      location: '',
-      price: '',
-      images: [],
-      availableDates: []
-    });
-    setSelectedDates([]);
-    setErrors({});
+    try {
+      const updatedExperiences = [...experiences, newExperience];
+      localStorage.setItem('experiences', JSON.stringify(updatedExperiences));
+      setExperiences(updatedExperiences);
+      setShowForm(false);
+      setFormData({
+        title: '',
+        description: '',
+        location: '',
+        price: '',
+        images: [],
+        availableDates: []
+      });
+      setSelectedDates([]);
+      setErrors({});
+      checkStorageUsage();
+    } catch (error) {
+      if (error.name === 'QuotaExceededError') {
+        // If storage is full, try to clean up old experiences
+        cleanupOldExperiences();
+        // Try to save again after cleanup
+        try {
+          const updatedExperiences = [...experiences, newExperience];
+          localStorage.setItem('experiences', JSON.stringify(updatedExperiences));
+          setExperiences(updatedExperiences);
+          setShowForm(false);
+          setFormData({
+            title: '',
+            description: '',
+            location: '',
+            price: '',
+            images: [],
+            availableDates: []
+          });
+          setSelectedDates([]);
+          setErrors({});
+        } catch (retryError) {
+          setErrors(prev => ({
+            ...prev,
+            submit: 'Unable to save experience. Please try again later or contact support.'
+          }));
+        }
+      } else {
+        setErrors(prev => ({
+          ...prev,
+          submit: 'An error occurred while saving the experience. Please try again.'
+        }));
+      }
+    }
   };
 
   const handleRemoveImage = (index) => {
@@ -133,6 +204,38 @@ const Menu = () => {
             Create New Experience
           </button>
         </div>
+
+        {storageWarning && (
+          <div className="mb-4 p-4 bg-yellow-50 border-l-4 border-yellow-400">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-yellow-700">
+                  Storage space is running low. Some older experiences may be automatically removed to make space for new ones.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {errors.submit && (
+          <div className="mb-4 p-4 bg-red-50 border-l-4 border-red-400">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-red-700">{errors.submit}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {showForm && (
           <motion.div
