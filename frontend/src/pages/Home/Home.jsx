@@ -1,9 +1,13 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import Hero from "../../components/Hero";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 
 const Home = () => {
+  const navigate = useNavigate();
+  const [experiences, setExperiences] = useState([]);
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -23,31 +27,54 @@ const Home = () => {
     fetchRestaurants();
   }, []);
 
+  useEffect(() => {
+    const storedExperiences = JSON.parse(localStorage.getItem('experiences') || '[]');
+    setExperiences(storedExperiences);
+  }, []);
+
   return (
-    <div className="bg-[#fdfcdcff] text-[#001524ff]">
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <Header />
       <Hero />
 
-      {/* Featured Restaurants Section */}
-      <section className="py-12 px-6 md:px-12">
-        <h2 className="text-3xl font-bold text-center">Explore our Tour Partner Restaurants</h2>
-        <p className="text-center text-gray-600 mt-2">Experience the best seafood dishes from around the world.</p>
+      
 
-        {loading ? (
-          <p className="text-center text-gray-500 mt-6">Loading restaurants...</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-            {restaurants.map((restaurant) => (
-              <div key={restaurant._id} className="bg-white shadow-md rounded-lg p-6 text-center hover:shadow-lg transition">
-                <h3 className="text-xl font-semibold">{restaurant.restaurantName}</h3>
-                <p className="text-gray-600">{restaurant.address || "Location Not Provided"}</p>
-                <a href="/restaurants" className="mt-3 inline-block bg-[#0098c9ff] text-white px-4 py-2 rounded-md hover:bg-[#0079a1ff] transition">
-                  View More
-                </a>
+      {/* Experiences Section */}
+      <section className="py-12 px-6 md:px-12">
+      <h2 className="text-3xl font-bold text-center">Explore our Tour Partner Restaurants</h2>
+      <p className="text-center text-gray-600 mt-2">Experience the best seafood dishes from around the world.</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {experiences.map((experience) => (
+            <motion.div
+              key={experience.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-lg shadow-md overflow-hidden"
+              whileHover={{ scale: 1.05 }}
+              onClick={() => navigate(`/experience/${experience.id}`)}
+            >
+              {experience.images && experience.images[0] && (
+                <img
+                  src={experience.images[0]}
+                  alt={experience.title}
+                  className="w-full h-48 object-cover"
+                />
+              )}
+              <div className="p-4">
+                <h3 className="text-xl font-semibold mb-2">{experience.title}</h3>
+                <p className="text-gray-600 mb-4 line-clamp-2">{experience.description}</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-blue-600 font-semibold">${experience.price}</span>
+                  <button
+                    className="text-blue-600 hover:text-blue-800"
+                  >
+                    View Details →
+                  </button>
+                </div>
               </div>
-            ))}
-          </div>
-        )}
+            </motion.div>
+          ))}
+        </div>
       </section>
 
       {/* Why Choose Us Section */}
