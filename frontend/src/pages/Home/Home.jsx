@@ -12,7 +12,7 @@ const Home = () => {
       try {
         const response = await fetch("http://localhost:3000/api/partners");
         const data = await response.json();
-        setRestaurants(data.slice(0, 3)); // Display top 3 restaurants
+        setRestaurants(data.slice(0, 3)); // Display top 3 restaurants ok
       } catch (error) {
         console.error("Error fetching restaurants:", error);
       } finally {
