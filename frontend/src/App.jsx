@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home/Home";
 import Restaurants from "./pages/Home/Restaurants";
+import ResDetails from "./pages/Home/ResDetails";
 import Reservation from "./pages/Home/Reservation";
 import About from "./pages/Home/About";
 import Contact from "./pages/Home/Contact";
@@ -34,6 +35,7 @@ const App = () => {
                 {/* Home Routes */}
                 <Route path="/" element={<Home />} />
                 <Route path="/restaurants" element={<Restaurants />} />
+                <Route path="/restaurant-details" element={<ResDetails />} />
                 <Route path="/events" element={<Events />} />
                 <Route path="/reservation" element={<Reservation />} />
                 <Route path="/about" element={<About />} />
