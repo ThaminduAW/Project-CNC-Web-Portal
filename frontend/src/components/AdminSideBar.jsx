@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { FaUser, FaUsers, FaCalendarAlt, FaEnvelope, FaCog, FaSignOutAlt, FaHome, FaComments, FaBuilding, FaCalendarCheck } from "react-icons/fa";
+import { FaUser, FaUsers, FaCalendarAlt, FaEnvelope, FaCog, FaSignOutAlt, FaHome, FaComments, FaBuilding, FaCalendarCheck, FaClipboardList } from "react-icons/fa";
 import logo from "../assets/logo.png"; // Ensure path is correct
 import defaultProfile from "../assets/default-profile.png"; // Default profile image
 
@@ -72,7 +72,10 @@ const AdminSideBar = () => {
     { path: "/admin/partners", icon: FaBuilding, label: "Partners" },
     { path: "/admin/reservations", icon: FaCalendarCheck, label: "Reservations" },
     { path: "/admin/events", icon: FaCalendarAlt, label: "Events" },
+    { path: "/admin/reservations", icon: FaCalendarCheck, label: "Reservations" },
+    { path: "/admin/events", icon: FaCalendarAlt, label: "Events" },
     { path: "/admin/messages", icon: FaComments, label: "Messages", badge: showBadge && unreadCount },
+    { path: "/admin/requests", icon: FaClipboardList, label: "Requests" },
     { path: "/admin/settings", icon: FaCog, label: "Settings" },
   ];
 
