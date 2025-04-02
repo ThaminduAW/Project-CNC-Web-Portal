@@ -10,6 +10,7 @@ import eventRoutes from "./routes/eventRoutes.js";
 import reservationRoutes from "./routes/reservationRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
 import partnerRoutes from "./routes/partnerRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -35,6 +36,7 @@ app.use("/api/events", eventRoutes);
 app.use("/api/reservations", reservationRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/partners", partnerRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {

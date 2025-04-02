@@ -72,8 +72,6 @@ const AdminSideBar = () => {
     { path: "/admin/partners", icon: FaBuilding, label: "Partners" },
     { path: "/admin/reservations", icon: FaCalendarCheck, label: "Reservations" },
     { path: "/admin/events", icon: FaCalendarAlt, label: "Events" },
-    { path: "/admin/reservations", icon: FaCalendarCheck, label: "Reservations" },
-    { path: "/admin/events", icon: FaCalendarAlt, label: "Events" },
     { path: "/admin/messages", icon: FaComments, label: "Messages", badge: showBadge && unreadCount },
     { path: "/admin/requests", icon: FaClipboardList, label: "Requests" },
     { path: "/admin/settings", icon: FaCog, label: "Settings" },
