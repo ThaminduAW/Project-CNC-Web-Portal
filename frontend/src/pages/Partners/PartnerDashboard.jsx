@@ -1,221 +1,228 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
 import PartnerSideBar from "../../components/PartnerSideBar";
-import { FaUsers, FaCalendarCheck, FaRegClock, FaChartLine, FaBell } from "react-icons/fa";
+import { FaCalendarAlt, FaUsers, FaClock, FaStore, FaStar, FaPhone, FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa';
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 const PartnerDashboard = () => {
-  const navigate = useNavigate();
-  const [partner, setPartner] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [stats, setStats] = useState({
+  const [dashboardData, setDashboardData] = useState({
     totalReservations: 0,
     pendingReservations: 0,
-    completedReservations: 0,
-    totalRevenue: 0
+    totalEvents: 0,
+    totalCustomers: 0,
+    profile: {
+      name: "",
+      address: "",
+      phone: "",
+      email: "",
+      cuisine: "",
+      rating: 0
+    },
+    recentActivities: []
   });
 
-  const fetchPartnerStats = async () => {
+  // Get partner ID from localStorage
+  const getPartnerId = () => {
+    const userData = JSON.parse(localStorage.getItem('user'));
+    return userData?.id;
+  };
+
+  const fetchDashboardData = async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("No authentication token found");
+      setLoading(true);
+      const partnerId = getPartnerId();
+      const token = localStorage.getItem('token');
+      
+      if (!partnerId) {
+        setError('Partner ID not found. Please login again.');
+        return;
       }
 
-      const response = await fetch("http://localhost:3000/api/partner/stats", {
+      if (!token) {
+        setError('Authentication token not found. Please login again.');
+        return;
+      }
+
+      const response = await axios.get(`${API_URL}/partners/${partnerId}/dashboard`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${token}`
         }
       });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
-          navigate("/signin");
-          throw new Error("Session expired. Please sign in again.");
-        }
-        throw new Error(`Server error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setStats(data);
-    } catch (err) {
-      if (err.message === "Failed to fetch") {
-        setError("Unable to connect to the server. Please check your internet connection or try again later.");
-      } else {
-        setError(err.message);
-      }
-      // Keep showing the last known stats if available
-      console.error("Error fetching partner stats:", err);
+      setDashboardData(response.data);
+    } catch (error) {
+      setError('Failed to fetch dashboard data. Please try again later.');
+      console.error('Dashboard data fetch error:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (!user || user.role !== "Partner") {
-      console.log("Unauthorized access! Redirecting to home.");
-      navigate("/");
-      return;
-    }
-    setPartner(user);
-    
-    // Fetch initial stats
-    fetchPartnerStats()
-      .finally(() => setLoading(false));
-
-    // Refresh stats every 5 minutes
-    const intervalId = setInterval(fetchPartnerStats, 300000);
-
-    return () => clearInterval(intervalId);
-  }, [navigate]);
+    fetchDashboardData();
+    const interval = setInterval(fetchDashboardData, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-100">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-[#3498DB]"></div>
+      <div className="flex bg-[#fdfcdcff] text-[#001524ff]">
+        <PartnerSideBar />
+        <div className="flex-1 p-8">
+          <div className="flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#fea116ff]"></div>
+          </div>
+        </div>
       </div>
     );
   }
 
-  // Show error in a toast-like component if there's an error but we have stats
-  const ErrorToast = () => error ? (
-    <div className="fixed top-4 right-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-lg">
-      <p>{error}</p>
-    </div>
-  ) : null;
+  if (error) {
+    return (
+      <div className="flex bg-[#fdfcdcff] text-[#001524ff]">
+        <PartnerSideBar />
+        <div className="flex-1 p-8">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <p className="text-red-600 text-center">{error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex min-h-screen bg-[#F8F9FA]">
+    <div className="flex bg-[#fdfcdcff] text-[#001524ff]">
       <PartnerSideBar />
       <div className="flex-1 p-8">
-        <ErrorToast />
-        {/* Header Section */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-4xl font-bold text-[#2C3E50]">
-              Welcome back, {partner?.fullName?.split(' ')[0]}! 👋
-            </h1>
-            <p className="text-gray-600 mt-2">Here's what's happening with your restaurant today.</p>
-          </div>
-          <button className="relative p-2 text-gray-600 hover:text-[#3498DB] transition-colors">
-            <FaBell className="text-2xl" />
-            <span className="absolute top-0 right-0 h-4 w-4 bg-red-500 rounded-full text-white text-xs flex items-center justify-center">
-              3
-            </span>
-          </button>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-2xl p-6 shadow-[0_4px_12px_rgba(0,0,0,0.1)] transform hover:scale-105 transition-transform duration-300">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <FaUsers className="text-[#3498DB] text-xl" />
+        <h1 className="text-3xl font-bold mb-8">
+          Welcome to <span className="text-[#fea116ff]">Partner Dashboard</span>
+        </h1>
+        
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Total Reservations</h3>
+                <p className="text-3xl font-bold text-[#0098c9ff]">{dashboardData.totalReservations}</p>
               </div>
-              <span className="text-sm font-medium text-green-500">+12.5%</span>
+              <FaCalendarAlt className="text-4xl text-[#0098c9ff] opacity-50" />
             </div>
-            <h3 className="text-gray-600 text-sm font-medium">Total Reservations</h3>
-            <p className="text-3xl font-bold text-[#2C3E50] mt-2">{stats.totalReservations}</p>
           </div>
-
-          <div className="bg-white rounded-2xl p-6 shadow-[0_4px_12px_rgba(0,0,0,0.1)] transform hover:scale-105 transition-transform duration-300">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-yellow-100 rounded-lg">
-                <FaRegClock className="text-[#F1C40F] text-xl" />
+          <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Total Events</h3>
+                <p className="text-3xl font-bold text-green-600">{dashboardData.totalEvents}</p>
               </div>
-              <span className="text-sm font-medium text-yellow-500">Pending</span>
+              <FaStore className="text-4xl text-green-600 opacity-50" />
             </div>
-            <h3 className="text-gray-600 text-sm font-medium">Pending Reservations</h3>
-            <p className="text-3xl font-bold text-[#2C3E50] mt-2">{stats.pendingReservations}</p>
           </div>
-
-          <div className="bg-white rounded-2xl p-6 shadow-[0_4px_12px_rgba(0,0,0,0.1)] transform hover:scale-105 transition-transform duration-300">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-green-100 rounded-lg">
-                <FaCalendarCheck className="text-[#2ECC71] text-xl" />
+          <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Total Customers</h3>
+                <p className="text-3xl font-bold text-purple-600">{dashboardData.totalCustomers}</p>
               </div>
-              <span className="text-sm font-medium text-green-500">Completed</span>
+              <FaUsers className="text-4xl text-purple-600 opacity-50" />
             </div>
-            <h3 className="text-gray-600 text-sm font-medium">Completed Reservations</h3>
-            <p className="text-3xl font-bold text-[#2C3E50] mt-2">{stats.completedReservations}</p>
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 shadow-[0_4px_12px_rgba(0,0,0,0.1)] transform hover:scale-105 transition-transform duration-300">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-purple-100 rounded-lg">
-                <FaChartLine className="text-[#9B59B6] text-xl" />
-              </div>
-              <span className="text-sm font-medium text-purple-500">Revenue</span>
-            </div>
-            <h3 className="text-gray-600 text-sm font-medium">Total Revenue</h3>
-            <p className="text-3xl font-bold text-[#2C3E50] mt-2">${stats.totalRevenue}</p>
           </div>
         </div>
 
-        {/* Restaurant Details Card */}
-        <div className="bg-white rounded-2xl p-8 shadow-[0_4px_12px_rgba(0,0,0,0.1)] mb-8">
-          <h2 className="text-2xl font-bold text-[#2C3E50] mb-6">Restaurant Profile</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Restaurant Profile */}
+        <div className="bg-white p-6 rounded-lg shadow-lg mb-8">
+          <h2 className="text-xl font-bold mb-6 flex items-center">
+            <FaStore className="text-2xl text-[#fea116ff] mr-2" />
+            Restaurant Profile
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Restaurant Name</p>
-                <p className="text-lg font-semibold text-[#2C3E50] pb-2 border-b border-gray-100">
-                  {partner?.restaurantName}
-                </p>
+              <div className="flex items-center">
+                <FaStore className="text-gray-500 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-500">Name</p>
+                  <p className="font-semibold">{dashboardData.profile.name}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Email Address</p>
-                <p className="text-lg font-semibold text-[#2C3E50] pb-2 border-b border-gray-100">
-                  {partner?.email}
-                </p>
+              <div className="flex items-center">
+                <FaMapMarkerAlt className="text-gray-500 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-500">Address</p>
+                  <p className="font-semibold">{dashboardData.profile.address}</p>
+                </div>
+              </div>
+              <div className="flex items-center">
+                <FaPhone className="text-gray-500 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-500">Phone</p>
+                  <p className="font-semibold">{dashboardData.profile.phone}</p>
+                </div>
               </div>
             </div>
             <div className="space-y-4">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Phone Number</p>
-                <p className="text-lg font-semibold text-[#2C3E50] pb-2 border-b border-gray-100">
-                  {partner?.phone || "Not provided"}
-                </p>
+              <div className="flex items-center">
+                <FaEnvelope className="text-gray-500 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-500">Email</p>
+                  <p className="font-semibold">{dashboardData.profile.email}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Address</p>
-                <p className="text-lg font-semibold text-[#2C3E50] pb-2 border-b border-gray-100">
-                  {partner?.address || "Not provided"}
-                </p>
+              <div className="flex items-center">
+                <FaStore className="text-gray-500 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-500">Cuisine</p>
+                  <p className="font-semibold">{dashboardData.profile.cuisine}</p>
+                </div>
+              </div>
+              <div className="flex items-center">
+                <FaStar className="text-gray-500 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-500">Rating</p>
+                  <p className="font-semibold">{dashboardData.profile.rating} / 5</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Recent Activity Table */}
-        <div className="bg-white rounded-2xl p-8 shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-[#2C3E50]">Recent Activity</h2>
-            <button className="text-[#3498DB] hover:text-[#2980B9] font-medium transition-colors">
-              View All
-            </button>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-4 px-4 text-sm font-medium text-gray-500">Date</th>
-                  <th className="text-left py-4 px-4 text-sm font-medium text-gray-500">Customer</th>
-                  <th className="text-left py-4 px-4 text-sm font-medium text-gray-500">Event</th>
-                  <th className="text-left py-4 px-4 text-sm font-medium text-gray-500">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-b border-gray-100">
-                  <td className="py-4 px-4 text-gray-600">No recent activity</td>
-                  <td className="py-4 px-4"></td>
-                  <td className="py-4 px-4"></td>
-                  <td className="py-4 px-4"></td>
-                </tr>
-              </tbody>
-            </table>
+        {/* Recent Activities */}
+        <div className="bg-white p-6 rounded-lg shadow-lg">
+          <h2 className="text-xl font-bold mb-6 flex items-center">
+            <FaCalendarAlt className="text-2xl text-[#fea116ff] mr-2" />
+            Recent Activities
+          </h2>
+          <div className="space-y-4">
+            {dashboardData.recentActivities.map((activity, index) => (
+              <div 
+                key={index}
+                className="flex items-center justify-between border-b pb-4 last:border-b-0 hover:bg-gray-50 p-2 rounded-lg transition-colors duration-200"
+              >
+                <div>
+                  <p className="font-semibold text-gray-800">
+                    {activity.type === "reservation" ? (
+                      <span className="text-green-600">✓ {activity.description}</span>
+                    ) : (
+                      <span className="text-orange-500">• {activity.description}</span>
+                    )}
+                  </p>
+                  <p className="text-gray-600">{activity.time}</p>
+                </div>
+                <span className={`text-sm px-3 py-1 rounded-full ${
+                  activity.status === "pending" 
+                    ? "bg-yellow-100 text-yellow-800" 
+                    : "bg-green-100 text-green-800"
+                }`}>
+                  {activity.status}
+                </span>
+              </div>
+            ))}
+            {dashboardData.recentActivities.length === 0 && (
+              <div className="text-center py-8">
+                <p className="text-gray-500">No recent activities</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

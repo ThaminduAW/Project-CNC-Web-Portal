@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import PartnerSideBar from "../../components/PartnerSideBar";
-import { FaPaperPlane, FaSpinner, FaEllipsisH, FaSmile, FaPaperclip, FaCheck, FaCheckDouble } from "react-icons/fa";
+import { FaPaperPlane, FaSpinner, FaEllipsisH, FaSmile, FaPaperclip, FaSearch, FaComments, FaCheck, FaCheckDouble } from "react-icons/fa";
 
 const PartnerMessages = () => {
   const navigate = useNavigate();
@@ -286,30 +286,36 @@ const PartnerMessages = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#F8F9FA]">
+    <div className="flex h-screen bg-[#fdfcdcff] text-[#001524ff]">
       <PartnerSideBar />
-      <div className="flex-1 flex">
+      <div className="flex-1 flex overflow-hidden">
         {/* Contacts Sidebar */}
-        <div className="w-80 bg-white border-r border-gray-200">
+        <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
           <div className="p-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-[#2C3E50]">Messages</h2>
+            <div className="flex items-center mb-4">
+              <FaComments className="text-xl text-[#fea116ff] mr-2" />
+              <h2 className="text-xl font-bold">Messages</h2>
+            </div>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search admins..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
+              />
+              <FaSearch className="absolute left-3 top-3 text-gray-400" />
+            </div>
           </div>
-          <div className="overflow-y-auto h-[calc(100vh-5rem)]">
+          <div className="flex-1 overflow-y-auto">
             {admins.map((admin) => (
               <button
                 key={admin._id}
                 onClick={() => setSelectedAdmin(admin._id)}
-                className={`w-full p-4 flex items-center space-x-3 hover:bg-gray-50 transition-colors ${
-                  selectedAdmin === admin._id ? "bg-gray-100" : ""
+                className={`w-full p-3 flex items-center space-x-3 hover:bg-gray-50 transition-colors ${
+                  selectedAdmin === admin._id ? "bg-[#fdfcdcff] border-l-4 border-[#fea116ff]" : ""
                 }`}
               >
-                <div className="relative">
-                  <div className="w-12 h-12 bg-[#3498DB] rounded-full flex items-center justify-center text-white font-semibold">
-                    {admin.fullName.charAt(0)}
-                  </div>
-                  {adminLastSeen[admin._id] === 'Active Now' && (
-                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                  )}
+                <div className="w-10 h-10 bg-[#fea116ff] rounded-full flex items-center justify-center text-white font-semibold">
+                  {admin.fullName.charAt(0)}
                 </div>
                 <div className="flex-1 text-left">
                   <h3 className="font-medium text-gray-900">{admin.fullName}</h3>
@@ -331,7 +337,7 @@ const PartnerMessages = () => {
             <div className="p-4 border-b border-gray-200 flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="relative">
-                  <div className="w-10 h-10 bg-[#3498DB] rounded-full flex items-center justify-center text-white font-semibold">
+                  <div className="w-10 h-10 bg-[#fea116ff] rounded-full flex items-center justify-center text-white font-semibold">
                     {admins.find(a => a._id === selectedAdmin)?.fullName.charAt(0)}
                   </div>
                   {adminLastSeen[selectedAdmin] === 'Active Now' && (
@@ -354,14 +360,15 @@ const PartnerMessages = () => {
           )}
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#fdfcdcff]">
             {loading ? (
               <div className="flex justify-center items-center h-full">
-                <FaSpinner className="animate-spin text-3xl text-[#3498DB]" />
+                <FaSpinner className="animate-spin text-3xl text-[#fea116ff]" />
               </div>
             ) : messages.length === 0 ? (
               <div className="text-center text-gray-500 mt-8">
-                No messages yet. Start a conversation!
+                <div className="text-6xl mb-4">💬</div>
+                <p className="text-lg">No messages yet. Start a conversation!</p>
               </div>
             ) : (
               Object.entries(groupMessagesByDate(messages)).map(([date, dateMessages]) => (
@@ -383,7 +390,7 @@ const PartnerMessages = () => {
                       <div
                         className={`max-w-[70%] rounded-2xl px-4 py-2 ${
                           message.sender._id === currentUser?.id
-                            ? "bg-[#3498DB] text-white rounded-br-none"
+                            ? "bg-[#fea116ff] text-white rounded-br-none"
                             : "bg-gray-200 text-gray-900 rounded-bl-none"
                         }`}
                       >
@@ -451,7 +458,7 @@ const PartnerMessages = () => {
               <button
                 type="submit"
                 disabled={sending || !newMessage.trim()}
-                className="p-2 text-[#3498DB] hover:text-[#2980B9] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2 text-[#fea116ff] hover:text-[#e69510ff] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {sending ? (
                   <FaSpinner className="animate-spin" />
@@ -472,7 +479,7 @@ const PartnerMessages = () => {
           {/* Message Notification */}
           {notification && (
             <div className={`fixed top-4 right-4 p-4 rounded-lg shadow-lg animate-slide-in
-              ${notification.type === 'message' ? 'bg-[#3498DB] text-white' :
+              ${notification.type === 'message' ? 'bg-[#fea116ff] text-white' :
                 notification.type === 'typing' ? 'bg-gray-700 text-white' :
                 'bg-green-500 text-white'}`}>
               <p className="font-medium">

@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home/Home";
 import Restaurants from "./pages/Home/Restaurants";
+import ResDetails from "./pages/Home/ResDetails";
 import Reservation from "./pages/Home/Reservation";
 import About from "./pages/Home/About";
 import Contact from "./pages/Home/Contact";
@@ -19,6 +20,8 @@ import PartnerEvents from "./pages/Partners/PartnerEvents";
 import Menu from "./pages/Partners/Menu";
 import PartnerMessages from "./pages/Partners/PartnerMessages";
 import PartnerSettings from "./pages/Partners/PartnerSettings";
+import Reservations from "./pages/Partners/Reservations";
+import ExperienceDetails from "./pages/Partners/ExperienceDetails";
 
 import SignIn from "./pages/Authentication/SignIn";
 import SignUp from "./pages/Authentication/SignUp";
@@ -32,6 +35,7 @@ const App = () => {
                 {/* Home Routes */}
                 <Route path="/" element={<Home />} />
                 <Route path="/restaurants" element={<Restaurants />} />
+                <Route path="/restaurant-details" element={<ResDetails />} />
                 <Route path="/events" element={<Events />} />
                 <Route path="/reservation" element={<Reservation />} />
                 <Route path="/about" element={<About />} />
@@ -47,10 +51,12 @@ const App = () => {
 
                 {/* Partner Routes */}
                 <Route path="/partner/dashboard" element={<PartnerDashboard />} />
-                <Route path="/partner/events" element={<Events />} />
+                <Route path="/partner/events" element={<PartnerEvents />} />
                 <Route path="/partner/menu" element={<Menu />} />
+                <Route path="/partner/reservations" element={<Reservations />} />
                 <Route path="/partner/messages" element={<PartnerMessages />} />
                 <Route path="/partner/settings" element={<PartnerSettings />} />
+                <Route path="/experience/:id" element={<ExperienceDetails />} />
 
                 {/* Authentication Routes */}
                 <Route path="/signin" element={<SignIn />} />

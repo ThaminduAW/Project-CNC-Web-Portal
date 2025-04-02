@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminSideBar from "../../components/AdminSideBar";
-import { FaPaperPlane, FaSpinner, FaEllipsisH, FaSmile, FaPaperclip } from "react-icons/fa";
+import { FaPaperPlane, FaSpinner, FaEllipsisH, FaSmile, FaPaperclip, FaSearch, FaComments, FaCircle } from "react-icons/fa";
 
 const Messages = () => {
   const navigate = useNavigate();
@@ -14,6 +14,8 @@ const Messages = () => {
   const [selectedPartner, setSelectedPartner] = useState(null);
   const messagesEndRef = useRef(null);
   const [currentUser, setCurrentUser] = useState(null);
+  const [unreadCounts, setUnreadCounts] = useState({});
+  const [lastMessageDates, setLastMessageDates] = useState({});
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -28,40 +30,75 @@ const Messages = () => {
     setCurrentUser(user);
   }, [navigate]);
 
-  // Fetch partners
-  useEffect(() => {
-    const fetchPartners = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          navigate("/signin");
-          return;
-        }
-
-        const response = await fetch("http://localhost:3000/api/admin/partners", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch partners");
-        }
-
-        const data = await response.json();
-        setPartners(data);
-        if (data.length > 0) {
-          setSelectedPartner(data[0]._id);
-        }
-      } catch (err) {
-        setError("Failed to load partners. Please try again later.");
+  // Fetch partners with unread counts and last message dates
+  const fetchPartners = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/signin");
+        return;
       }
-    };
 
+      const response = await fetch("http://localhost:3000/api/admin/partners", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch partners");
+      }
+
+      const data = await response.json();
+      
+      // Fetch unread counts and last message dates for each partner
+      const partnerData = await Promise.all(
+        data.map(async (partner) => {
+          const messagesResponse = await fetch(
+            `http://localhost:3000/api/messages/conversation/${partner._id}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          
+          if (!messagesResponse.ok) {
+            throw new Error("Failed to fetch messages");
+          }
+
+          const messagesData = await messagesResponse.json();
+          const unreadCount = messagesData.filter(
+            msg => !msg.read && msg.sender._id !== currentUser?.id
+          ).length;
+
+          const lastMessage = messagesData[messagesData.length - 1];
+          const lastMessageDate = lastMessage ? new Date(lastMessage.createdAt) : new Date(0);
+
+          return {
+            ...partner,
+            unreadCount,
+            lastMessageDate
+          };
+        })
+      );
+
+      // Sort partners by last message date (newest first)
+      const sortedPartners = partnerData.sort((a, b) => b.lastMessageDate - a.lastMessageDate);
+      setPartners(sortedPartners);
+    } catch (err) {
+      setError("Failed to load partners. Please try again later.");
+    }
+  };
+
+  useEffect(() => {
     fetchPartners();
-  }, [navigate]);
+    // Set up polling for partner list updates
+    const interval = setInterval(fetchPartners, 30000);
+    return () => clearInterval(interval);
+  }, [navigate, currentUser?.id]);
 
-  // Fetch messages
+  // Fetch messages and mark them as read when conversation is opened
   useEffect(() => {
     const fetchMessages = async () => {
       if (!selectedPartner) return;
@@ -87,6 +124,17 @@ const Messages = () => {
         setMessages(data);
         setLoading(false);
         scrollToBottom();
+
+        // Mark messages as read
+        await fetch(`http://localhost:3000/api/messages/read/${selectedPartner}`, {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        // Update partner list to reflect read messages
+        fetchPartners();
       } catch (err) {
         setError("Failed to load messages. Please try again later.");
         setLoading(false);
@@ -126,6 +174,9 @@ const Messages = () => {
       setMessages([...messages, data]);
       setNewMessage("");
       scrollToBottom();
+
+      // Update partner list to reflect new message
+      fetchPartners();
     } catch (err) {
       setError("Failed to send message. Please try again.");
     } finally {
@@ -167,29 +218,55 @@ const Messages = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#F8F9FA]">
+    <div className="flex h-screen bg-[#fdfcdcff] text-[#001524ff]">
       <AdminSideBar />
-      <div className="flex-1 flex">
+      <div className="flex-1 flex overflow-hidden">
         {/* Contacts Sidebar */}
-        <div className="w-80 bg-white border-r border-gray-200">
+        <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
           <div className="p-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-[#2C3E50]">Partner Messages</h2>
+            <div className="flex items-center mb-4">
+              <FaComments className="text-xl text-[#fea116ff] mr-2" />
+              <h2 className="text-xl font-bold">Messages</h2>
+            </div>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search partners..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
+              />
+              <FaSearch className="absolute left-3 top-3 text-gray-400" />
+            </div>
           </div>
-          <div className="overflow-y-auto h-[calc(100vh-5rem)]">
+          <div className="flex-1 overflow-y-auto">
             {partners.map((partner) => (
               <button
                 key={partner._id}
                 onClick={() => setSelectedPartner(partner._id)}
-                className={`w-full p-4 flex items-center space-x-3 hover:bg-gray-50 transition-colors ${
-                  selectedPartner === partner._id ? "bg-gray-100" : ""
+                className={`w-full p-3 flex items-center space-x-3 hover:bg-gray-50 transition-colors relative ${
+                  selectedPartner === partner._id ? "bg-[#fdfcdcff] border-l-4 border-[#fea116ff]" : ""
                 }`}
               >
-                <div className="w-12 h-12 bg-[#3498DB] rounded-full flex items-center justify-center text-white font-semibold">
-                  {partner.fullName.charAt(0)}
+                <div className="relative">
+                  <div className="w-10 h-10 bg-[#fea116ff] rounded-full flex items-center justify-center text-white font-semibold">
+                    {partner.fullName.charAt(0)}
+                  </div>
+                  {partner.unreadCount > 0 && (
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs">{partner.unreadCount}</span>
+                    </div>
+                  )}
                 </div>
                 <div className="flex-1 text-left">
-                  <h3 className="font-medium text-gray-900">{partner.fullName}</h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-medium text-gray-900">{partner.fullName}</h3>
+                    {partner.unreadCount > 0 && (
+                      <FaCircle className="text-[#fea116ff] text-xs" />
+                    )}
+                  </div>
                   <p className="text-sm text-gray-500">{partner.restaurantName}</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {formatLastMessageDate(partner.lastMessageDate)}
+                  </p>
                 </div>
               </button>
             ))}
@@ -202,7 +279,7 @@ const Messages = () => {
           {selectedPartner && (
             <div className="p-4 border-b border-gray-200 flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-[#3498DB] rounded-full flex items-center justify-center text-white font-semibold">
+                <div className="w-10 h-10 bg-[#fea116ff] rounded-full flex items-center justify-center text-white font-semibold">
                   {partners.find(p => p._id === selectedPartner)?.fullName.charAt(0)}
                 </div>
                 <div>
@@ -221,14 +298,15 @@ const Messages = () => {
           )}
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#fdfcdcff]">
             {loading ? (
               <div className="flex justify-center items-center h-full">
-                <FaSpinner className="animate-spin text-3xl text-[#3498DB]" />
+                <FaSpinner className="animate-spin text-3xl text-[#fea116ff]" />
               </div>
             ) : messages.length === 0 ? (
               <div className="text-center text-gray-500 mt-8">
-                No messages yet. Start a conversation!
+                <div className="text-6xl mb-4">💬</div>
+                <p className="text-lg">No messages yet. Start a conversation!</p>
               </div>
             ) : (
               Object.entries(groupMessagesByDate(messages)).map(([date, dateMessages]) => (
@@ -248,12 +326,15 @@ const Messages = () => {
                       }`}
                     >
                       <div
-                        className={`max-w-[70%] rounded-2xl px-4 py-2 ${
+                        className={`max-w-[70%] rounded-2xl px-4 py-2 relative ${
                           message.sender._id === currentUser?.id
-                            ? "bg-[#3498DB] text-white rounded-br-none"
+                            ? "bg-[#fea116ff] text-white rounded-br-none"
                             : "bg-gray-200 text-gray-900 rounded-bl-none"
                         }`}
                       >
+                        {!message.read && message.sender._id !== currentUser?.id && (
+                          <div className="absolute -top-1 -right-1 w-2 h-2 bg-[#fea116ff] rounded-full" />
+                        )}
                         <p className="text-sm mb-1">{message.content}</p>
                         <p className="text-xs opacity-75 text-right">
                           {formatTime(message.createdAt)}
@@ -292,7 +373,7 @@ const Messages = () => {
               <button
                 type="submit"
                 disabled={sending || !newMessage.trim()}
-                className="p-2 text-[#3498DB] hover:text-[#2980B9] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2 text-[#fea116ff] hover:text-[#e69510ff] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {sending ? (
                   <FaSpinner className="animate-spin" />
@@ -313,6 +394,19 @@ const Messages = () => {
       </div>
     </div>
   );
+};
+
+// Helper function to format last message date
+const formatLastMessageDate = (date) => {
+  if (!date) return '';
+  const now = new Date();
+  const messageDate = new Date(date);
+  const diff = now - messageDate;
+  
+  if (diff < 60000) return 'Just now';
+  if (diff < 3600000) return `${Math.floor(diff/60000)}m ago`;
+  if (diff < 86400000) return `${Math.floor(diff/3600000)}h ago`;
+  return messageDate.toLocaleDateString();
 };
 
 export default Messages;

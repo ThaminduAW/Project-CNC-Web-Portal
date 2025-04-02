@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { FaUser, FaUsers, FaCalendarAlt, FaEnvelope, FaCog, FaSignOutAlt, FaHome, FaComments, FaBuilding } from "react-icons/fa";
+import { FaUser, FaUsers, FaCalendarAlt, FaEnvelope, FaCog, FaSignOutAlt, FaHome, FaComments, FaBuilding, FaCalendarCheck, FaClipboardList } from "react-icons/fa";
 import logo from "../assets/logo.png"; // Ensure path is correct
 import defaultProfile from "../assets/default-profile.png"; // Default profile image
 
@@ -42,7 +42,7 @@ const AdminSideBar = () => {
 
         const response = await fetch("http://localhost:3000/api/messages/unread", {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`, // Fixed token interpolation
           },
         });
 
@@ -70,8 +70,10 @@ const AdminSideBar = () => {
   const menuItems = [
     { path: "/admin/dashboard", icon: FaHome, label: "Dashboard" },
     { path: "/admin/partners", icon: FaBuilding, label: "Partners" },
-    { path: "/admin/users", icon: FaUsers, label: "Users" },
+    { path: "/admin/reservations", icon: FaCalendarCheck, label: "Reservations" },
+    { path: "/admin/events", icon: FaCalendarAlt, label: "Events" },
     { path: "/admin/messages", icon: FaComments, label: "Messages", badge: showBadge && unreadCount },
+    { path: "/admin/requests", icon: FaClipboardList, label: "Requests" },
     { path: "/admin/settings", icon: FaCog, label: "Settings" },
   ];
 
@@ -85,7 +87,7 @@ const AdminSideBar = () => {
 
       {/* Profile Section */}
       <div className="flex flex-col items-center p-4 border-b border-gray-700">
-        <img src={admin.profilePhoto} alt="Admin" className="h-16 w-16 rounded-full border border-gray-400" />
+        <img src={admin.profilePhoto} alt="Admin" className="w-16 h-16 border border-gray-400 rounded-full" />
         <h2 className="mt-2 font-semibold">{admin.fullName}</h2>
         <p className="text-sm text-gray-300">{admin.role}</p>
       </div>
@@ -117,7 +119,7 @@ const AdminSideBar = () => {
       </nav>
 
       {/* Return to Home Page & Sign Out Buttons */}
-      <div className="p-4 border-t border-gray-700 space-y-2">
+      <div className="p-4 space-y-2 border-t border-gray-700">
         <Link 
           to="/" 
           className="w-full flex items-center justify-center bg-[#0098c9ff] hover:bg-[#0084b3ff] transition py-2 rounded-md"
@@ -126,7 +128,7 @@ const AdminSideBar = () => {
         </Link>
         <button 
           onClick={handleSignOut} 
-          className="w-full flex items-center justify-center bg-red-600 hover:bg-red-700 transition py-2 rounded-md"
+          className="flex items-center justify-center w-full py-2 transition bg-red-600 rounded-md hover:bg-red-700"
         >
           <FaSignOutAlt className="mr-2" /> Sign Out
         </button>
