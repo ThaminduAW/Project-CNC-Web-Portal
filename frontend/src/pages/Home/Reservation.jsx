@@ -12,6 +12,7 @@ const Reservation = () => {
     date: "",
     time: "",
     instructions: "",
+    guestCount: "1", // Add default guest count
   });
 
   const [status, setStatus] = useState({ success: false, error: "" });
@@ -64,7 +65,7 @@ const Reservation = () => {
       if (!response.ok) throw new Error(data.message || "Something went wrong.");
 
       setStatus({ success: true, error: "" });
-      setFormData({ name: "", email: "", contact: "", restaurant: "", date: "", time: "", instructions: "" });
+      setFormData({ name: "", email: "", contact: "", restaurant: "", date: "", time: "", instructions: "", guestCount: "1" });
 
       setTimeout(() => setStatus({ success: false, error: "" }), 5000);
     } catch (err) {
@@ -124,6 +125,18 @@ const Reservation = () => {
               className="w-full px-4 py-2 border rounded-md"
               value={formData.contact}
               onChange={handleChange}
+            />
+
+            <input
+              type="number"
+              name="guestCount"
+              min="1"
+              max="20"
+              placeholder="Number of Guests"
+              className="w-full px-4 py-2 border rounded-md"
+              value={formData.guestCount}
+              onChange={handleChange}
+              required
             />
 
             {/* Restaurant Selection Dropdown */}

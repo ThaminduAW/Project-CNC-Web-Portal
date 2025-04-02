@@ -8,7 +8,7 @@ const router = express.Router();
 
 // POST - Create a reservation
 router.post("/", async (req, res) => {
-  const { name, email, contact, restaurant, date, time, instructions } = req.body;
+  const { name, email, contact, restaurant, date, time, instructions, guestCount } = req.body;
   console.log("New Reservation Received:", req.body);
 
   try {
@@ -19,7 +19,16 @@ router.post("/", async (req, res) => {
     }
 
     // Save reservation in database
-    const newReservation = new Reservation({ name, email, contact, restaurant, date, time, instructions });
+    const newReservation = new Reservation({ 
+      name, 
+      email, 
+      contact, 
+      restaurant, 
+      date, 
+      time, 
+      instructions,
+      numberOfGuests: parseInt(guestCount) || 1 
+    });
     await newReservation.save();
 
     // Email Configuration
@@ -37,7 +46,7 @@ router.post("/", async (req, res) => {
         from: process.env.EMAIL_USER,
         to: email,
         subject: "Reservation Confirmation - CNC World Tour",
-        text: `Hello ${name},\n\nYour reservation at ${restaurant} is confirmed for ${date} at ${time}.\n\nSpecial Instructions: ${instructions || "None"}\n\nThank you for booking with CNC World Tour!`,
+        text: `Hello ${name},\n\nYour reservation at ${restaurant} is confirmed for ${date} at ${time}.\nNumber of Guests: ${guestCount}\n\nSpecial Instructions: ${instructions || "None"}\n\nThank you for booking with CNC World Tour!`,
       };
 
       await transporter.sendMail(visitorMailOptions);
@@ -47,7 +56,7 @@ router.post("/", async (req, res) => {
         from: process.env.EMAIL_USER,
         to: partner.email,
         subject: "New Reservation at Your Restaurant",
-        text: `Hello ${partner.fullName},\n\nA new reservation has been made at your restaurant.\n\nDetails:\nName: ${name}\nEmail: ${email}\nDate: ${date}\nTime: ${time}\nContact: ${contact || "Not provided"}\n\nInstructions: ${instructions || "None"}`,
+        text: `Hello ${partner.fullName},\n\nA new reservation has been made at your restaurant.\n\nDetails:\nName: ${name}\nEmail: ${email}\nDate: ${date}\nTime: ${time}\nNumber of Guests: ${guestCount}\nContact: ${contact || "Not provided"}\n\nInstructions: ${instructions || "None"}`,
       };
 
       await transporter.sendMail(partnerMailOptions);
@@ -192,6 +201,68 @@ router.put("/:id/status", async (req, res) => {
   } catch (error) {
     console.error("Error updating reservation status:", error);
     res.status(500).json({ message: "Server error updating reservation status" });
+  }
+});
+
+// DELETE - Delete a reservation
+router.delete("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const token = req.headers.authorization?.split(' ')[1];
+
+    if (!token) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    // Verify the token and get partner info
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    const partner = await User.findById(decodedToken.id);
+
+    if (!partner) {
+      return res.status(404).json({ message: "Partner not found" });
+    }
+
+    // Find the reservation
+    const reservation = await Reservation.findById(id);
+    if (!reservation) {
+      return res.status(404).json({ message: "Reservation not found" });
+    }
+
+    // Verify that the reservation belongs to the partner's restaurant
+    if (reservation.restaurant !== partner.restaurantName) {
+      return res.status(403).json({ message: "Not authorized to delete this reservation" });
+    }
+
+    // Delete the reservation
+    await Reservation.findByIdAndDelete(id);
+
+    // Send email notification to customer about cancellation
+    try {
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+
+      const emailOptions = {
+        from: process.env.EMAIL_USER,
+        to: reservation.email,
+        subject: "Reservation Cancelled - CNC World Tour",
+        text: `Hello ${reservation.name},\n\nYour reservation at ${reservation.restaurant} for ${reservation.date} at ${reservation.time} has been cancelled.\n\nThank you for your understanding.\n\nBest regards,\nCNC World Tour Team`,
+      };
+
+      await transporter.sendMail(emailOptions);
+    } catch (emailError) {
+      console.error("Email sending failed:", emailError);
+      // Continue execution even if email fails
+    }
+
+    res.json({ message: "Reservation deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting reservation:", error);
+    res.status(500).json({ message: "Server error deleting reservation" });
   }
 });
 
