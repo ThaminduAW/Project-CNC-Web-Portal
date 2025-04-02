@@ -114,7 +114,7 @@ const PartnerDashboard = () => {
           <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Total Events</h3>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Total Menu</h3>
                 <p className="text-3xl font-bold text-green-600">{dashboardData.totalEvents}</p>
               </div>
               <FaStore className="text-4xl text-green-600 opacity-50" />

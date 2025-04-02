@@ -19,7 +19,7 @@ const Header = () => {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex space-x-6">
           <Link to="/" className="hover:text-[#fea116ff] transition">Home</Link>
-          <Link to="/restaurants" className="hover:text-[#fea116ff] transition">Restaurants</Link>
+          {/* <Link to="/restaurants" className="hover:text-[#fea116ff] transition">Restaurants</Link> */}
           <Link to="/events" className="hover:text-[#fea116ff] transition">Menu</Link>
           <Link to="/reservation" className="hover:text-[#fea116ff] transition">Reservation</Link>
           <Link to="/about" className="hover:text-[#fea116ff] transition">About</Link>

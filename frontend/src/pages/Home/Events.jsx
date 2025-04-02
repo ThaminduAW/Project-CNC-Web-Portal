@@ -63,7 +63,7 @@ const Events = () => {
         {/* Header Section */}
         <div className="text-center mb-12">
           <h1 className="text-3xl md:text-4xl font-bold">
-            Discover <span className="text-[#fea116ff]">Upcoming Events</span>
+            Discover <span className="text-[#fea116ff]">Upcoming Menus</span>
           </h1>
           <p className="text-center text-gray-600 text-lg mt-3">
             Experience the thrill of culinary adventures and unforgettable moments with our partner restaurants.
@@ -82,7 +82,7 @@ const Events = () => {
             >
               <div className="relative h-48">
                 <img
-                  src={event.image}
+                  src={`http://localhost:3000${event.image}`}
                   alt={event.title}
                   className="w-full h-full object-cover"
                 />

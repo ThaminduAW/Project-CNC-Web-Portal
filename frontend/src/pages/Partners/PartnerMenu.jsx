@@ -252,7 +252,7 @@ const PartnerEvents = () => {
             >
               <div className="relative h-48">
                 <img
-                  src={event.image}
+                  src={`http://localhost:3000${event.image}`}
                   alt={event.title}
                   className="w-full h-full object-cover"
                 />

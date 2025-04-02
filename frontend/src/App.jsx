@@ -7,6 +7,7 @@ import Reservation from "./pages/Home/Reservation";
 import About from "./pages/Home/About";
 import Contact from "./pages/Home/Contact";
 import Events from "./pages/Home/Events";
+import MenuDetail from "./components/MenuDetail";
 
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import Partners from "./pages/Admin/Partners";
@@ -37,6 +38,7 @@ const App = () => {
                 <Route path="/restaurants" element={<Restaurants />} />
                 <Route path="/restaurant-details" element={<ResDetails />} />
                 <Route path="/events" element={<Events />} />
+                <Route path="/menu/:id" element={<MenuDetail />} />
                 <Route path="/reservation" element={<Reservation />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
