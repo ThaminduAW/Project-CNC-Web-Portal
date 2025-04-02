@@ -16,8 +16,8 @@ import Messages from "./pages/Admin/Messages";
 import AdminSettings from "./pages/Admin/AdminSettings";
 
 import PartnerDashboard from "./pages/Partners/PartnerDashboard";
+import PartnerMenu from "./pages/Partners/PartnerMenu";
 import PartnerEvents from "./pages/Partners/PartnerEvents";
-import Menu from "./pages/Partners/Menu";
 import PartnerMessages from "./pages/Partners/PartnerMessages";
 import PartnerSettings from "./pages/Partners/PartnerSettings";
 import Reservations from "./pages/Partners/Reservations";
@@ -51,8 +51,8 @@ const App = () => {
 
                 {/* Partner Routes */}
                 <Route path="/partner/dashboard" element={<PartnerDashboard />} />
+                <Route path="/partner/menu" element={<PartnerMenu />} />
                 <Route path="/partner/events" element={<PartnerEvents />} />
-                <Route path="/partner/menu" element={<Menu />} />
                 <Route path="/partner/reservations" element={<Reservations />} />
                 <Route path="/partner/messages" element={<PartnerMessages />} />
                 <Route path="/partner/settings" element={<PartnerSettings />} />
