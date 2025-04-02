@@ -10,13 +10,13 @@ const PartnerEvents = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [formData, setFormData] = useState({
-    name: '',
+    title: '',
     description: '',
-    date: '',
-    time: '',
-    capacity: '',
-    price: '',
     location: '',
+    price: '',
+    image: null,
+    availableFrom: '',
+    availableTo: '',
     status: 'active'
   });
 
@@ -62,10 +62,18 @@ const PartnerEvents = () => {
 
   // Handle form input changes
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value, files } = e.target;
+    if (name === 'image') {
+      setFormData(prev => ({
+        ...prev,
+        image: files[0]
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   // Handle add event
@@ -75,16 +83,21 @@ const PartnerEvents = () => {
       const partnerId = getPartnerId();
       const token = localStorage.getItem('token');
       
+      const formDataToSend = new FormData();
+      Object.keys(formData).forEach(key => {
+        if (key === 'image') {
+          formDataToSend.append('image', formData.image);
+        } else {
+          formDataToSend.append(key, formData[key]);
+        }
+      });
+      
       const response = await fetch('http://localhost:3000/api/events', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({
-          ...formData,
-          partnerId
-        })
+        body: formDataToSend
       });
 
       if (!response.ok) {
@@ -95,13 +108,13 @@ const PartnerEvents = () => {
       setEvents([...events, newEvent]);
       setShowAddModal(false);
       setFormData({
-        name: '',
+        title: '',
         description: '',
-        date: '',
-        time: '',
-        capacity: '',
-        price: '',
         location: '',
+        price: '',
+        image: null,
+        availableFrom: '',
+        availableTo: '',
         status: 'active'
       });
     } catch (err) {
@@ -115,13 +128,21 @@ const PartnerEvents = () => {
     try {
       const token = localStorage.getItem('token');
       
+      const formDataToSend = new FormData();
+      Object.keys(formData).forEach(key => {
+        if (key === 'image' && formData.image) {
+          formDataToSend.append('image', formData.image);
+        } else {
+          formDataToSend.append(key, formData[key]);
+        }
+      });
+      
       const response = await fetch(`http://localhost:3000/api/events/${selectedEvent._id}`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(formData)
+        body: formDataToSend
       });
 
       if (!response.ok) {
@@ -135,13 +156,13 @@ const PartnerEvents = () => {
       setShowEditModal(false);
       setSelectedEvent(null);
       setFormData({
-        name: '',
+        title: '',
         description: '',
-        date: '',
-        time: '',
-        capacity: '',
-        price: '',
         location: '',
+        price: '',
+        image: null,
+        availableFrom: '',
+        availableTo: '',
         status: 'active'
       });
     } catch (err) {
@@ -177,13 +198,13 @@ const PartnerEvents = () => {
   const openEditModal = (event) => {
     setSelectedEvent(event);
     setFormData({
-      name: event.name,
+      title: event.title,
       description: event.description,
-      date: event.date.split('T')[0],
-      time: event.time,
-      capacity: event.capacity,
-      price: event.price,
       location: event.location,
+      price: event.price,
+      image: null,
+      availableFrom: event.availableFrom.split('T')[0],
+      availableTo: event.availableTo.split('T')[0],
       status: event.status
     });
     setShowEditModal(true);
@@ -229,22 +250,25 @@ const PartnerEvents = () => {
               key={event._id}
               className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
             >
+              <div className="relative h-48">
+                <img
+                  src={event.image}
+                  alt={event.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold mb-2">{event.name}</h3>
+                <h3 className="text-xl font-bold mb-2">{event.title}</h3>
                 <p className="text-gray-600 mb-4">{event.description}</p>
                 
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center text-gray-600">
                     <FaCalendarAlt className="mr-2" />
-                    {new Date(event.date).toLocaleDateString()}
+                    From: {new Date(event.availableFrom).toLocaleDateString()}
                   </div>
                   <div className="flex items-center text-gray-600">
                     <FaClock className="mr-2" />
-                    {event.time}
-                  </div>
-                  <div className="flex items-center text-gray-600">
-                    <FaUsers className="mr-2" />
-                    Capacity: {event.capacity}
+                    To: {new Date(event.availableTo).toLocaleDateString()}
                   </div>
                   <div className="flex items-center text-gray-600">
                     <FaMapMarkerAlt className="mr-2" />
@@ -284,11 +308,11 @@ const PartnerEvents = () => {
               <form onSubmit={handleAddEvent}>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Event Name</label>
+                    <label className="block text-sm font-medium text-gray-700">Event Title</label>
                     <input
                       type="text"
-                      name="name"
-                      value={formData.name}
+                      name="title"
+                      value={formData.title}
                       onChange={handleChange}
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#0098c9ff] focus:ring-[#0098c9ff]"
                       required
@@ -306,33 +330,11 @@ const PartnerEvents = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Date</label>
+                    <label className="block text-sm font-medium text-gray-700">Location</label>
                     <input
-                      type="date"
-                      name="date"
-                      value={formData.date}
-                      onChange={handleChange}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#0098c9ff] focus:ring-[#0098c9ff]"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Time</label>
-                    <input
-                      type="time"
-                      name="time"
-                      value={formData.time}
-                      onChange={handleChange}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#0098c9ff] focus:ring-[#0098c9ff]"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Capacity</label>
-                    <input
-                      type="number"
-                      name="capacity"
-                      value={formData.capacity}
+                      type="text"
+                      name="location"
+                      value={formData.location}
                       onChange={handleChange}
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#0098c9ff] focus:ring-[#0098c9ff]"
                       required
@@ -350,11 +352,33 @@ const PartnerEvents = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Location</label>
+                    <label className="block text-sm font-medium text-gray-700">Event Image</label>
                     <input
-                      type="text"
-                      name="location"
-                      value={formData.location}
+                      type="file"
+                      name="image"
+                      onChange={handleChange}
+                      className="mt-1 block w-full"
+                      accept="image/*"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Available From</label>
+                    <input
+                      type="date"
+                      name="availableFrom"
+                      value={formData.availableFrom}
+                      onChange={handleChange}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#0098c9ff] focus:ring-[#0098c9ff]"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Available To</label>
+                    <input
+                      type="date"
+                      name="availableTo"
+                      value={formData.availableTo}
                       onChange={handleChange}
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#0098c9ff] focus:ring-[#0098c9ff]"
                       required
@@ -389,11 +413,11 @@ const PartnerEvents = () => {
               <form onSubmit={handleEditEvent}>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Event Name</label>
+                    <label className="block text-sm font-medium text-gray-700">Event Title</label>
                     <input
                       type="text"
-                      name="name"
-                      value={formData.name}
+                      name="title"
+                      value={formData.title}
                       onChange={handleChange}
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#0098c9ff] focus:ring-[#0098c9ff]"
                       required
@@ -411,33 +435,11 @@ const PartnerEvents = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Date</label>
+                    <label className="block text-sm font-medium text-gray-700">Location</label>
                     <input
-                      type="date"
-                      name="date"
-                      value={formData.date}
-                      onChange={handleChange}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#0098c9ff] focus:ring-[#0098c9ff]"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Time</label>
-                    <input
-                      type="time"
-                      name="time"
-                      value={formData.time}
-                      onChange={handleChange}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#0098c9ff] focus:ring-[#0098c9ff]"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Capacity</label>
-                    <input
-                      type="number"
-                      name="capacity"
-                      value={formData.capacity}
+                      type="text"
+                      name="location"
+                      value={formData.location}
                       onChange={handleChange}
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#0098c9ff] focus:ring-[#0098c9ff]"
                       required
@@ -455,11 +457,33 @@ const PartnerEvents = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Location</label>
+                    <label className="block text-sm font-medium text-gray-700">Event Image</label>
                     <input
-                      type="text"
-                      name="location"
-                      value={formData.location}
+                      type="file"
+                      name="image"
+                      onChange={handleChange}
+                      className="mt-1 block w-full"
+                      accept="image/*"
+                    />
+                    <p className="text-sm text-gray-500 mt-1">Leave empty to keep current image</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Available From</label>
+                    <input
+                      type="date"
+                      name="availableFrom"
+                      value={formData.availableFrom}
+                      onChange={handleChange}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#0098c9ff] focus:ring-[#0098c9ff]"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Available To</label>
+                    <input
+                      type="date"
+                      name="availableTo"
+                      value={formData.availableTo}
                       onChange={handleChange}
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#0098c9ff] focus:ring-[#0098c9ff]"
                       required
