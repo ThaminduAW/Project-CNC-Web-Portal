@@ -10,6 +10,8 @@ const userSchema = new mongoose.Schema({
   url: { type: String, required: true },
   role: { type: String, enum: ["Admin", "Partner"], required: true },
   approved: { type: Boolean, default: false }, // Ensures partners need admin approval
+  cuisine: { type: String }, // Type of cuisine served
+  rating: { type: Number, default: 0, min: 0, max: 5 }, // Restaurant rating out of 5
 }, { timestamps: true });
 
 export default mongoose.model("User", userSchema);

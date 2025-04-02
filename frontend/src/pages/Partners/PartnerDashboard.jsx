@@ -101,7 +101,7 @@ const PartnerDashboard = () => {
         </h1>
         
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
             <div className="flex items-center justify-between">
               <div>
@@ -109,15 +109,6 @@ const PartnerDashboard = () => {
                 <p className="text-3xl font-bold text-[#0098c9ff]">{dashboardData.totalReservations}</p>
               </div>
               <FaCalendarAlt className="text-4xl text-[#0098c9ff] opacity-50" />
-            </div>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Pending Reservations</h3>
-                <p className="text-3xl font-bold text-orange-500">{dashboardData.pendingReservations}</p>
-              </div>
-              <FaClock className="text-4xl text-orange-500 opacity-50" />
             </div>
           </div>
           <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
