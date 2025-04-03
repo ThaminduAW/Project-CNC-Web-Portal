@@ -1,5 +1,5 @@
 import express from "express";
-import User from "../models/User.js"; // Assuming partners are stored in User model
+import User from "../models/User.js"; 
 import Reservation from "../models/Reservation.js";
 import Event from "../models/Event.js";
 import authMiddleware from "../middleware/authMiddleware.js";

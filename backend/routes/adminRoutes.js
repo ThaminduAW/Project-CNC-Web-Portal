@@ -111,7 +111,46 @@ router.patch("/partners/approve/:id", authMiddleware, async (req, res) => {
         from: process.env.EMAIL_USER,
         to: updatedPartner.email,
         subject: "Your Partner Account Has Been Approved - CNC World Tour",
-        text: `Dear ${updatedPartner.fullName},\n\nWe are pleased to inform you that your partner account has been approved. You can now log in to your partner dashboard and start managing your restaurant.\n\nRestaurant Name: ${updatedPartner.restaurantName}\n\nPlease visit http://localhost:5173/signin to access your account.\n\nBest regards,\nCNC World Tour Team`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 8px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #2c3e50; margin: 0;">CNC World Tour</h1>
+              <p style="color: #7f8c8d; margin: 5px 0;">Your Global Dining Experience</p>
+            </div>
+            
+            <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+              <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color: #27ae60; margin: 0;">Account Approved!</h2>
+              </div>
+              
+              <p style="color: #34495e; font-size: 16px; line-height: 1.6;">Dear ${updatedPartner.fullName},</p>
+              
+              <p style="color: #34495e; font-size: 16px; line-height: 1.6;">We are pleased to inform you that your partner account has been approved. You can now log in to your partner dashboard and start managing your restaurant.</p>
+              
+              <div style="background-color: #f8f9fa; padding: 20px; border-radius: 6px; margin: 20px 0;">
+                <h3 style="color: #2c3e50; margin-top: 0;">Your Restaurant Details</h3>
+                <p style="margin: 5px 0;"><strong>Restaurant Name:</strong> ${updatedPartner.restaurantName}</p>
+              </div>
+              
+              <div style="background-color: #e8f4f8; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                <p style="color: #2c3e50; margin: 0; font-weight: bold;">Next Steps</p>
+                <p style="color: #34495e; margin: 5px 0 0 0;">Access your partner dashboard to start managing your restaurant and reservations.</p>
+              </div>
+              
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="http://localhost:5173/signin" style="display: inline-block; background-color: #fea116; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Access Your Dashboard</a>
+              </div>
+              
+              <div style="text-align: center; margin-top: 30px;">
+                <p style="color: #7f8c8d; font-size: 14px;">Welcome to the CNC World Tour family!</p>
+              </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+              <p style="color: #95a5a6; font-size: 12px;">This is an automated message, please do not reply directly to this email.</p>
+            </div>
+          </div>
+        `
       };
 
       await transporter.sendMail(mailOptions);
@@ -218,7 +257,48 @@ router.post("/partners/add", async (req, res) => {
         from: process.env.EMAIL_USER,
         to: email,
         subject: "Welcome to CNC World Tour - Your Partner Account is Ready",
-        text: `Dear ${fullName},\n\nWelcome to CNC World Tour! Your partner account has been created and is ready to use.\n\nRestaurant Name: ${restaurantName}\n\nYou can now log in to your partner dashboard and start managing your restaurant.\n\nPlease visit http://localhost:5173/signin to access your account.\n\nBest regards,\nCNC World Tour Team`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 8px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #2c3e50; margin: 0;">CNC World Tour</h1>
+              <p style="color: #7f8c8d; margin: 5px 0;">Your Global Dining Experience</p>
+            </div>
+            
+            <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+              <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color: #27ae60; margin: 0;">Welcome Aboard!</h2>
+              </div>
+              
+              <p style="color: #34495e; font-size: 16px; line-height: 1.6;">Dear ${fullName},</p>
+              
+              <p style="color: #34495e; font-size: 16px; line-height: 1.6;">We're thrilled to welcome you to the CNC World Tour family! Your partner account has been created and is ready to use.</p>
+              
+              <div style="background-color: #f8f9fa; padding: 20px; border-radius: 6px; margin: 20px 0;">
+                <h3 style="color: #2c3e50; margin-top: 0;">Your Restaurant Details</h3>
+                <p style="margin: 5px 0;"><strong>Restaurant Name:</strong> ${restaurantName}</p>
+                <p style="margin: 5px 0;"><strong>Address:</strong> ${address}</p>
+                <p style="margin: 5px 0;"><strong>Contact:</strong> ${phone}</p>
+              </div>
+              
+              <div style="background-color: #e8f4f8; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                <p style="color: #2c3e50; margin: 0; font-weight: bold;">Next Steps</p>
+                <p style="color: #34495e; margin: 5px 0 0 0;">You can now log in to your partner dashboard and start managing your restaurant.</p>
+              </div>
+              
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="http://localhost:5173/signin" style="display: inline-block; background-color: #fea116; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Access Your Dashboard</a>
+              </div>
+              
+              <div style="text-align: center; margin-top: 30px;">
+                <p style="color: #7f8c8d; font-size: 14px;">Thank you for joining CNC World Tour!</p>
+              </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+              <p style="color: #95a5a6; font-size: 12px;">This is an automated message, please do not reply directly to this email.</p>
+            </div>
+          </div>
+        `
       };
 
       await transporter.sendMail(mailOptions);

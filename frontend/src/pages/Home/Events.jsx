@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { FaCalendarAlt, FaClock, FaMapMarkerAlt, FaStore } from 'react-icons/fa';
@@ -8,6 +9,7 @@ const Events = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -27,6 +29,10 @@ const Events = () => {
 
     fetchEvents();
   }, []);
+
+  const handleViewMenu = (eventId) => {
+    navigate(`/menu/${eventId}`);
+  };
 
   if (loading) {
     return (
@@ -117,8 +123,11 @@ const Events = () => {
                   </div>
                 </div>
 
-                <button className="mt-6 w-full bg-[#fea116ff] text-white py-2 px-4 rounded-md hover:bg-[#e89115ff] transition duration-300">
-                  Book Now
+                <button 
+                  onClick={() => handleViewMenu(event._id)}
+                  className="mt-6 w-full bg-[#fea116ff] text-white py-2 px-4 rounded-md hover:bg-[#e89115ff] transition duration-300"
+                >
+                  View Menu
                 </button>
               </div>
             </motion.div>

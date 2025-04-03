@@ -27,7 +27,8 @@ router.post("/", async (req, res) => {
       date, 
       time, 
       instructions,
-      numberOfGuests: parseInt(guestCount) || 1 
+      numberOfGuests: parseInt(guestCount) || 1,
+      status: 'pending' // Set initial status as pending
     });
     await newReservation.save();
 
@@ -41,12 +42,46 @@ router.post("/", async (req, res) => {
         },
       });
 
-      // Confirmation Email to the Visitor
+      // Pending Notification Email to the Visitor
       const visitorMailOptions = {
         from: process.env.EMAIL_USER,
         to: email,
-        subject: "Reservation Confirmation - CNC World Tour",
-        text: `Hello ${name},\n\nYour reservation at ${restaurant} is confirmed for ${date} at ${time}.\nNumber of Guests: ${guestCount}\n\nSpecial Instructions: ${instructions || "None"}\n\nThank you for booking with CNC World Tour!`,
+        subject: "Reservation Request Received - CNC World Tour",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 8px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #2c3e50; margin: 0;">CNC World Tour</h1>
+              <p style="color: #7f8c8d; margin: 5px 0;">Your Global Dining Experience</p>
+            </div>
+            
+            <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+              <h2 style="color: #2c3e50; margin-top: 0;">Reservation Request Received</h2>
+              
+              <p style="color: #34495e; font-size: 16px; line-height: 1.6;">Hello ${name},</p>
+              
+              <p style="color: #34495e; font-size: 16px; line-height: 1.6;">Your reservation request has been received and is currently pending approval.</p>
+              
+              <div style="background-color: #f8f9fa; padding: 20px; border-radius: 6px; margin: 20px 0;">
+                <h3 style="color: #2c3e50; margin-top: 0;">Reservation Details</h3>
+                <p style="margin: 5px 0;"><strong>Restaurant:</strong> ${restaurant}</p>
+                <p style="margin: 5px 0;"><strong>Date:</strong> ${date}</p>
+                <p style="margin: 5px 0;"><strong>Time:</strong> ${time}</p>
+                <p style="margin: 5px 0;"><strong>Number of Guests:</strong> ${guestCount}</p>
+                <p style="margin: 5px 0;"><strong>Special Instructions:</strong> ${instructions || "None"}</p>
+              </div>
+              
+              <p style="color: #34495e; font-size: 16px; line-height: 1.6;">We will notify you once the restaurant confirms your reservation.</p>
+              
+              <div style="text-align: center; margin-top: 30px;">
+                <p style="color: #7f8c8d; font-size: 14px;">Thank you for choosing CNC World Tour!</p>
+              </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+              <p style="color: #95a5a6; font-size: 12px;">This is an automated message, please do not reply directly to this email.</p>
+            </div>
+          </div>
+        `
       };
 
       await transporter.sendMail(visitorMailOptions);
@@ -55,8 +90,43 @@ router.post("/", async (req, res) => {
       const partnerMailOptions = {
         from: process.env.EMAIL_USER,
         to: partner.email,
-        subject: "New Reservation at Your Restaurant",
-        text: `Hello ${partner.fullName},\n\nA new reservation has been made at your restaurant.\n\nDetails:\nName: ${name}\nEmail: ${email}\nDate: ${date}\nTime: ${time}\nNumber of Guests: ${guestCount}\nContact: ${contact || "Not provided"}\n\nInstructions: ${instructions || "None"}`,
+        subject: "New Reservation Request at Your Restaurant",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 8px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #2c3e50; margin: 0;">CNC World Tour</h1>
+              <p style="color: #7f8c8d; margin: 5px 0;">Partner Notification</p>
+            </div>
+            
+            <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+              <h2 style="color: #2c3e50; margin-top: 0;">New Reservation Request</h2>
+              
+              <p style="color: #34495e; font-size: 16px; line-height: 1.6;">Hello ${partner.fullName},</p>
+              
+              <p style="color: #34495e; font-size: 16px; line-height: 1.6;">A new reservation request has been made at your restaurant.</p>
+              
+              <div style="background-color: #f8f9fa; padding: 20px; border-radius: 6px; margin: 20px 0;">
+                <h3 style="color: #2c3e50; margin-top: 0;">Reservation Details</h3>
+                <p style="margin: 5px 0;"><strong>Customer Name:</strong> ${name}</p>
+                <p style="margin: 5px 0;"><strong>Email:</strong> ${email}</p>
+                <p style="margin: 5px 0;"><strong>Contact:</strong> ${contact || "Not provided"}</p>
+                <p style="margin: 5px 0;"><strong>Date:</strong> ${date}</p>
+                <p style="margin: 5px 0;"><strong>Time:</strong> ${time}</p>
+                <p style="margin: 5px 0;"><strong>Number of Guests:</strong> ${guestCount}</p>
+                <p style="margin: 5px 0;"><strong>Special Instructions:</strong> ${instructions || "None"}</p>
+              </div>
+              
+              <div style="background-color: #e8f4f8; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                <p style="color: #2c3e50; margin: 0; font-weight: bold;">Action Required</p>
+                <p style="color: #34495e; margin: 5px 0 0 0;">Please review and update the reservation status in your dashboard.</p>
+              </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+              <p style="color: #95a5a6; font-size: 12px;">This is an automated message from CNC World Tour.</p>
+            </div>
+          </div>
+        `
       };
 
       await transporter.sendMail(partnerMailOptions);
@@ -184,11 +254,88 @@ router.put("/:id/status", async (req, res) => {
         },
       });
 
+      let emailSubject, emailHtml;
+      
+      if (status === 'confirmed') {
+        emailSubject = "Reservation Confirmed - CNC World Tour";
+        emailHtml = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 8px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #2c3e50; margin: 0;">CNC World Tour</h1>
+              <p style="color: #7f8c8d; margin: 5px 0;">Your Global Dining Experience</p>
+            </div>
+            
+            <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+              <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color: #27ae60; margin: 0;">Reservation Confirmed!</h2>
+              </div>
+              
+              <p style="color: #34495e; font-size: 16px; line-height: 1.6;">Hello ${reservation.name},</p>
+              
+              <p style="color: #34495e; font-size: 16px; line-height: 1.6;">Great news! Your reservation has been confirmed.</p>
+              
+              <div style="background-color: #f8f9fa; padding: 20px; border-radius: 6px; margin: 20px 0;">
+                <h3 style="color: #2c3e50; margin-top: 0;">Reservation Details</h3>
+                <p style="margin: 5px 0;"><strong>Restaurant:</strong> ${reservation.restaurant}</p>
+                <p style="margin: 5px 0;"><strong>Date:</strong> ${reservation.date}</p>
+                <p style="margin: 5px 0;"><strong>Time:</strong> ${reservation.time}</p>
+                <p style="margin: 5px 0;"><strong>Number of Guests:</strong> ${reservation.numberOfGuests}</p>
+                <p style="margin: 5px 0;"><strong>Special Instructions:</strong> ${reservation.instructions || "None"}</p>
+              </div>
+              
+              <div style="text-align: center; margin: 30px 0;">
+                <p style="color: #34495e; font-size: 16px; line-height: 1.6;">We look forward to welcoming you!</p>
+              </div>
+              
+              <div style="text-align: center; margin-top: 30px;">
+                <p style="color: #7f8c8d; font-size: 14px;">Thank you for choosing CNC World Tour!</p>
+              </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+              <p style="color: #95a5a6; font-size: 12px;">This is an automated message, please do not reply directly to this email.</p>
+            </div>
+          </div>
+        `;
+      } else {
+        emailSubject = `Reservation ${status.charAt(0).toUpperCase() + status.slice(1)} - CNC World Tour`;
+        emailHtml = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 8px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #2c3e50; margin: 0;">CNC World Tour</h1>
+              <p style="color: #7f8c8d; margin: 5px 0;">Your Global Dining Experience</p>
+            </div>
+            
+            <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+              <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color: #e74c3c; margin: 0;">Reservation ${status.charAt(0).toUpperCase() + status.slice(1)}</h2>
+              </div>
+              
+              <p style="color: #34495e; font-size: 16px; line-height: 1.6;">Hello ${reservation.name},</p>
+              
+              <p style="color: #34495e; font-size: 16px; line-height: 1.6;">Your reservation at ${reservation.restaurant} for ${reservation.date} at ${reservation.time} has been ${status}.</p>
+              
+              <div style="text-align: center; margin: 30px 0;">
+                <p style="color: #34495e; font-size: 16px; line-height: 1.6;">Thank you for your understanding.</p>
+              </div>
+              
+              <div style="text-align: center; margin-top: 30px;">
+                <p style="color: #7f8c8d; font-size: 14px;">Best regards,<br>CNC World Tour Team</p>
+              </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+              <p style="color: #95a5a6; font-size: 12px;">This is an automated message, please do not reply directly to this email.</p>
+            </div>
+          </div>
+        `;
+      }
+
       const emailOptions = {
         from: process.env.EMAIL_USER,
         to: reservation.email,
-        subject: `Reservation ${status.charAt(0).toUpperCase() + status.slice(1)} - CNC World Tour`,
-        text: `Hello ${reservation.name},\n\nYour reservation at ${reservation.restaurant} for ${reservation.date} at ${reservation.time} has been ${status}.\n\nThank you for choosing CNC World Tour!`,
+        subject: emailSubject,
+        html: emailHtml,
       };
 
       await transporter.sendMail(emailOptions);
