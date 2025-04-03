@@ -65,7 +65,7 @@ const Footer = () => {
       <div className="text-center text-gray-400 text-sm">
         <p>© {new Date().getFullYear()} CNC World Tour. All rights reserved.</p>
         <p className="mt-2 text-gray-300">
-          Project by: <span className="text-[#fea116ff] font-semibold">Thamindu, Bipin, Suyog, Rusha</span>
+          Project by: <span className="text-[#fea116ff] font-semibold">Thamindu, Bipin, Suyog, Kawindu & Rusha</span>
         </p>
       </div>
     </footer>
