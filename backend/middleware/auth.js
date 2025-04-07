@@ -37,7 +37,7 @@ export const verifyPartner = (req, res, next) => {
       return res.status(401).json({ message: 'User not authenticated' });
     }
 
-    if (req.user.role !== 'partner') {
+    if (req.user.role !== 'Partner') {
       return res.status(403).json({ message: 'Access denied. Partner role required.' });
     }
 

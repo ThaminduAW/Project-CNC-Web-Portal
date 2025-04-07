@@ -22,23 +22,39 @@ const Reservation = () => {
   useEffect(() => {
     const fetchRestaurants = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/partners");
+        const response = await fetch("http://localhost:3000/api/partners", {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
 
         if (!response.ok) {
           throw new Error(`API Error: ${response.statusText}`);
         }
 
         const data = await response.json();
-        console.log("Fetched Restaurants:", data); // Debugging Output
+        console.log("Fetched Restaurants:", data);
 
         if (!Array.isArray(data)) {
           throw new Error("Invalid response format");
         }
 
-        setRestaurants(data); // Ensure correct data is set
+        // Filter out any invalid restaurant objects
+        const validRestaurants = data.filter(restaurant => 
+          restaurant && 
+          restaurant._id && 
+          restaurant.restaurantName
+        );
+
+        if (validRestaurants.length === 0) {
+          throw new Error("No valid restaurants found");
+        }
+
+        setRestaurants(validRestaurants);
       } catch (err) {
         console.error("Error fetching restaurants:", err.message);
-        setRestaurants([]); // Prevent crash by setting an empty array
+        setStatus({ success: false, error: "Failed to load restaurants. Please try again later." });
+        setRestaurants([]);
       }
     };
 

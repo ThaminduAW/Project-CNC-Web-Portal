@@ -10,8 +10,13 @@ router.get('/:restaurantId/:date', async (req, res) => {
   try {
     const { restaurantId, date } = req.params;
     
+    // Validate restaurantId
+    if (!restaurantId || restaurantId === 'null') {
+      return res.status(400).json({ message: 'Invalid restaurant ID' });
+    }
+    
     let availability = await Availability.findOne({
-      restaurantId,
+      restaurantId: restaurantId,
       date: new Date(date)
     });
     
@@ -33,7 +38,7 @@ router.get('/:restaurantId/:date', async (req, res) => {
       ];
 
       availability = new Availability({
-        restaurantId,
+        restaurantId: restaurantId,
         date: new Date(date),
         timeSlots: defaultTimeSlots
       });
@@ -56,7 +61,7 @@ router.get('/:restaurantId/:date', async (req, res) => {
       );
       
       slot.currentBookings = reservationsForSlot.length;
-      slot.isAvailable = slot.currentBookings < 1; // Changed to check against 1 instead of maxCapacity
+      slot.isAvailable = slot.currentBookings < 1;
     });
 
     // Save the updated availability
@@ -72,7 +77,8 @@ router.get('/:restaurantId/:date', async (req, res) => {
 // Create or update availability (Partner only)
 router.post('/', verifyToken, verifyPartner, async (req, res) => {
   try {
-    const { restaurantId, date, timeSlots } = req.body;
+    const { date, timeSlots } = req.body;
+    const partnerId = req.user._id;
     
     // Ensure all time slots have maxCapacity of 1
     const updatedTimeSlots = timeSlots.map(slot => ({
@@ -81,7 +87,7 @@ router.post('/', verifyToken, verifyPartner, async (req, res) => {
     }));
     
     let availability = await Availability.findOne({
-      restaurantId,
+      restaurantId: partnerId,
       date: new Date(date)
     });
     
@@ -90,7 +96,7 @@ router.post('/', verifyToken, verifyPartner, async (req, res) => {
       await availability.save();
     } else {
       availability = new Availability({
-        restaurantId,
+        restaurantId: partnerId,
         date: new Date(date),
         timeSlots: updatedTimeSlots
       });
@@ -108,8 +114,13 @@ router.patch('/:id/slot/:slotId', verifyToken, verifyPartner, async (req, res) =
   try {
     const { id, slotId } = req.params;
     const { isAvailable } = req.body;
+    const partnerId = req.user._id;
     
-    const availability = await Availability.findById(id);
+    const availability = await Availability.findOne({
+      _id: id,
+      restaurantId: partnerId
+    });
+    
     if (!availability) {
       return res.status(404).json({ message: 'Availability not found' });
     }
