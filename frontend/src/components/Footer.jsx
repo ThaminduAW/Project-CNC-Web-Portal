@@ -2,6 +2,14 @@ import { Link } from "react-router-dom";
 import { FaFacebookF, FaInstagram, FaTwitter, FaLinkedin } from "react-icons/fa";
 
 const Footer = () => {
+  // Function to scroll to top of page
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
+
   return (
     <footer className="bg-[#001524ff] text-white py-10">
       <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -34,11 +42,11 @@ const Footer = () => {
         <div className="text-center md:text-left">
           <h3 className="text-lg font-semibold mb-3 text-[#fea116ff]">Quick Links</h3>
           <ul className="space-y-2">
-            <li><Link to="/" className="hover:text-[#fea116ff] transition duration-300">🏠 Home</Link></li>
-            <li><Link to="/restaurants" className="hover:text-[#fea116ff] transition duration-300">🍽 Restaurants</Link></li>
-            <li><Link to="/reservation" className="hover:text-[#fea116ff] transition duration-300">📅 Reservation</Link></li>
-            <li><Link to="/about" className="hover:text-[#fea116ff] transition duration-300">ℹ️ About</Link></li>
-            <li><Link to="/contact" className="hover:text-[#fea116ff] transition duration-300">📞 Contact</Link></li>
+            <li><Link to="/" onClick={scrollToTop} className="hover:text-[#fea116ff] transition duration-300">🏠 Home</Link></li>
+            <li><Link to="/events" onClick={scrollToTop} className="hover:text-[#fea116ff] transition duration-300">🍽 Menu</Link></li>
+            <li><Link to="/reservation" onClick={scrollToTop} className="hover:text-[#fea116ff] transition duration-300">📅 Reservation</Link></li>
+            <li><Link to="/about" onClick={scrollToTop} className="hover:text-[#fea116ff] transition duration-300">ℹ️ About</Link></li>
+            <li><Link to="/contact" onClick={scrollToTop} className="hover:text-[#fea116ff] transition duration-300">📞 Contact</Link></li>
           </ul>
         </div>
 
@@ -57,7 +65,7 @@ const Footer = () => {
       <div className="text-center text-gray-400 text-sm">
         <p>© {new Date().getFullYear()} CNC World Tour. All rights reserved.</p>
         <p className="mt-2 text-gray-300">
-          Project by: <span className="text-[#fea116ff] font-semibold">Thamindu, Bipin, Suyog, Rusha</span>
+          Project by: <span className="text-[#fea116ff] font-semibold">Thamindu, Bipin, Suyog, Kawindu & Rusha</span>
         </p>
       </div>
     </footer>

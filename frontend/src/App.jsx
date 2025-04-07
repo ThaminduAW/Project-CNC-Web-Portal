@@ -1,5 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Home from "./pages/Home/Home";
 import Restaurants from "./pages/Home/Restaurants";
 import ResDetails from "./pages/Home/ResDetails";
@@ -7,6 +9,7 @@ import Reservation from "./pages/Home/Reservation";
 import About from "./pages/Home/About";
 import Contact from "./pages/Home/Contact";
 import Events from "./pages/Home/Events";
+import MenuDetail from "./components/MenuDetail";
 
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import Partners from "./pages/Admin/Partners";
@@ -16,8 +19,8 @@ import Messages from "./pages/Admin/Messages";
 import AdminSettings from "./pages/Admin/AdminSettings";
 
 import PartnerDashboard from "./pages/Partners/PartnerDashboard";
+import PartnerMenu from "./pages/Partners/PartnerMenu";
 import PartnerEvents from "./pages/Partners/PartnerEvents";
-import Menu from "./pages/Partners/Menu";
 import PartnerMessages from "./pages/Partners/PartnerMessages";
 import PartnerSettings from "./pages/Partners/PartnerSettings";
 import Reservations from "./pages/Partners/Reservations";
@@ -31,12 +34,25 @@ import NotFound from "./components/NotFound";
 const App = () => {
     return (
         <Router>
+            <ToastContainer
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+            />
             <Routes>
                 {/* Home Routes */}
                 <Route path="/" element={<Home />} />
                 <Route path="/restaurants" element={<Restaurants />} />
                 <Route path="/restaurant-details" element={<ResDetails />} />
                 <Route path="/events" element={<Events />} />
+                <Route path="/menu/:id" element={<MenuDetail />} />
                 <Route path="/reservation" element={<Reservation />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
@@ -51,8 +67,8 @@ const App = () => {
 
                 {/* Partner Routes */}
                 <Route path="/partner/dashboard" element={<PartnerDashboard />} />
+                <Route path="/partner/menu" element={<PartnerMenu />} />
                 <Route path="/partner/events" element={<PartnerEvents />} />
-                <Route path="/partner/menu" element={<Menu />} />
                 <Route path="/partner/reservations" element={<Reservations />} />
                 <Route path="/partner/messages" element={<PartnerMessages />} />
                 <Route path="/partner/settings" element={<PartnerSettings />} />

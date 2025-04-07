@@ -7,7 +7,7 @@ const AdminPartnerEvents = () => {
   const [error, setError] = useState("");
   const [selectedRestaurant, setSelectedRestaurant] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
-  const [dateRange, setDateRange] = useState({ start: "", end: "" });
+  const [selectedDate, setSelectedDate] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [currentPage, setCurrentPage] = useState(1);
@@ -29,9 +29,9 @@ const AdminPartnerEvents = () => {
           _id: event._id,
           name: event.title,
           restaurant: event.partner?.restaurantName || 'Unknown Restaurant',
-          date: event.availableFrom,
-          time: new Date(event.availableFrom).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          capacity: event.price, // Using price as capacity for now, adjust if needed
+          date: event.date,
+          time: new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          capacity: event.price,
           status: event.status,
           description: event.description,
           location: event.location,
@@ -78,15 +78,14 @@ const AdminPartnerEvents = () => {
       (event.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
       (event.restaurant?.toLowerCase() || "").includes(searchQuery.toLowerCase());
     
-    let matchesDateRange = true;
-    if (dateRange.start && dateRange.end && event.date) {
-      const eventDate = new Date(event.date);
-      const startDate = new Date(dateRange.start);
-      const endDate = new Date(dateRange.end);
-      matchesDateRange = eventDate >= startDate && eventDate <= endDate;
+    let matchesDate = true;
+    if (selectedDate && event.date) {
+      const eventDate = new Date(event.date).toDateString();
+      const filterDate = new Date(selectedDate).toDateString();
+      matchesDate = eventDate === filterDate;
     }
 
-    return matchesRestaurant && matchesStatus && matchesSearch && matchesDateRange;
+    return matchesRestaurant && matchesStatus && matchesSearch && matchesDate;
   });
 
   // Sort filtered events
@@ -136,8 +135,8 @@ const AdminPartnerEvents = () => {
 
       {/* Main Content */}
       <div className="flex-1 p-6">
-        <h1 className="text-3xl font-bold text-[#001524ff]">Partner Events</h1>
-        <p className="text-gray-600 mb-6">View and manage all events organized by partner restaurants.</p>
+        <h1 className="text-3xl font-bold text-[#001524ff]">Partner Menu</h1>
+        <p className="text-gray-600 mb-6">View and manage all menu organized by partner restaurants.</p>
 
         {/* Filters Section */}
         <div className="bg-white p-4 rounded-lg shadow-md mb-6">
@@ -180,25 +179,17 @@ const AdminPartnerEvents = () => {
               </select>
             </div>
 
-            {/* Date Range Filter */}
+            {/* Date Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Date Range:
+                Date:
               </label>
-              <div className="flex gap-2">
-                <input
-                  type="date"
-                  value={dateRange.start}
-                  onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-                  className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0098c9ff] focus:border-[#0098c9ff]"
-                />
-                <input
-                  type="date"
-                  value={dateRange.end}
-                  onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-                  className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0098c9ff] focus:border-[#0098c9ff]"
-                />
-              </div>
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0098c9ff] focus:border-[#0098c9ff]"
+              />
             </div>
 
             {/* Search */}
@@ -211,7 +202,7 @@ const AdminPartnerEvents = () => {
                 id="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search events..."
+                placeholder="Search menu..."
                 className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0098c9ff] focus:border-[#0098c9ff]"
               />
             </div>
@@ -229,7 +220,7 @@ const AdminPartnerEvents = () => {
           </div>
         ) : currentEvents.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-500 text-lg">No events found matching your criteria.</p>
+            <p className="text-gray-500 text-lg">No menu found matching your criteria.</p>
           </div>
         ) : (
           <>
@@ -238,7 +229,7 @@ const AdminPartnerEvents = () => {
                 <thead className="bg-[#0098c9ff] text-white">
                   <tr>
                     <th className="p-3 text-left cursor-pointer hover:bg-[#0088b9ff]" onClick={() => handleSort('name')}>
-                      Event Name {sortConfig.key === 'name' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                      Menu Name {sortConfig.key === 'name' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                     </th>
                     <th className="p-3 text-left cursor-pointer hover:bg-[#0088b9ff]" onClick={() => handleSort('restaurant')}>
                       Restaurant {sortConfig.key === 'restaurant' && (sortConfig.direction === 'asc' ? '↑' : '↓')}

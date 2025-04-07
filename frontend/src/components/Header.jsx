@@ -19,9 +19,8 @@ const Header = () => {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex space-x-6">
           <Link to="/" className="hover:text-[#fea116ff] transition">Home</Link>
-          <Link to="/restaurants" className="hover:text-[#fea116ff] transition">Restaurants</Link>
-          <Link to="/events" className="hover:text-[#fea116ff] transition">Events</Link>
-          <Link to="/offers" className="hover:text-[#fea116ff] transition">Offers</Link>
+          {/* <Link to="/restaurants" className="hover:text-[#fea116ff] transition">Restaurants</Link> */}
+          <Link to="/events" className="hover:text-[#fea116ff] transition">Menu</Link>
           <Link to="/reservation" className="hover:text-[#fea116ff] transition">Reservation</Link>
           <Link to="/about" className="hover:text-[#fea116ff] transition">About</Link>
           <Link to="/contact" className="hover:text-[#fea116ff] transition">Contact</Link>
@@ -56,8 +55,7 @@ const Header = () => {
         <nav className="md:hidden bg-[#0098c9ff] text-white flex flex-col items-center space-y-4 py-4">
           <Link to="/" className="hover:text-[#fea116ff]" onClick={() => setIsOpen(false)}>Home</Link>
           <Link to="/restaurants" className="hover:text-[#fea116ff]" onClick={() => setIsOpen(false)}>Restaurants</Link>
-          <Link to="/events" className="hover:text-[#fea116ff]" onClick={() => setIsOpen(false)}>Events</Link>
-          <Link to="/offers" className="hover:text-[#fea116ff]" onClick={() => setIsOpen(false)}>Offers</Link>
+          <Link to="/events" className="hover:text-[#fea116ff]" onClick={() => setIsOpen(false)}>Menu</Link>
           <Link to="/reservation" className="hover:text-[#fea116ff]" onClick={() => setIsOpen(false)}>Reservation</Link>
           <Link to="/about" className="hover:text-[#fea116ff]" onClick={() => setIsOpen(false)}>About</Link>
           <Link to="/contact" className="hover:text-[#fea116ff]" onClick={() => setIsOpen(false)}>Contact</Link>

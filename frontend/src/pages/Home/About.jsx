@@ -28,7 +28,7 @@ const About = () => {
           <div className="md:ml-10 mt-6 md:mt-0">
             <h2 className="text-2xl font-semibold">A Journey Rooted in Passion</h2>
             <p className="text-gray-600 mt-2">
-              CNC World Tour was born from a deep love for the sea and a desire to create **unforgettable seafood experiences**. Our mission is to bring people closer to nature by **exploring, fishing, and cooking** in some of the most breathtaking locations worldwide.
+              CNC World Tour was born from a deep love for the sea and a desire to create unforgettable seafood experiences. Our mission is to bring people closer to nature by exploring, fishing, and cooking in some of the most breathtaking locations worldwide.
             </p>
           </div>
         </div>
@@ -37,7 +37,7 @@ const About = () => {
         <div className="bg-white p-6 md:p-10 mt-12 rounded-lg shadow-lg">
           <h2 className="text-2xl font-semibold text-center">Why Choose CNC World Tour?</h2>
           <p className="text-gray-600 text-center mt-2">
-            More than just a tour – it's an **adventure that immerses you** in the beauty of the ocean and the traditions of sustainable fishing.
+            More than just a tour – it's an adventure that immerses you in the beauty of the ocean and the traditions of sustainable fishing.
           </p>
 
           {/* Key Highlights */}
@@ -63,7 +63,7 @@ const About = () => {
           <div className="md:mr-10 mb-6 md:mb-0">
             <h2 className="text-2xl font-semibold">Join Us on This Epic Journey</h2>
             <p className="text-gray-600 mt-2">
-              Whether you're a seafood enthusiast, an adventurer at heart, or simply someone who loves **extraordinary experiences**, CNC World Tour is your gateway to the **ultimate ocean adventure**.  
+              Whether you're a seafood enthusiast, an adventurer at heart, or simply someone who loves extraordinary experiences, CNC World Tour is your gateway to the ultimate ocean adventure.  
               <br /><br />
               Explore, Catch, Cook – and create memories that will last a lifetime!
             </p>

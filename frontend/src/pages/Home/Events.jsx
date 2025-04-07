@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { FaCalendarAlt, FaClock, FaMapMarkerAlt, FaStore } from 'react-icons/fa';
@@ -8,6 +9,7 @@ const Events = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -27,6 +29,10 @@ const Events = () => {
 
     fetchEvents();
   }, []);
+
+  const handleViewMenu = (eventId) => {
+    navigate(`/menu/${eventId}`);
+  };
 
   if (loading) {
     return (
@@ -63,7 +69,7 @@ const Events = () => {
         {/* Header Section */}
         <div className="text-center mb-12">
           <h1 className="text-3xl md:text-4xl font-bold">
-            Discover <span className="text-[#fea116ff]">Upcoming Events</span>
+            Discover <span className="text-[#fea116ff]">Upcoming Menus</span>
           </h1>
           <p className="text-center text-gray-600 text-lg mt-3">
             Experience the thrill of culinary adventures and unforgettable moments with our partner restaurants.
@@ -82,7 +88,7 @@ const Events = () => {
             >
               <div className="relative h-48">
                 <img
-                  src={event.image}
+                  src={`http://localhost:3000${event.image}`}
                   alt={event.title}
                   className="w-full h-full object-cover"
                 />
@@ -103,7 +109,7 @@ const Events = () => {
                   
                   <div className="flex items-center text-gray-600">
                     <FaCalendarAlt className="w-5 h-5 mr-2 text-[#fea116ff]" />
-                    From: {new Date(event.availableFrom).toLocaleDateString()}
+                    Date: {new Date(event.date).toLocaleDateString()}
                   </div>
                   
                   <div className="flex items-center text-gray-600">
@@ -117,8 +123,11 @@ const Events = () => {
                   </div>
                 </div>
 
-                <button className="mt-6 w-full bg-[#fea116ff] text-white py-2 px-4 rounded-md hover:bg-[#e89115ff] transition duration-300">
-                  Book Now
+                <button 
+                  onClick={() => handleViewMenu(event._id)}
+                  className="mt-6 w-full bg-[#fea116ff] text-white py-2 px-4 rounded-md hover:bg-[#e89115ff] transition duration-300"
+                >
+                  View Menu
                 </button>
               </div>
             </motion.div>

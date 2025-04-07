@@ -15,13 +15,13 @@ const Hero = () => {
         </p>
 
         {/* Call-To-Action Buttons */}
-        <div className="mt-6 flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
+        <div className="mt-6 flex justify-center">
           <a href="/reservation" className="bg-white text-[#0098c9ff] px-6 py-3 rounded-lg text-lg font-semibold shadow-md hover:bg-gray-200 transition">
             Book a Reservation
           </a>
-          <a href="/restaurants" className="bg-[#001524ff] text-white px-6 py-3 rounded-lg text-lg font-semibold shadow-md hover:bg-[#00345cff] transition">
+          {/* <a href="/restaurants" className="bg-[#001524ff] text-white px-6 py-3 rounded-lg text-lg font-semibold shadow-md hover:bg-[#00345cff] transition">
             Explore Restaurants
-          </a>
+          </a> */}
         </div>
       </div>
     </section>
