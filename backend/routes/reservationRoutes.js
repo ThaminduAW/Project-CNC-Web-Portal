@@ -193,11 +193,9 @@ router.get("/", async (req, res) => {
 
 // GET - Fetch partner-specific reservations
 router.get("/partner", async (req, res) => {
-  console.log("Partner route hit");
   try {
     // Get the partner's ID from the authenticated user
     const token = req.headers.authorization?.split(' ')[1];
-    console.log("Token received:", token ? "Yes" : "No");
     
     if (!token) {
       return res.status(401).json({ message: "Authentication required" });
@@ -205,10 +203,8 @@ router.get("/partner", async (req, res) => {
 
     // Find the partner by their ID (which should be stored in the token)
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("Decoded token:", decodedToken);
     
     const partner = await User.findById(decodedToken.id);
-    console.log("Partner found:", partner ? "Yes" : "No");
     
     if (!partner) {
       return res.status(404).json({ message: "Partner not found" });
@@ -217,7 +213,6 @@ router.get("/partner", async (req, res) => {
     // Fetch reservations for the partner's restaurant using the restaurant name
     const reservations = await Reservation.find({ restaurant: partner._id })
       .sort({ date: -1, time: -1 });
-    console.log("Reservations found:", reservations.length);
 
     // Format the response to include only necessary fields
     const formattedReservations = reservations.map(reservation => ({

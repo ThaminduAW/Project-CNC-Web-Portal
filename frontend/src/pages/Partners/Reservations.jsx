@@ -33,12 +33,12 @@ const Reservations = () => {
       });
 
       if (!response.ok) {
-        if (response.status === 401) {
+        const errorData = await response.json();
+        if (errorData.code === 'TOKEN_EXPIRED' || response.status === 401) {
           localStorage.removeItem('token');
           navigate('/signin');
           return;
         }
-        const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to fetch reservations');
       }
 
@@ -70,6 +70,11 @@ const Reservations = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
+        if (errorData.code === 'TOKEN_EXPIRED' || response.status === 401) {
+          localStorage.removeItem('token');
+          navigate('/signin');
+          return;
+        }
         throw new Error(errorData.message || 'Failed to update reservation status');
       }
 
@@ -101,6 +106,11 @@ const Reservations = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
+        if (errorData.code === 'TOKEN_EXPIRED' || response.status === 401) {
+          localStorage.removeItem('token');
+          navigate('/signin');
+          return;
+        }
         throw new Error(errorData.message || 'Failed to delete reservation');
       }
 
