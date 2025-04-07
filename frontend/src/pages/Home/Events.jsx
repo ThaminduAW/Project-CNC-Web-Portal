@@ -109,7 +109,7 @@ const Events = () => {
                   
                   <div className="flex items-center text-gray-600">
                     <FaCalendarAlt className="w-5 h-5 mr-2 text-[#fea116ff]" />
-                    From: {new Date(event.availableFrom).toLocaleDateString()}
+                    Date: {new Date(event.date).toLocaleDateString()}
                   </div>
                   
                   <div className="flex items-center text-gray-600">
