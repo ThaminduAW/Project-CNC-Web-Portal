@@ -20,31 +20,38 @@ router.get("/", async (req, res) => {
 // GET partner dashboard data
 router.get("/:id/dashboard", authMiddleware, async (req, res) => {
   try {
+    console.log("Fetching dashboard for partner ID:", req.params.id);
     const partner = await User.findById(req.params.id);
     
     if (!partner) {
+      console.log("Partner not found with ID:", req.params.id);
       return res.status(404).json({ message: "Partner not found" });
     }
 
-    // Get total reservations for this partner
-    const totalReservations = await Reservation.countDocuments({ restaurant: partner.restaurantName });
+    console.log("Found partner:", partner.restaurantName);
+    
+    // Get total reservations for this partner using the partner's ID
+    const totalReservations = await Reservation.countDocuments({ restaurant: partner._id });
+    console.log("Total reservations:", totalReservations);
 
     // Get total events for this partner
     const totalEvents = await Event.countDocuments({ partner: partner._id });
+    console.log("Total events:", totalEvents);
 
     // Get unique customers (based on email) who made reservations
     const uniqueCustomers = await Reservation.distinct('email', { 
-      restaurant: partner.restaurantName 
+      restaurant: partner._id 
     });
     const totalCustomers = uniqueCustomers.length;
+    console.log("Total customers:", totalCustomers);
 
     // Get recent activities (last 10 reservations)
     const recentReservations = await Reservation.find({ 
-      restaurant: partner.restaurantName 
+      restaurant: partner._id 
     })
     .sort({ createdAt: -1 })
     .limit(10)
-    .select('name date time status createdAt');
+    .select('name date timeSlot status createdAt');
 
     const recentActivities = recentReservations.map(reservation => ({
       type: 'reservation',
@@ -71,8 +78,15 @@ router.get("/:id/dashboard", authMiddleware, async (req, res) => {
 
     res.json(dashboardData);
   } catch (error) {
-    console.error("Error fetching partner dashboard:", error);
-    res.status(500).json({ message: "Server error, try again later." });
+    console.error("Detailed error in partner dashboard:", {
+      message: error.message,
+      stack: error.stack,
+      partnerId: req.params.id
+    });
+    res.status(500).json({ 
+      message: "Server error, try again later.",
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 

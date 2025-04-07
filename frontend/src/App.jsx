@@ -1,5 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Home from "./pages/Home/Home";
 import Restaurants from "./pages/Home/Restaurants";
 import ResDetails from "./pages/Home/ResDetails";
@@ -32,6 +34,18 @@ import NotFound from "./components/NotFound";
 const App = () => {
     return (
         <Router>
+            <ToastContainer
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+            />
             <Routes>
                 {/* Home Routes */}
                 <Route path="/" element={<Home />} />

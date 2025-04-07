@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import AvailabilityViewer from "../../components/AvailabilityViewer";
 
 const Reservation = () => {
   const [restaurants, setRestaurants] = useState([]); // Stores fetched restaurants
@@ -14,7 +15,7 @@ const Reservation = () => {
     instructions: "",
     guestCount: "1", // Add default guest count
   });
-
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
   const [status, setStatus] = useState({ success: false, error: "" });
 
   // Fetch restaurant (partner) list from backend
@@ -45,18 +46,50 @@ const Reservation = () => {
   }, []);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Reset time slot when date or restaurant changes
+    if (name === 'date' || name === 'restaurant') {
+      setSelectedTimeSlot(null);
+      setFormData(prev => ({ ...prev, time: "" }));
+    }
+  };
+
+  const handleTimeSlotSelect = (slot) => {
+    setSelectedTimeSlot(slot);
+    setFormData(prev => ({
+      ...prev,
+      time: `${slot.startTime}-${slot.endTime}`
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus({ success: false, error: "" });
 
+    if (!selectedTimeSlot) {
+      setStatus({ success: false, error: "Please select an available time slot" });
+      return;
+    }
+
     try {
       const response = await fetch("http://localhost:3000/api/reservations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          contact: formData.contact,
+          restaurant: formData.restaurant,
+          date: formData.date,
+          timeSlot: {
+            startTime: selectedTimeSlot.startTime,
+            endTime: selectedTimeSlot.endTime
+          },
+          instructions: formData.instructions,
+          guestCount: formData.guestCount
+        }),
       });
 
       const data = await response.json();
@@ -65,7 +98,17 @@ const Reservation = () => {
       if (!response.ok) throw new Error(data.message || "Something went wrong.");
 
       setStatus({ success: true, error: "" });
-      setFormData({ name: "", email: "", contact: "", restaurant: "", date: "", time: "", instructions: "", guestCount: "1" });
+      setFormData({
+        name: "",
+        email: "",
+        contact: "",
+        restaurant: "",
+        date: "",
+        time: "",
+        instructions: "",
+        guestCount: "1",
+      });
+      setSelectedTimeSlot(null);
 
       setTimeout(() => setStatus({ success: false, error: "" }), 5000);
     } catch (err) {
@@ -150,7 +193,7 @@ const Reservation = () => {
               <option value="" disabled>Select a Restaurant</option>
               {restaurants.length > 0 ? (
                 restaurants.map((restaurant) => (
-                  <option key={restaurant._id} value={restaurant.restaurantName}>
+                  <option key={restaurant._id} value={restaurant._id}>
                     {restaurant.restaurantName}
                   </option>
                 ))
@@ -165,17 +208,17 @@ const Reservation = () => {
               className="w-full px-4 py-2 border rounded-md"
               value={formData.date}
               onChange={handleChange}
+              min={new Date().toISOString().split('T')[0]}
               required
             />
 
-            <input
-              type="time"
-              name="time"
-              className="w-full px-4 py-2 border rounded-md"
-              value={formData.time}
-              onChange={handleChange}
-              required
-            />
+            {formData.restaurant && formData.date && (
+              <AvailabilityViewer
+                restaurantId={formData.restaurant}
+                date={formData.date}
+                onTimeSlotSelect={handleTimeSlotSelect}
+              />
+            )}
 
             <textarea
               name="instructions"
@@ -188,9 +231,10 @@ const Reservation = () => {
 
             <button
               type="submit"
-              className="w-full bg-[#fea116ff] text-white py-2 rounded-md hover:bg-[#e69510ff] transition"
+              className="w-full bg-[#fea116ff] text-white py-2 rounded-md hover:bg-[#e69510ff] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!selectedTimeSlot}
             >
-              Confirm Reservation
+              {selectedTimeSlot ? "Confirm Reservation" : "Select a Time Slot"}
             </button>
           </form>
         </div>
