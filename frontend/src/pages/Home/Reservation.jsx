@@ -83,26 +83,48 @@ const Reservation = () => {
       return;
     }
 
+    // Validate restaurant selection
+    if (!formData.restaurant) {
+      setStatus({ success: false, error: "Please select a restaurant" });
+      return;
+    }
+
+    // Find the selected restaurant object
+    const selectedRestaurant = restaurants.find(r => r._id === formData.restaurant);
+    console.log("Selected Restaurant:", selectedRestaurant);
+    console.log("All Restaurants:", restaurants);
+    console.log("Form Restaurant ID:", formData.restaurant);
+
+    if (!selectedRestaurant) {
+      setStatus({ success: false, error: "Invalid restaurant selection" });
+      return;
+    }
+
+    const reservationData = {
+      name: formData.name,
+      email: formData.email,
+      contact: formData.contact,
+      restaurant: selectedRestaurant._id,
+      date: formData.date,
+      timeSlot: {
+        startTime: selectedTimeSlot.startTime,
+        endTime: selectedTimeSlot.endTime
+      },
+      instructions: formData.instructions || '',
+      guestCount: parseInt(formData.guestCount)
+    };
+
+    console.log("Sending reservation data:", reservationData);
+
     try {
       const response = await fetch("http://localhost:3000/api/reservations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customerName: formData.name,
-          customerEmail: formData.email,
-          customerContact: formData.contact,
-          restaurantId: formData.restaurant,
-          date: formData.date,
-          timeSlot: {
-            startTime: selectedTimeSlot.startTime,
-            endTime: selectedTimeSlot.endTime
-          },
-          numberOfGuests: parseInt(formData.guestCount),
-          instructions: formData.instructions || ''
-        }),
+        body: JSON.stringify(reservationData),
       });
 
       const data = await response.json();
+      console.log("Server response:", data);
 
       if (!response.ok) {
         throw new Error(data.message || "Failed to make reservation");
