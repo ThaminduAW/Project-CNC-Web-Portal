@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FaCheck, FaTimes, FaSearch, FaFilter, FaCalendarAlt, FaClock, FaUsers, FaEnvelope, FaStore, FaTrash, FaCalendarPlus } from 'react-icons/fa';
+import { FaCheck, FaTimes, FaSearch, FaFilter, FaCalendarAlt, FaClock, FaUsers, FaEnvelope, FaStore, FaTrash, FaCalendarPlus, FaEdit } from 'react-icons/fa';
 import PartnerSideBar from '../../components/PartnerSideBar';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -21,6 +21,17 @@ const Reservations = () => {
     endTime: '',
     isAvailable: true
   });
+  const [showCustomTimeSlotModal, setShowCustomTimeSlotModal] = useState(false);
+  const [customTimeSlot, setCustomTimeSlot] = useState({
+    startTime: '',
+    endTime: '',
+    isAvailable: true,
+    maxCapacity: 1,
+    price: 0,
+    description: ''
+  });
+  const [showEditTimeSlotModal, setShowEditTimeSlotModal] = useState(false);
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -75,11 +86,16 @@ const Reservations = () => {
 
       // Get user data from localStorage
       const userData = JSON.parse(localStorage.getItem('user'));
-      if (!userData || !userData.id) {
-        throw new Error('User data not found');
+      console.log('User Data:', userData); // Debug log
+
+      // Check for either id or _id
+      const userId = userData?.id || userData?._id;
+      if (!userId) {
+        console.error('User data missing:', userData); // Debug log
+        throw new Error('User data not found. Please sign in again.');
       }
 
-      const response = await fetch(`http://localhost:3000/api/availability/${userData.id}/${format(selectedDate, 'yyyy-MM-dd')}`, {
+      const response = await fetch(`http://localhost:3000/api/availability/${userId}/${format(selectedDate, 'yyyy-MM-dd')}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -88,6 +104,7 @@ const Reservations = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('Fetch availability error:', errorData); // Debug log
         if (errorData.code === 'TOKEN_EXPIRED' || response.status === 401) {
           localStorage.removeItem('token');
           navigate('/signin');
@@ -97,9 +114,11 @@ const Reservations = () => {
       }
 
       const data = await response.json();
-      setAvailability(data.timeSlots);
+      console.log('Fetched availability:', data); // Debug log
+      setAvailability(data.timeSlots || []);
       setLoading(false);
     } catch (err) {
+      console.error('Fetch availability error:', err); // Debug log
       setError(err.message);
       setLoading(false);
     }
@@ -183,22 +202,151 @@ const Reservations = () => {
         return;
       }
 
-      // Get user data from localStorage
       const userData = JSON.parse(localStorage.getItem('user'));
-      if (!userData || !userData._id) {
-        throw new Error('User data not found');
+      console.log('User Data for regular slot:', userData); // Debug log
+
+      // Check for either id or _id
+      const userId = userData?.id || userData?._id;
+      if (!userId) {
+        console.error('User data missing for regular slot:', userData); // Debug log
+        throw new Error('User data not found. Please sign in again.');
       }
 
-      const response = await fetch(`http://localhost:3000/api/availability`, {
+      // Validate time slot data before sending
+      if (!newAvailability.startTime || !newAvailability.endTime) {
+        throw new Error('Start time and end time are required');
+      }
+
+      const timeSlotData = {
+        restaurantId: userId,
+        date: format(selectedDate, 'yyyy-MM-dd'),
+        timeSlot: {
+          ...newAvailability,
+          maxCapacity: 1,
+          price: 0,
+          description: ''
+        }
+      };
+
+      console.log('Sending regular time slot data:', timeSlotData); // Debug log
+
+      const response = await fetch(`http://localhost:3000/api/availability/custom`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
+        body: JSON.stringify(timeSlotData)
+      });
+
+      const responseData = await response.json();
+      console.log('Response from server:', responseData); // Debug log
+
+      if (!response.ok) {
+        throw new Error(responseData.message || 'Failed to add availability');
+      }
+
+      setShowAvailabilityModal(false);
+      setNewAvailability({
+        startTime: '',
+        endTime: '',
+        isAvailable: true
+      });
+      fetchAvailability();
+    } catch (err) {
+      console.error('Add regular time slot error:', err); // Debug log
+      setError(err.message);
+    }
+  };
+
+  const handleAddCustomTimeSlot = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/signin');
+        return;
+      }
+
+      const userData = JSON.parse(localStorage.getItem('user'));
+      console.log('User Data for custom slot:', userData); // Debug log
+
+      // Check for either id or _id
+      const userId = userData?.id || userData?._id;
+      if (!userId) {
+        console.error('User data missing for custom slot:', userData); // Debug log
+        throw new Error('User data not found. Please sign in again.');
+      }
+
+      // Validate time slot data before sending
+      if (!customTimeSlot.startTime || !customTimeSlot.endTime) {
+        throw new Error('Start time and end time are required');
+      }
+
+      const timeSlotData = {
+        restaurantId: userId,
+        date: format(selectedDate, 'yyyy-MM-dd'),
+        timeSlot: {
+          ...customTimeSlot,
+          maxCapacity: parseInt(customTimeSlot.maxCapacity) || 1,
+          price: parseFloat(customTimeSlot.price) || 0
+        }
+      };
+
+      console.log('Sending time slot data:', timeSlotData); // Debug log
+
+      const response = await fetch(`http://localhost:3000/api/availability/custom`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(timeSlotData)
+      });
+
+      const responseData = await response.json();
+      console.log('Response from server:', responseData); // Debug log
+
+      if (!response.ok) {
+        throw new Error(responseData.message || 'Failed to add custom time slot');
+      }
+
+      setShowCustomTimeSlotModal(false);
+      setCustomTimeSlot({
+        startTime: '',
+        endTime: '',
+        isAvailable: true,
+        maxCapacity: 1,
+        price: 0,
+        description: ''
+      });
+      fetchAvailability();
+    } catch (err) {
+      console.error('Add custom time slot error:', err); // Debug log
+      setError(err.message);
+    }
+  };
+
+  const handleEditTimeSlot = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/signin');
+        return;
+      }
+
+      const userData = JSON.parse(localStorage.getItem('user'));
+      if (!userData || !userData._id) {
+        throw new Error('User data not found');
+      }
+
+      const response = await fetch(`http://localhost:3000/api/availability/${selectedTimeSlot._id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
-          restaurantId: userData._id,
-          date: format(selectedDate, 'yyyy-MM-dd'),
-          timeSlots: [newAvailability]
+          timeSlot: selectedTimeSlot
         })
       });
 
@@ -209,10 +357,47 @@ const Reservations = () => {
           navigate('/signin');
           return;
         }
-        throw new Error(errorData.message || 'Failed to add availability');
+        throw new Error(errorData.message || 'Failed to update time slot');
       }
 
-      setShowAvailabilityModal(false);
+      setShowEditTimeSlotModal(false);
+      setSelectedTimeSlot(null);
+      fetchAvailability();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleDeleteTimeSlot = async (timeSlotId) => {
+    if (!window.confirm('Are you sure you want to delete this time slot?')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/signin');
+        return;
+      }
+
+      const response = await fetch(`http://localhost:3000/api/availability/${timeSlotId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (errorData.code === 'TOKEN_EXPIRED' || response.status === 401) {
+          localStorage.removeItem('token');
+          navigate('/signin');
+          return;
+        }
+        throw new Error(errorData.message || 'Failed to delete time slot');
+      }
+
       fetchAvailability();
     } catch (err) {
       setError(err.message);
@@ -430,6 +615,12 @@ const Reservations = () => {
                   >
                     <FaCalendarPlus /> Add Time Slot
                   </button>
+                  <button
+                    onClick={() => setShowCustomTimeSlotModal(true)}
+                    className="bg-[#fea116ff] text-white px-4 py-2 rounded-lg hover:bg-[#fea116cc] transition-colors flex items-center gap-2"
+                  >
+                    <FaCalendarPlus /> Add Custom Time Slot
+                  </button>
                 </div>
               </div>
             </div>
@@ -455,96 +646,29 @@ const Reservations = () => {
                         {slot.isAvailable ? 'Available' : 'Booked'}
                       </span>
                       <button
-                        onClick={async () => {
-                          try {
-                            const token = localStorage.getItem('token');
-                            if (!token) {
-                              navigate('/signin');
-                              return;
-                            }
-
-                            const userData = JSON.parse(localStorage.getItem('user'));
-                            if (!userData || !userData._id) {
-                              throw new Error('User data not found');
-                            }
-
-                            const response = await fetch(`http://localhost:3000/api/availability/${availability._id}/slot/${slot._id}`, {
-                              method: 'PATCH',
-                              headers: {
-                                'Authorization': `Bearer ${token}`,
-                                'Content-Type': 'application/json'
-                              },
-                              body: JSON.stringify({
-                                isAvailable: !slot.isAvailable
-                              })
-                            });
-
-                            if (!response.ok) {
-                              const errorData = await response.json();
-                              if (errorData.code === 'TOKEN_EXPIRED' || response.status === 401) {
-                                localStorage.removeItem('token');
-                                navigate('/signin');
-                                return;
-                              }
-                              throw new Error(errorData.message || 'Failed to update slot');
-                            }
-
-                            fetchAvailability();
-                          } catch (err) {
-                            setError(err.message);
-                          }
+                        onClick={() => {
+                          setSelectedTimeSlot(slot);
+                          setShowEditTimeSlotModal(true);
                         }}
-                        className={`px-3 py-1 rounded-md text-sm font-medium ${
-                          slot.isAvailable 
-                            ? 'bg-red-100 text-red-800 hover:bg-red-200' 
-                            : 'bg-green-100 text-green-800 hover:bg-green-200'
-                        }`}
+                        className="p-2 text-gray-600 hover:text-[#fea116ff] transition-colors"
                       >
-                        {slot.isAvailable ? 'Mark as Booked' : 'Mark as Available'}
+                        <FaEdit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteTimeSlot(slot._id)}
+                        className="p-2 text-gray-600 hover:text-red-500 transition-colors"
+                      >
+                        <FaTrash className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
-
-                  {/* Reservation Details */}
-                  {!slot.isAvailable && (
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">Reservation Details</h4>
-                      <div className="space-y-2">
-                        {reservations
-                          .filter(res => 
-                            res.status === 'confirmed' && 
-                            res.timeSlot.startTime === slot.startTime && 
-                            res.timeSlot.endTime === slot.endTime &&
-                            new Date(res.date).toDateString() === selectedDate.toDateString()
-                          )
-                          .map(reservation => (
-                            <div key={reservation._id} className="bg-gray-50 p-3 rounded-lg">
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <p className="font-medium text-gray-900">{reservation.customerName}</p>
-                                  <p className="text-sm text-gray-500">{reservation.customerEmail}</p>
-                                </div>
-                                <span className="text-sm text-gray-500">
-                                  {reservation.numberOfGuests} guests
-                                </span>
-                              </div>
-                              {reservation.instructions && (
-                                <p className="text-sm text-gray-600 mt-1">
-                                  Note: {reservation.instructions}
-                                </p>
-                              )}
-                            </div>
-                          ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Slot Statistics */}
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <div className="flex justify-between text-sm text-gray-600">
-                      <span>Capacity: 1</span>
-                      <span>Booked: {slot.currentBookings}</span>
-                    </div>
+                  
+                  <div className="space-y-2">
+                    <p className="text-sm text-gray-600">Capacity: {slot.maxCapacity}</p>
+                    <p className="text-sm text-gray-600">Price: ${slot.price}</p>
+                    {slot.description && (
+                      <p className="text-sm text-gray-600">Description: {slot.description}</p>
+                    )}
                   </div>
                 </div>
               ))}
@@ -695,6 +819,198 @@ const Reservations = () => {
                 </button>
                 <button
                   onClick={() => setShowAvailabilityModal(false)}
+                  className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-md hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Add Custom Time Slot Modal */}
+        {showCustomTimeSlotModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-md w-full p-6">
+              <div className="flex justify-between items-start mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Add Custom Time Slot</h2>
+                <button
+                  onClick={() => setShowCustomTimeSlotModal(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <FaTimes className="w-6 h-6" />
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+                  <input
+                    type="time"
+                    value={customTimeSlot.startTime}
+                    onChange={(e) => setCustomTimeSlot({ ...customTimeSlot, startTime: e.target.value })}
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#fea116ff]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">End Time</label>
+                  <input
+                    type="time"
+                    value={customTimeSlot.endTime}
+                    onChange={(e) => setCustomTimeSlot({ ...customTimeSlot, endTime: e.target.value })}
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#fea116ff]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Maximum Capacity</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={customTimeSlot.maxCapacity}
+                    onChange={(e) => setCustomTimeSlot({ ...customTimeSlot, maxCapacity: parseInt(e.target.value) })}
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#fea116ff]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={customTimeSlot.price}
+                    onChange={(e) => setCustomTimeSlot({ ...customTimeSlot, price: parseFloat(e.target.value) })}
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#fea116ff]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <textarea
+                    value={customTimeSlot.description}
+                    onChange={(e) => setCustomTimeSlot({ ...customTimeSlot, description: e.target.value })}
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#fea116ff]"
+                    rows="3"
+                    placeholder="Add any special details about this time slot..."
+                  />
+                </div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="isAvailable"
+                    checked={customTimeSlot.isAvailable}
+                    onChange={(e) => setCustomTimeSlot({ ...customTimeSlot, isAvailable: e.target.checked })}
+                    className="h-4 w-4 text-[#fea116ff] focus:ring-[#fea116ff] border-gray-300 rounded"
+                  />
+                  <label htmlFor="isAvailable" className="ml-2 block text-sm text-gray-700">
+                    Available
+                  </label>
+                </div>
+              </div>
+
+              <div className="mt-6 flex gap-3">
+                <button
+                  onClick={handleAddCustomTimeSlot}
+                  className="flex-1 bg-[#fea116ff] text-white py-3 rounded-md hover:bg-[#fea116cc] transition-colors flex items-center justify-center"
+                >
+                  Add Custom Time Slot
+                </button>
+                <button
+                  onClick={() => setShowCustomTimeSlotModal(false)}
+                  className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-md hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Time Slot Modal */}
+        {showEditTimeSlotModal && selectedTimeSlot && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-md w-full p-6">
+              <div className="flex justify-between items-start mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Edit Time Slot</h2>
+                <button
+                  onClick={() => setShowEditTimeSlotModal(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <FaTimes className="w-6 h-6" />
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+                  <input
+                    type="time"
+                    value={selectedTimeSlot.startTime}
+                    onChange={(e) => setSelectedTimeSlot({ ...selectedTimeSlot, startTime: e.target.value })}
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#fea116ff]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">End Time</label>
+                  <input
+                    type="time"
+                    value={selectedTimeSlot.endTime}
+                    onChange={(e) => setSelectedTimeSlot({ ...selectedTimeSlot, endTime: e.target.value })}
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#fea116ff]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Maximum Capacity</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={selectedTimeSlot.maxCapacity}
+                    onChange={(e) => setSelectedTimeSlot({ ...selectedTimeSlot, maxCapacity: parseInt(e.target.value) })}
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#fea116ff]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={selectedTimeSlot.price}
+                    onChange={(e) => setSelectedTimeSlot({ ...selectedTimeSlot, price: parseFloat(e.target.value) })}
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#fea116ff]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <textarea
+                    value={selectedTimeSlot.description}
+                    onChange={(e) => setSelectedTimeSlot({ ...selectedTimeSlot, description: e.target.value })}
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#fea116ff]"
+                    rows="3"
+                    placeholder="Add any special details about this time slot..."
+                  />
+                </div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="isAvailable"
+                    checked={selectedTimeSlot.isAvailable}
+                    onChange={(e) => setSelectedTimeSlot({ ...selectedTimeSlot, isAvailable: e.target.checked })}
+                    className="h-4 w-4 text-[#fea116ff] focus:ring-[#fea116ff] border-gray-300 rounded"
+                  />
+                  <label htmlFor="isAvailable" className="ml-2 block text-sm text-gray-700">
+                    Available
+                  </label>
+                </div>
+              </div>
+
+              <div className="mt-6 flex gap-3">
+                <button
+                  onClick={handleEditTimeSlot}
+                  className="flex-1 bg-[#fea116ff] text-white py-3 rounded-md hover:bg-[#fea116cc] transition-colors flex items-center justify-center"
+                >
+                  Save Changes
+                </button>
+                <button
+                  onClick={() => setShowEditTimeSlotModal(false)}
                   className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-md hover:bg-gray-200 transition-colors"
                 >
                   Cancel
