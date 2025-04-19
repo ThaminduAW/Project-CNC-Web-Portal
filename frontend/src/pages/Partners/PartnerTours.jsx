@@ -264,19 +264,21 @@ const PartnerTours = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#fdfcdcff]">
-      <PartnerSideBar />
-      <div className="flex-1 p-8">
+    <div className="flex min-h-screen bg-[#fdfcdcff] relative">
+      <div className="fixed left-0 top-0 h-full z-30">
+        <PartnerSideBar />
+      </div>
+      <div className="flex-1 ml-[240px] p-6 md:p-8 overflow-x-hidden min-h-screen">
         <div className="max-w-7xl mx-auto">
           {/* Header Section */}
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-[#001524ff]">Manage Tours</h1>
-              <p className="text-gray-600 mt-2">Create and manage your culinary tour experiences</p>
+              <h1 className="text-2xl md:text-3xl font-bold text-[#001524ff] tracking-tight">Manage Tours</h1>
+              <p className="text-gray-600 mt-1">Create and manage your culinary tour experiences</p>
             </div>
             <button
               onClick={() => setShowAddModal(true)}
-              className="bg-[#fea116ff] text-white px-6 py-3 rounded-lg hover:bg-[#e69510ff] transition-all duration-300 flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              className="w-full md:w-auto bg-[#fea116ff] text-white px-6 py-3 rounded-lg hover:bg-[#e69510ff] transition-all duration-300 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
             >
               <FaPlus className="text-lg" />
               <span>Add New Tour</span>
@@ -285,7 +287,7 @@ const PartnerTours = () => {
 
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-lg flex items-center">
-              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-5 h-5 mr-2 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
               </svg>
               {error}
@@ -293,20 +295,20 @@ const PartnerTours = () => {
           )}
 
           {/* Tours Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-8">
             {tours.map((tour) => (
-              <div key={tour._id} className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300">
-                <div className="relative h-48">
+              <div key={tour._id} className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+                <div className="relative h-56 overflow-hidden">
                   <img
                     src={getImageUrl(tour.image)}
                     alt={tour.title}
-                    className="w-full h-full object-cover rounded-t-xl"
+                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                     onError={handleImageError}
                   />
-                  <div className="absolute top-4 right-4 bg-[#fea116ff] text-white px-3 py-1 rounded-full shadow-md">
+                  <div className="absolute top-4 right-4 bg-[#fea116ff] text-white px-4 py-1.5 rounded-full shadow-md font-semibold">
                     ${tour.price}
                   </div>
-                  <div className={`absolute bottom-4 left-4 px-3 py-1 rounded-full text-xs font-medium ${
+                  <div className={`absolute top-4 left-4 px-3 py-1 rounded-full text-sm font-medium ${
                     tour.status === 'active' 
                       ? 'bg-green-100 text-green-800'
                       : 'bg-red-100 text-red-800'
@@ -316,47 +318,51 @@ const PartnerTours = () => {
                 </div>
 
                 <div className="p-6">
-                  <h3 className="text-xl font-semibold text-[#001524ff] mb-3">{tour.title}</h3>
-                  <p className="text-gray-600 mb-4 line-clamp-2">{tour.briefDescription}</p>
+                  <h3 className="text-xl font-semibold text-[#001524ff] mb-3 line-clamp-1">{tour.title}</h3>
+                  <p className="text-gray-600 mb-4 line-clamp-2 text-sm">{tour.briefDescription}</p>
 
-                  <div className="space-y-2 mb-6">
-                    <div className="flex items-center text-gray-600">
-                      <FaClock className="w-4 h-4 mr-2 text-[#fea116ff]" />
-                      {tour.timeDuration}
+                  <div className="space-y-3 mb-6">
+                    <div className="flex items-center text-gray-600 text-sm">
+                      <FaClock className="w-4 h-4 mr-3 text-[#fea116ff]" />
+                      <span className="line-clamp-1">{tour.timeDuration}</span>
                     </div>
-                    <div className="flex items-center text-gray-600">
-                      <FaCalendarAlt className="w-4 h-4 mr-2 text-[#fea116ff]" />
-                      {new Date(tour.date).toLocaleDateString()}
+                    <div className="flex items-center text-gray-600 text-sm">
+                      <FaCalendarAlt className="w-4 h-4 mr-3 text-[#fea116ff]" />
+                      <span className="line-clamp-1">{new Date(tour.date).toLocaleDateString()}</span>
                     </div>
-                    <div className="flex items-center text-gray-600">
-                      <FaMapMarkerAlt className="w-4 h-4 mr-2 text-[#fea116ff]" />
-                      {tour.location}
+                    <div className="flex items-center text-gray-600 text-sm">
+                      <FaMapMarkerAlt className="w-4 h-4 mr-3 text-[#fea116ff]" />
+                      <span className="line-clamp-1">{tour.location}</span>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-end space-x-3">
+                  <div className="flex items-center justify-between space-x-3 pt-4 border-t border-gray-100">
                     <button
                       onClick={() => handleToggleAvailability(tour._id, tour.status)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex-grow text-center ${
                         tour.status === 'active'
-                          ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                          : 'bg-green-100 text-green-600 hover:bg-green-200'
+                          ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                          : 'bg-green-50 text-green-600 hover:bg-green-100'
                       }`}
                     >
                       {tour.status === 'active' ? 'Make Unavailable' : 'Make Available'}
                     </button>
-                    <button
-                      onClick={() => openEditModal(tour)}
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
-                    >
-                      <FaEdit className="text-lg" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteTour(tour._id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
-                    >
-                      <FaTrash className="text-lg" />
-                    </button>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => openEditModal(tour)}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                        title="Edit Tour"
+                      >
+                        <FaEdit className="text-lg" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteTour(tour._id)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                        title="Delete Tour"
+                      >
+                        <FaTrash className="text-lg" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -365,9 +371,9 @@ const PartnerTours = () => {
 
           {/* Add/Edit Tour Modal */}
           {(showAddModal || showEditModal) && (
-            <div className="fixed inset-0 flex items-center justify-center z-50">
-              <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
-                <div className="flex justify-between items-center mb-6">
+            <div className="fixed inset-0 flex items-center justify-center z-50 p-4 bg-black bg-opacity-50">
+              <div className="bg-white rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative">
+                <div className="flex justify-between items-center mb-6 sticky top-0 bg-white pb-4 border-b">
                   <h2 className="text-2xl font-bold text-[#001524ff]">
                     {showAddModal ? 'Add New Tour' : 'Edit Tour'}
                   </h2>
@@ -555,24 +561,23 @@ const PartnerTours = () => {
                     </div>
                   )}
 
-                  <div className="flex justify-end space-x-4 pt-6 border-t">
+                  <div className="flex justify-end space-x-4 pt-6 border-t sticky bottom-0 bg-white">
                     <button
                       type="button"
                       onClick={() => {
                         showAddModal ? setShowAddModal(false) : setShowEditModal(false);
                         setSelectedTour(null);
                       }}
-                      className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-200"
+                      className="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-200"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="px-6 py-2 bg-[#fea116ff] text-white rounded-lg hover:bg-[#e69510ff] transition-all duration-200 flex items-center space-x-2"
+                      className="px-6 py-2.5 bg-[#fea116ff] text-white rounded-lg hover:bg-[#e69510ff] transition-all duration-200 flex items-center space-x-2"
                     >
                       <span>{showAddModal ? 'Add Tour' : 'Update Tour'}</span>
-                      <FaPlus className={showAddModal ? 'block' : 'hidden'} />
-                      <FaEdit className={showAddModal ? 'hidden' : 'block'} />
+                      {showAddModal ? <FaPlus /> : <FaEdit />}
                     </button>
                   </div>
                 </form>

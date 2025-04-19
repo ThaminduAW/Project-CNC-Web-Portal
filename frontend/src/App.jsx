@@ -17,6 +17,7 @@ import PartnerReservations from "./pages/Admin/PartnerReservations";
 import AdminPartnerTours from "./pages/Admin/AdminPartnerTours";
 import Messages from "./pages/Admin/Messages";
 import AdminSettings from "./pages/Admin/AdminSettings";
+import Requests from "./pages/Admin/Requests";
 
 import PartnerDashboard from "./pages/Partners/PartnerDashboard";
 import PartnerTours from "./pages/Partners/PartnerTours";
@@ -59,10 +60,12 @@ const App = () => {
                 {/* Admin Routes */}
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
                 <Route path="/admin/partners" element={<Partners />} />
+                <Route path="/admin/requests" element={<Requests />} />
                 <Route path="/admin/reservations" element={<PartnerReservations />} />
                 <Route path="/admin/tours" element={<AdminPartnerTours />} />
                 <Route path="/admin/messages" element={<Messages />} />
                 <Route path="/admin/settings" element={<AdminSettings />} />
+                
 
                 {/* Partner Routes */}
                 <Route path="/partner/dashboard" element={<PartnerDashboard />} />

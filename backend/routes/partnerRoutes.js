@@ -1,8 +1,10 @@
 import express from "express";
-import User from "../models/User.js"; 
+import User from "../models/User.js";
 import Reservation from "../models/Reservation.js";
 import Tour from "../models/Tour.js";
 import authMiddleware from "../middleware/authMiddleware.js";
+import { getPartnerProfile, updatePartnerProfile, updatePartnerImages } from "../controllers/partnerController.js";
+import upload from "../middleware/upload.js";
 
 const router = express.Router();
 
@@ -89,5 +91,21 @@ router.get("/:id/dashboard", authMiddleware, async (req, res) => {
     });
   }
 });
+
+// Get partner profile
+router.get('/profile', authMiddleware, getPartnerProfile);
+
+// Update partner profile
+router.put('/profile', authMiddleware, updatePartnerProfile);
+
+// Update partner images
+router.put('/images', 
+  authMiddleware, 
+  upload.fields([
+    { name: 'logo', maxCount: 1 },
+    { name: 'images', maxCount: 5 }
+  ]), 
+  updatePartnerImages
+);
 
 export default router;

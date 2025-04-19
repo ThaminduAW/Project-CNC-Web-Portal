@@ -7,34 +7,34 @@ const Requests = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchRequests = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          throw new Error('No authentication token found');
-        }
-
-        const response = await fetch('http://localhost:3000/api/requests', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch requests');
-        }
-
-        const data = await response.json();
-        setRequests(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchRequests();
   }, []);
+
+  const fetchRequests = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch('http://localhost:3000/api/requests', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch requests');
+      }
+
+      const data = await response.json();
+      setRequests(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleRequestAction = async (requestId, action) => {
     try {
@@ -52,16 +52,40 @@ const Requests = () => {
       }
 
       // Refresh requests after action
-      const updatedResponse = await fetch('http://localhost:3000/api/requests', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      const data = await updatedResponse.json();
-      setRequests(data);
+      fetchRequests();
     } catch (err) {
       setError(err.message);
     }
+  };
+
+  const renderChanges = (changes, originalData) => {
+    const changedFields = [];
+    Object.keys(changes).forEach(key => {
+      if (key !== 'operatingHours' && changes[key] !== originalData[key]) {
+        changedFields.push(
+          <div key={key} className="mb-2">
+            <span className="font-semibold">{key}: </span>
+            <span className="text-red-500">{originalData[key]}</span>
+            <span className="mx-2">→</span>
+            <span className="text-green-500">{changes[key]}</span>
+          </div>
+        );
+      }
+    });
+
+    // Handle operating hours changes separately
+    if (changes.operatingHours) {
+      const hoursChanged = JSON.stringify(changes.operatingHours) !== JSON.stringify(originalData.operatingHours);
+      if (hoursChanged) {
+        changedFields.push(
+          <div key="operatingHours" className="mb-2">
+            <span className="font-semibold">Operating Hours Updated</span>
+          </div>
+        );
+      }
+    }
+
+    return changedFields;
   };
 
   if (loading) {
@@ -99,11 +123,11 @@ const Requests = () => {
     <div className="flex">
       <AdminSideBar />
       <div className="flex-1 p-8">
-        <h1 className="text-2xl font-bold mb-6">Requests</h1>
+        <h1 className="text-2xl font-bold mb-6">Partner Change Requests</h1>
         
         {requests.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-500">No requests found</p>
+            <p className="text-gray-500">No pending requests</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -113,30 +137,43 @@ const Requests = () => {
                 className="bg-white rounded-lg shadow p-6 border border-gray-200"
               >
                 <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="text-lg font-semibold">{request.title}</h3>
-                    <p className="text-gray-600 mt-1">{request.description}</p>
-                    <div className="mt-2 text-sm text-gray-500">
-                      <p>Status: <span className={`font-semibold ${
-                        request.status === 'pending' ? 'text-yellow-600' :
-                        request.status === 'approved' ? 'text-green-600' :
-                        'text-red-600'
-                      }`}>{request.status}</span></p>
-                      <p>Submitted by: {request.submittedBy}</p>
-                      <p>Date: {new Date(request.createdAt).toLocaleDateString()}</p>
+                  <div className="flex-1">
+                    <div className="flex items-center mb-4">
+                      <h3 className="text-lg font-semibold">
+                        {request.partnerId?.restaurantName || 'Unknown Restaurant'}
+                      </h3>
+                      <span className={`ml-3 px-3 py-1 rounded-full text-sm ${
+                        request.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                        request.status === 'approved' ? 'bg-green-100 text-green-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                      </span>
+                    </div>
+                    
+                    <div className="text-sm text-gray-600 mb-4">
+                      <p>Submitted by: {request.partnerId?.fullName}</p>
+                      <p>Email: {request.partnerId?.email}</p>
+                      <p>Date: {new Date(request.createdAt).toLocaleString()}</p>
+                    </div>
+
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <h4 className="font-semibold mb-2">Requested Changes:</h4>
+                      {renderChanges(request.changes, request.originalData)}
                     </div>
                   </div>
+
                   {request.status === 'pending' && (
-                    <div className="space-x-2">
+                    <div className="ml-4 space-y-2">
                       <button
                         onClick={() => handleRequestAction(request._id, 'approve')}
-                        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+                        className="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
                       >
                         Approve
                       </button>
                       <button
                         onClick={() => handleRequestAction(request._id, 'reject')}
-                        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+                        className="w-full bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
                       >
                         Reject
                       </button>

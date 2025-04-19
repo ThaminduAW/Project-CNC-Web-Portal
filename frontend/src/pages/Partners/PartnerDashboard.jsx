@@ -11,7 +11,7 @@ const PartnerDashboard = () => {
   const [dashboardData, setDashboardData] = useState({
     totalReservations: 0,
     pendingReservations: 0,
-    totalEvents: 0,
+    totalTours: 0,
     totalCustomers: 0,
     profile: {
       name: "",
@@ -35,6 +35,10 @@ const PartnerDashboard = () => {
       setLoading(true);
       const partnerId = getPartnerId();
       const token = localStorage.getItem('token');
+      
+      console.log('Debug - Partner ID:', partnerId);
+      console.log('Debug - Token exists:', !!token);
+      console.log('Debug - Request URL:', `${API_URL}/partners/${partnerId}/dashboard`);
       
       if (!partnerId) {
         setError('Partner ID not found. Please login again.');
@@ -68,164 +72,170 @@ const PartnerDashboard = () => {
 
   if (loading) {
     return (
-      <div className="flex bg-[#fdfcdcff] text-[#001524ff]">
+      <div className="min-h-screen bg-[#fdfcdcff]">
         <PartnerSideBar />
-        <div className="flex-1 p-8">
-          <div className="flex items-center justify-center h-full">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#fea116ff]"></div>
+        <main className="ml-64 min-h-screen">
+          <div className="p-8">
+            <div className="flex items-center justify-center h-full">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#fea116ff]"></div>
+            </div>
           </div>
-        </div>
+        </main>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex bg-[#fdfcdcff] text-[#001524ff]">
+      <div className="min-h-screen bg-[#fdfcdcff]">
         <PartnerSideBar />
-        <div className="flex-1 p-8">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <p className="text-red-600 text-center">{error}</p>
+        <main className="ml-64 min-h-screen">
+          <div className="p-8">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-red-600 text-center">{error}</p>
+            </div>
           </div>
-        </div>
+        </main>
       </div>
     );
   }
 
   return (
-    <div className="flex bg-[#fdfcdcff] text-[#001524ff]">
+    <div className="min-h-screen bg-[#fdfcdcff]">
       <PartnerSideBar />
-      <div className="flex-1 p-8">
-        <h1 className="text-3xl font-bold mb-8">
-          Welcome to <span className="text-[#fea116ff]">Partner Dashboard</span>
-        </h1>
-        
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Total Reservations</h3>
-                <p className="text-3xl font-bold text-[#0098c9ff]">{dashboardData.totalReservations}</p>
+      <main className="ml-64 min-h-screen">
+        <div className="p-8">
+          <h1 className="text-3xl font-bold mb-8">
+            Welcome to <span className="text-[#fea116ff]">Partner Dashboard</span>
+          </h1>
+          
+          {/* Statistics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">Total Reservations</h3>
+                  <p className="text-3xl font-bold text-[#0098c9ff]">{dashboardData.totalReservations}</p>
+                </div>
+                <FaCalendarAlt className="text-4xl text-[#0098c9ff] opacity-50" />
               </div>
-              <FaCalendarAlt className="text-4xl text-[#0098c9ff] opacity-50" />
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">Total Tours</h3>
+                  <p className="text-3xl font-bold text-green-600">{dashboardData.totalTours}</p>
+                </div>
+                <FaStore className="text-4xl text-green-600 opacity-50" />
+              </div>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">Total Customers</h3>
+                  <p className="text-3xl font-bold text-purple-600">{dashboardData.totalCustomers}</p>
+                </div>
+                <FaUsers className="text-4xl text-purple-600 opacity-50" />
+              </div>
             </div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Total Menu</h3>
-                <p className="text-3xl font-bold text-green-600">{dashboardData.totalEvents}</p>
-              </div>
-              <FaStore className="text-4xl text-green-600 opacity-50" />
-            </div>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Total Customers</h3>
-                <p className="text-3xl font-bold text-purple-600">{dashboardData.totalCustomers}</p>
-              </div>
-              <FaUsers className="text-4xl text-purple-600 opacity-50" />
-            </div>
-          </div>
-        </div>
 
-        {/* Restaurant Profile */}
-        <div className="bg-white p-6 rounded-lg shadow-lg mb-8">
-          <h2 className="text-xl font-bold mb-6 flex items-center">
-            <FaStore className="text-2xl text-[#fea116ff] mr-2" />
-            Restaurant Profile
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div className="flex items-center">
-                <FaStore className="text-gray-500 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-500">Name</p>
-                  <p className="font-semibold">{dashboardData.profile.name}</p>
+          {/* Restaurant Profile */}
+          <div className="bg-white p-6 rounded-lg shadow-lg mb-8">
+            <h2 className="text-xl font-bold mb-6 flex items-center">
+              <FaStore className="text-2xl text-[#fea116ff] mr-2" />
+              Restaurant Profile
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div className="flex items-center">
+                  <FaStore className="text-gray-500 mr-3" />
+                  <div>
+                    <p className="text-sm text-gray-500">Name</p>
+                    <p className="font-semibold">{dashboardData.profile.name}</p>
+                  </div>
+                </div>
+                <div className="flex items-center">
+                  <FaMapMarkerAlt className="text-gray-500 mr-3" />
+                  <div>
+                    <p className="text-sm text-gray-500">Address</p>
+                    <p className="font-semibold">{dashboardData.profile.address}</p>
+                  </div>
+                </div>
+                <div className="flex items-center">
+                  <FaPhone className="text-gray-500 mr-3" />
+                  <div>
+                    <p className="text-sm text-gray-500">Phone</p>
+                    <p className="font-semibold">{dashboardData.profile.phone}</p>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center">
-                <FaMapMarkerAlt className="text-gray-500 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-500">Address</p>
-                  <p className="font-semibold">{dashboardData.profile.address}</p>
+              <div className="space-y-4">
+                <div className="flex items-center">
+                  <FaEnvelope className="text-gray-500 mr-3" />
+                  <div>
+                    <p className="text-sm text-gray-500">Email</p>
+                    <p className="font-semibold">{dashboardData.profile.email}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center">
-                <FaPhone className="text-gray-500 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-500">Phone</p>
-                  <p className="font-semibold">{dashboardData.profile.phone}</p>
+                <div className="flex items-center">
+                  <FaStore className="text-gray-500 mr-3" />
+                  <div>
+                    <p className="text-sm text-gray-500">Cuisine</p>
+                    <p className="font-semibold">{dashboardData.profile.cuisine}</p>
+                  </div>
                 </div>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div className="flex items-center">
-                <FaEnvelope className="text-gray-500 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-500">Email</p>
-                  <p className="font-semibold">{dashboardData.profile.email}</p>
-                </div>
-              </div>
-              <div className="flex items-center">
-                <FaStore className="text-gray-500 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-500">Cuisine</p>
-                  <p className="font-semibold">{dashboardData.profile.cuisine}</p>
-                </div>
-              </div>
-              <div className="flex items-center">
-                <FaStar className="text-gray-500 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-500">Rating</p>
-                  <p className="font-semibold">{dashboardData.profile.rating} / 5</p>
+                <div className="flex items-center">
+                  <FaStar className="text-gray-500 mr-3" />
+                  <div>
+                    <p className="text-sm text-gray-500">Rating</p>
+                    <p className="font-semibold">{dashboardData.profile.rating} / 5</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Recent Activities */}
-        <div className="bg-white p-6 rounded-lg shadow-lg">
-          <h2 className="text-xl font-bold mb-6 flex items-center">
-            <FaCalendarAlt className="text-2xl text-[#fea116ff] mr-2" />
-            Recent Activities
-          </h2>
-          <div className="space-y-4">
-            {dashboardData.recentActivities.map((activity, index) => (
-              <div 
-                key={index}
-                className="flex items-center justify-between border-b pb-4 last:border-b-0 hover:bg-gray-50 p-2 rounded-lg transition-colors duration-200"
-              >
-                <div>
-                  <p className="font-semibold text-gray-800">
-                    {activity.type === "reservation" ? (
-                      <span className="text-green-600">✓ {activity.description}</span>
-                    ) : (
-                      <span className="text-orange-500">• {activity.description}</span>
-                    )}
-                  </p>
-                  <p className="text-gray-600">{activity.time}</p>
+          {/* Recent Activities */}
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-xl font-bold mb-6 flex items-center">
+              <FaCalendarAlt className="text-2xl text-[#fea116ff] mr-2" />
+              Recent Activities
+            </h2>
+            <div className="space-y-4">
+              {dashboardData.recentActivities.map((activity, index) => (
+                <div 
+                  key={index}
+                  className="flex items-center justify-between border-b pb-4 last:border-b-0 hover:bg-gray-50 p-2 rounded-lg transition-colors duration-200"
+                >
+                  <div>
+                    <p className="font-semibold text-gray-800">
+                      {activity.type === "reservation" ? (
+                        <span className="text-green-600">✓ {activity.description}</span>
+                      ) : (
+                        <span className="text-orange-500">• {activity.description}</span>
+                      )}
+                    </p>
+                    <p className="text-gray-600">{activity.time}</p>
+                  </div>
+                  <span className={`text-sm px-3 py-1 rounded-full ${
+                    activity.status === "pending" 
+                      ? "bg-yellow-100 text-yellow-800" 
+                      : "bg-green-100 text-green-800"
+                  }`}>
+                    {activity.status}
+                  </span>
                 </div>
-                <span className={`text-sm px-3 py-1 rounded-full ${
-                  activity.status === "pending" 
-                    ? "bg-yellow-100 text-yellow-800" 
-                    : "bg-green-100 text-green-800"
-                }`}>
-                  {activity.status}
-                </span>
-              </div>
-            ))}
-            {dashboardData.recentActivities.length === 0 && (
-              <div className="text-center py-8">
-                <p className="text-gray-500">No recent activities</p>
-              </div>
-            )}
+              ))}
+              {dashboardData.recentActivities.length === 0 && (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">No recent activities</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };
