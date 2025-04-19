@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { FaUser, FaUsers, FaCalendarAlt, FaEnvelope, FaCog, FaSignOutAlt, FaHome, FaComments, FaBuilding, FaCalendarCheck, FaClipboardList } from "react-icons/fa";
+import { FaUser, FaUsers, FaCalendarAlt, FaEnvelope, FaCog, FaSignOutAlt, FaHome, FaComments, FaBuilding, FaCalendarCheck, FaClipboardList, FaBell } from "react-icons/fa";
 import logo from "../assets/logo.png"; // Ensure path is correct
 import defaultProfile from "../assets/default-profile.png"; // Default profile image
 
@@ -10,6 +10,7 @@ const AdminSideBar = () => {
   const [admin, setAdmin] = useState({ fullName: "Admin", role: "Admin", profilePhoto: defaultProfile });
   const [unreadCount, setUnreadCount] = useState(0);
   const [showBadge, setShowBadge] = useState(true);
+  const [pendingRequests, setPendingRequests] = useState(0);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -23,6 +24,35 @@ const AdminSideBar = () => {
       navigate("/signin"); // Redirect if not admin
     }
   }, [navigate]);
+
+  // Fetch pending requests count
+  useEffect(() => {
+    const fetchPendingRequests = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const response = await fetch("http://localhost:3000/api/requests", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) throw new Error("Failed to fetch requests");
+
+        const data = await response.json();
+        const pendingCount = data.filter(req => req.status === 'pending').length;
+        setPendingRequests(pendingCount);
+      } catch (error) {
+        console.error("Error fetching pending requests:", error);
+      }
+    };
+
+    fetchPendingRequests();
+    // Poll for new requests every minute
+    const interval = setInterval(fetchPendingRequests, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Reset badge when navigating to messages
   useEffect(() => {
@@ -70,10 +100,10 @@ const AdminSideBar = () => {
   const menuItems = [
     { path: "/admin/dashboard", icon: FaHome, label: "Dashboard" },
     { path: "/admin/partners", icon: FaBuilding, label: "Partners" },
+    { path: "/admin/requests", icon: FaBell, label: "Requests", badge: pendingRequests },
+    { path: "/admin/tours", icon: FaCalendarAlt, label: "Tours" },
     { path: "/admin/reservations", icon: FaCalendarCheck, label: "Reservations" },
-    { path: "/admin/events", icon: FaCalendarAlt, label: "Menu" },
     { path: "/admin/messages", icon: FaComments, label: "Messages", badge: showBadge && unreadCount },
-    { path: "/admin/requests", icon: FaClipboardList, label: "Requests" },
     { path: "/admin/settings", icon: FaCog, label: "Settings" },
   ];
 

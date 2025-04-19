@@ -16,7 +16,8 @@ const PartnerSideBar = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [showBadge, setShowBadge] = useState(true);
 
-  useEffect(() => {
+  // Function to update partner details from localStorage
+  const updatePartnerDetails = () => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (user && user.role === "Partner") {
       setPartner({
@@ -28,7 +29,27 @@ const PartnerSideBar = () => {
     } else {
       navigate("/signin");
     }
+  };
+
+  // Initial load and setup storage event listener
+  useEffect(() => {
+    updatePartnerDetails();
+
+    // Listen for storage changes
+    const handleStorageChange = (e) => {
+      if (e.key === "user") {
+        updatePartnerDetails();
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, [navigate]);
+
+  // Also update when location changes (in case settings page updates localStorage)
+  useEffect(() => {
+    updatePartnerDetails();
+  }, [location]);
 
   // Reset badge when navigating to messages
   useEffect(() => {
@@ -76,14 +97,14 @@ const PartnerSideBar = () => {
   const menuItems = [
     { path: "/partner/dashboard", icon: FaHome, label: "Dashboard" },
     { path: "/partner/events", icon: FaUtensils, label: "Events" },
-    { path: "/partner/menu", icon: FaCalendarAlt, label: "Menu" },
+    { path: "/partner/tours", icon: FaCalendarAlt, label: "Tours" },
     { path: "/partner/reservations", icon: FaCalendarCheck, label: "Reservations" },
     { path: "/partner/messages", icon: FaComments, label: "Messages", badge: showBadge && unreadCount },
     { path: "/partner/settings", icon: FaCog, label: "Settings" },
   ];
 
   return (
-    <div className="h-screen w-64 bg-[#001524ff] text-white flex flex-col shadow-lg">
+    <div className="fixed top-0 left-0 h-screen w-64 bg-[#001524ff] text-white flex flex-col overflow-hidden">
       {/* Logo & Name */}
       <div className="flex items-center justify-center p-4 border-b border-gray-700">
         <img src={logo} alt="CNC Logo" className="h-10 mr-2" />
@@ -98,7 +119,7 @@ const PartnerSideBar = () => {
       </div>
 
       {/* Navigation Menu */}
-      <nav className="flex-1 mt-4">
+      <nav className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
         {menuItems.map((item) => (
           <div key={item.path} className="relative">
             <Link

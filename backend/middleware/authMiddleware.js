@@ -3,7 +3,8 @@ import User from "../models/User.js";
 
 const authMiddleware = async (req, res, next) => {
   try {
-    const authHeader = req.header("Authorization");
+    // Try to get token from Authorization header
+    const authHeader = req.headers.authorization || req.header("Authorization");
     if (!authHeader) {
       return res.status(401).json({ message: "Access denied. No token provided." });
     }
@@ -36,7 +37,7 @@ const authMiddleware = async (req, res, next) => {
 
     // Set complete user object in request
     req.user = {
-      _id: user._id,
+      id: user._id,
       role: user.role,
       approved: user.approved
     };

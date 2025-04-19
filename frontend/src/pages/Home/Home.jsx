@@ -12,6 +12,7 @@ const Home = () => {
   const [restaurants, setRestaurants] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [tours, setTours] = useState([]);
 
   useEffect(() => {
     const fetchRestaurants = async () => {
@@ -30,29 +31,20 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    const fetchMenuItems = async () => {
+    const fetchTours = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/events");
+        const response = await fetch("http://localhost:3000/api/tours");
+        if (!response.ok) {
+          throw new Error('Failed to fetch tours');
+        }
         const data = await response.json();
-        // Filter and transform menu items
-        const featuredItems = data
-          .filter(item => item.status === 'active')
-          .slice(0, 4)
-          .map(item => ({
-            id: item._id,
-            title: item.title,
-            description: item.description,
-            price: item.price,
-            image: item.image,
-            restaurant: item.partner?.restaurantName || 'Unknown Restaurant'
-          }));
-        setMenuItems(featuredItems);
+        setTours(data);
       } catch (error) {
-        console.error("Error fetching menu items:", error);
+        console.error('Error fetching tours:', error);
       }
     };
 
-    fetchMenuItems();
+    fetchTours();
   }, []);
 
   useEffect(() => {

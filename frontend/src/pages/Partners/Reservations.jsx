@@ -244,9 +244,11 @@ const Reservations = () => {
 
   if (loading) {
     return (
-      <div className="flex bg-[#fdfcdcff] text-[#001524ff]">
-        <PartnerSideBar />
-        <div className="flex-1 p-8">
+      <div className="flex min-h-screen bg-[#fdfcdcff] relative">
+        <div className="fixed left-0 top-0 h-full z-30">
+          <PartnerSideBar />
+        </div>
+        <div className="flex-1 ml-[240px] p-6 md:p-8 overflow-x-hidden min-h-screen">
           <div className="flex items-center justify-center h-full">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#fea116ff]"></div>
           </div>
@@ -257,9 +259,11 @@ const Reservations = () => {
 
   if (error) {
     return (
-      <div className="flex bg-[#fdfcdcff] text-[#001524ff]">
-        <PartnerSideBar />
-        <div className="flex-1 p-8">
+      <div className="flex min-h-screen bg-[#fdfcdcff] relative">
+        <div className="fixed left-0 top-0 h-full z-30">
+          <PartnerSideBar />
+        </div>
+        <div className="flex-1 ml-[240px] p-6 md:p-8 overflow-x-hidden min-h-screen">
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <p className="text-red-600 text-center">{error}</p>
           </div>
@@ -269,9 +273,11 @@ const Reservations = () => {
   }
 
   return (
-    <div className="flex bg-[#fdfcdcff] text-[#001524ff]">
-      <PartnerSideBar />
-      <div className="flex-1 p-8">
+    <div className="flex min-h-screen bg-[#fdfcdcff] relative">
+      <div className="fixed left-0 top-0 h-full z-30">
+        <PartnerSideBar />
+      </div>
+      <div className="flex-1 ml-[240px] p-6 md:p-8 overflow-x-hidden min-h-screen">
         <h1 className="text-3xl font-bold mb-8">
           Manage <span className="text-[#fea116ff]">Reservations</span>
         </h1>

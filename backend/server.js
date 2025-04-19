@@ -6,12 +6,14 @@ import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
 import authRoutes from "./routes/authRoutes.js";
-import eventRoutes from "./routes/eventRoutes.js";
+import tourRoutes from "./routes/tourRoutes.js";
 import reservationRoutes from "./routes/reservationRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
 import partnerRoutes from "./routes/partnerRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import availabilityRoutes from "./routes/availability.js";
+import userRoutes from "./routes/userRoutes.js";
+import requestRoutes from './routes/requestRoutes.js';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -21,24 +23,35 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Create uploads directory if it doesn't exist
-const uploadsDir = path.join(__dirname, "uploads", "events");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+const uploadsDir = path.join(__dirname, "uploads");
+const toursUploadsDir = path.join(uploadsDir, "tours");
+if (!fs.existsSync(toursUploadsDir)) {
+  fs.mkdirSync(toursUploadsDir, { recursive: true });
 }
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173', // Your frontend URL
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use(express.urlencoded({ extended: true }));
+
+// Serve static files from the uploads directory
+app.use("/uploads", express.static(uploadsDir));
 
 // Routes
 app.use("/api/auth", authRoutes);
-app.use("/api/events", eventRoutes);
+app.use("/api/tours", tourRoutes);
 app.use("/api/reservations", reservationRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/partners", partnerRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/availability", availabilityRoutes);
+app.use("/api/users", userRoutes);
+app.use('/api/requests', requestRoutes);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {

@@ -1,25 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { FaCalendarAlt, FaClock, FaMapMarkerAlt, FaStore } from 'react-icons/fa';
+import { getImageUrl, handleImageError } from '../../utils/imageUtils';
 
-const Events = () => {
-  const [events, setEvents] = useState([]);
+const Tours = () => {
+  const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchEvents = async () => {
+    const fetchTours = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/events');
+        const response = await fetch('http://localhost:3000/api/tours');
         if (!response.ok) {
-          throw new Error('Failed to fetch events');
+          throw new Error('Failed to fetch tours');
         }
         const data = await response.json();
-        setEvents(data);
+        setTours(data);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -27,7 +28,7 @@ const Events = () => {
       }
     };
 
-    fetchEvents();
+    fetchTours();
   }, []);
 
   const handleViewMenu = (eventId) => {
@@ -78,9 +79,9 @@ const Events = () => {
 
         {/* Events Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {events.map((event) => (
+          {tours.map((tour) => (
             <motion.div
-              key={event._id}
+              key={tour._id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
@@ -88,47 +89,50 @@ const Events = () => {
             >
               <div className="relative h-48">
                 <img
-                  src={`http://localhost:3000${event.image}`}
-                  alt={event.title}
+                  src={getImageUrl(tour.image)}
+                  alt={tour.title}
                   className="w-full h-full object-cover"
+                  onError={handleImageError}
                 />
                 <div className="absolute top-4 right-4 bg-[#fea116ff] text-white px-3 py-1 rounded-full">
-                  ${event.price}
+                  ${tour.price}
                 </div>
               </div>
               
               <div className="p-6">
-                <h3 className="text-xl font-semibold text-[#001524ff] mb-2">{event.title}</h3>
-                <p className="text-gray-600 mb-4">{event.description}</p>
+                <h3 className="text-xl font-semibold text-[#001524ff] mb-2">{tour.title}</h3>
+                <p className="text-gray-600 mb-4">{tour.briefDescription}</p>
                 
                 <div className="space-y-2">
                   <div className="flex items-center text-gray-600">
+                    <FaClock className="w-5 h-5 mr-2 text-[#fea116ff]" />
+                    Duration: {tour.timeDuration}
+                  </div>
+                  
+                  <div className="flex items-center text-gray-600">
                     <FaStore className="w-5 h-5 mr-2 text-[#fea116ff]" />
-                    {event.partner.restaurantName}
+                    {tour.partner?.restaurantName || 'Restaurant name not available'}
                   </div>
                   
                   <div className="flex items-center text-gray-600">
                     <FaCalendarAlt className="w-5 h-5 mr-2 text-[#fea116ff]" />
-                    Date: {new Date(event.date).toLocaleDateString()}
-                  </div>
-                  
-                  <div className="flex items-center text-gray-600">
-                    <FaClock className="w-5 h-5 mr-2 text-[#fea116ff]" />
-                    To: {new Date(event.availableTo).toLocaleDateString()}
+                    Date: {new Date(tour.date).toLocaleDateString()}
                   </div>
                   
                   <div className="flex items-center text-gray-600">
                     <FaMapMarkerAlt className="w-5 h-5 mr-2 text-[#fea116ff]" />
-                    {event.location}
+                    {tour.location}
                   </div>
                 </div>
 
-                <button 
-                  onClick={() => handleViewMenu(event._id)}
-                  className="mt-6 w-full bg-[#fea116ff] text-white py-2 px-4 rounded-md hover:bg-[#e89115ff] transition duration-300"
-                >
-                  View Menu
-                </button>
+                <div className="flex justify-between items-center mt-6">
+                  <Link 
+                    to={`/tours/${tour._id}`}
+                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                  >
+                    View Details
+                  </Link>
+                </div>
               </div>
             </motion.div>
           ))}
@@ -139,4 +143,4 @@ const Events = () => {
   );
 };
 
-export default Events; 
+export default Tours; 

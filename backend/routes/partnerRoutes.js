@@ -1,8 +1,10 @@
 import express from "express";
-import User from "../models/User.js"; 
+import User from "../models/User.js";
 import Reservation from "../models/Reservation.js";
-import Event from "../models/Event.js";
+import Tour from "../models/Tour.js";
 import authMiddleware from "../middleware/authMiddleware.js";
+import { getPartnerProfile, updatePartnerProfile, updatePartnerImages } from "../controllers/partnerController.js";
+import upload from "../middleware/upload.js";
 
 const router = express.Router();
 
@@ -34,9 +36,9 @@ router.get("/:id/dashboard", authMiddleware, async (req, res) => {
     const totalReservations = await Reservation.countDocuments({ restaurant: partner._id });
     console.log("Total reservations:", totalReservations);
 
-    // Get total events for this partner
-    const totalEvents = await Event.countDocuments({ partner: partner._id });
-    console.log("Total events:", totalEvents);
+    // Get total tours for this partner
+    const totalTours = await Tour.countDocuments({ partner: partner._id });
+    console.log("Total tours:", totalTours);
 
     // Get unique customers (based on email) who made reservations
     const uniqueCustomers = await Reservation.distinct('email', { 
@@ -62,7 +64,7 @@ router.get("/:id/dashboard", authMiddleware, async (req, res) => {
 
     const dashboardData = {
       totalReservations,
-      totalEvents,
+      totalTours,
       totalCustomers,
       profile: {
         name: partner.restaurantName,
@@ -89,5 +91,21 @@ router.get("/:id/dashboard", authMiddleware, async (req, res) => {
     });
   }
 });
+
+// Get partner profile
+router.get('/profile', authMiddleware, getPartnerProfile);
+
+// Update partner profile
+router.put('/profile', authMiddleware, updatePartnerProfile);
+
+// Update partner images
+router.put('/images', 
+  authMiddleware, 
+  upload.fields([
+    { name: 'logo', maxCount: 1 },
+    { name: 'images', maxCount: 5 }
+  ]), 
+  updatePartnerImages
+);
 
 export default router;
