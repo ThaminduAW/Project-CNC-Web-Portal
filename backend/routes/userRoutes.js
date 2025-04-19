@@ -9,12 +9,11 @@ const router = express.Router();
 // Get user profile
 router.get("/profile", authMiddleware, async (req, res) => {
   try {
-    console.log('Profile request received, user ID:', req.user.id);
     // Get user from auth middleware
     const user = await User.findById(req.user.id);
-    
+
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     // Return different fields based on user role
@@ -24,10 +23,9 @@ router.get("/profile", authMiddleware, async (req, res) => {
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
-          phone: user.phone
-        }
+          phone: user.phone,
+        },
       };
-      console.log('Sending admin data:', adminData);
       res.json(adminData);
     } else {
       const partnerData = {
@@ -39,15 +37,15 @@ router.get("/profile", authMiddleware, async (req, res) => {
           email: user.email,
           url: user.url,
           cuisine: user.cuisine,
-          operatingHours: user.operatingHours
-        }
+          operatingHours: user.operatingHours,
+        },
       };
-      console.log('Sending partner data:', partnerData);
+      console.log("Sending partner data:", partnerData);
       res.json(partnerData);
     }
   } catch (error) {
-    console.error('Profile fetch error:', error);
-    res.status(500).json({ message: 'Server error. Please try again later.' });
+    console.error("Profile fetch error:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
 
@@ -56,33 +54,43 @@ router.put("/:id", authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     // Check if the user is updating their own profile
     if (req.user.id.toString() !== req.params.id) {
-      return res.status(403).json({ message: 'Not authorized to update this profile' });
+      return res
+        .status(403)
+        .json({ message: "Not authorized to update this profile" });
     }
 
     // If email is being updated, check if it's already in use
     if (req.body.email && req.body.email !== user.email) {
       const emailExists = await User.findOne({ email: req.body.email });
       if (emailExists) {
-        return res.status(400).json({ message: 'Email already in use' });
+        return res.status(400).json({ message: "Email already in use" });
       }
     }
 
     // Update fields based on user role
     if (user.role === "Admin") {
       const { firstName, lastName, phone, email } = req.body;
-      
+
       if (firstName) user.firstName = firstName;
       if (lastName) user.lastName = lastName;
       if (phone) user.phone = phone;
       if (email) user.email = email;
     } else {
-      const { fullName, restaurantName, address, phone, url, cuisine, operatingHours } = req.body;
-      
+      const {
+        fullName,
+        restaurantName,
+        address,
+        phone,
+        url,
+        cuisine,
+        operatingHours,
+      } = req.body;
+
       if (fullName) user.fullName = fullName;
       if (restaurantName) user.restaurantName = restaurantName;
       if (address) user.address = address;
@@ -92,7 +100,7 @@ router.put("/:id", authMiddleware, async (req, res) => {
       if (operatingHours) {
         user.operatingHours = {
           ...user.operatingHours,
-          ...operatingHours
+          ...operatingHours,
         };
       }
     }
@@ -103,10 +111,10 @@ router.put("/:id", authMiddleware, async (req, res) => {
     let token;
     if (req.body.email && req.body.email !== user.email) {
       token = jwt.sign(
-        { 
+        {
           id: user._id.toString(),
           role: user.role,
-          approved: user.approved 
+          approved: user.approved,
         },
         process.env.JWT_SECRET,
         { expiresIn: "2h" }
@@ -116,13 +124,13 @@ router.put("/:id", authMiddleware, async (req, res) => {
     // Return updated user data based on role
     if (user.role === "Admin") {
       const response = {
-        message: 'Profile updated successfully',
+        message: "Profile updated successfully",
         user: {
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
-          phone: user.phone
-        }
+          phone: user.phone,
+        },
       };
 
       if (token) {
@@ -131,8 +139,8 @@ router.put("/:id", authMiddleware, async (req, res) => {
 
       res.json(response);
     } else {
-      res.json({ 
-        message: 'Profile updated successfully',
+      res.json({
+        message: "Profile updated successfully",
         user: {
           fullName: user.fullName,
           restaurantName: user.restaurantName,
@@ -141,13 +149,13 @@ router.put("/:id", authMiddleware, async (req, res) => {
           email: user.email,
           url: user.url,
           cuisine: user.cuisine,
-          operatingHours: user.operatingHours
-        }
+          operatingHours: user.operatingHours,
+        },
       });
     }
   } catch (error) {
-    console.error('Profile update error:', error);
-    res.status(500).json({ message: 'Server error. Please try again later.' });
+    console.error("Profile update error:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
 
@@ -158,13 +166,13 @@ router.put("/change-password", authMiddleware, async (req, res) => {
     const user = await User.findById(req.user.id);
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     // Verify current password
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Current password is incorrect' });
+      return res.status(400).json({ message: "Current password is incorrect" });
     }
 
     // Hash new password
@@ -172,11 +180,11 @@ router.put("/change-password", authMiddleware, async (req, res) => {
     user.password = hashedPassword;
     await user.save();
 
-    res.json({ message: 'Password updated successfully' });
+    res.json({ message: "Password updated successfully" });
   } catch (error) {
-    console.error('Password change error:', error);
-    res.status(500).json({ message: 'Server error. Please try again later.' });
+    console.error("Password change error:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
 
-export default router; 
+export default router;

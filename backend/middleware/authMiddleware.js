@@ -18,7 +18,6 @@ const authMiddleware = async (req, res, next) => {
 
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log('Decoded token:', decoded);
 
     // For admin users, we still need to fetch from database to get full profile
     const user = await User.findById(decoded.id);
