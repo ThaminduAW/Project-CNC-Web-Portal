@@ -3,8 +3,12 @@ import Tour from "../models/Tour.js";
 import { verifyToken } from '../middleware/auth.js';
 import upload from '../middleware/upload.js';
 import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 
 const router = express.Router();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Get all tours
 router.get("/", async (req, res) => {
@@ -46,16 +50,27 @@ router.get("/:id", async (req, res) => {
 // Create new tour
 router.post("/", verifyToken, upload.single('image'), async (req, res) => {
   try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'Image is required' });
+    }
+
     const tourData = {
       ...req.body,
       partner: req.user.id,
-      image: req.file ? `/uploads/tours/${req.file.filename}` : null
+      image: `/uploads/tours/${req.file.filename}`
     };
     
     const tour = new Tour(tourData);
     const newTour = await tour.save();
     res.status(201).json(newTour);
   } catch (error) {
+    // If there was an error and a file was uploaded, delete it
+    if (req.file) {
+      const filePath = path.join(__dirname, '..', 'uploads', 'tours', req.file.filename);
+      fs.unlink(filePath, (err) => {
+        if (err) console.error('Error deleting file:', err);
+      });
+    }
     res.status(400).json({ message: error.message });
   }
 });
@@ -78,6 +93,14 @@ router.put("/:id", verifyToken, upload.single('image'), async (req, res) => {
       image: req.file ? `/uploads/tours/${req.file.filename}` : tour.image
     };
 
+    // If a new image is uploaded, delete the old one
+    if (req.file && tour.image) {
+      const oldImagePath = path.join(__dirname, '..', tour.image);
+      fs.unlink(oldImagePath, (err) => {
+        if (err && err.code !== 'ENOENT') console.error('Error deleting old image:', err);
+      });
+    }
+
     const updatedTour = await Tour.findByIdAndUpdate(
       req.params.id,
       updateData,
@@ -86,6 +109,13 @@ router.put("/:id", verifyToken, upload.single('image'), async (req, res) => {
 
     res.json(updatedTour);
   } catch (error) {
+    // If there was an error and a new file was uploaded, delete it
+    if (req.file) {
+      const filePath = path.join(__dirname, '..', 'uploads', 'tours', req.file.filename);
+      fs.unlink(filePath, (err) => {
+        if (err) console.error('Error deleting file:', err);
+      });
+    }
     res.status(400).json({ message: error.message });
   }
 });
@@ -101,6 +131,14 @@ router.delete("/:id", verifyToken, async (req, res) => {
     // Check if the user is the tour owner
     if (tour.partner.toString() !== req.user.id) {
       return res.status(403).json({ message: 'Not authorized to delete this tour' });
+    }
+
+    // Delete the tour's image if it exists
+    if (tour.image) {
+      const imagePath = path.join(__dirname, '..', tour.image);
+      fs.unlink(imagePath, (err) => {
+        if (err && err.code !== 'ENOENT') console.error('Error deleting image:', err);
+      });
     }
 
     await Tour.findByIdAndDelete(req.params.id);

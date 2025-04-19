@@ -21,16 +21,19 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Create uploads directory if it doesn't exist
-const uploadsDir = path.join(__dirname, "uploads", "tours");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+const uploadsDir = path.join(__dirname, "uploads");
+const toursUploadsDir = path.join(uploadsDir, "tours");
+if (!fs.existsSync(toursUploadsDir)) {
+  fs.mkdirSync(toursUploadsDir, { recursive: true });
 }
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// Serve static files from the uploads directory
+app.use("/uploads", express.static(uploadsDir));
 
 // Routes
 app.use("/api/auth", authRoutes);

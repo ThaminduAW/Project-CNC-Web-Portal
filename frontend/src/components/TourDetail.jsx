@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { getImageUrl, handleImageError } from '../utils/imageUtils';
 
 const TourDetail = () => {
   const { id } = useParams();
@@ -45,25 +46,50 @@ const TourDetail = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
             <img
-              src={tour.image}
+              src={getImageUrl(tour.image)}
               alt={tour.title}
               className="w-full h-64 object-cover rounded-lg"
+              onError={handleImageError}
             />
           </div>
           <div>
-            <p className="text-gray-600 mb-4">{tour.description}</p>
+            <div className="mb-4">
+              <h2 className="text-xl font-semibold mb-2">Brief Description</h2>
+              <p className="text-gray-600">{tour.briefDescription}</p>
+            </div>
+            
+            <div className="mb-4">
+              <h2 className="text-xl font-semibold mb-2">Detailed Description</h2>
+              <p className="text-gray-600">{tour.detailedDescription}</p>
+            </div>
+
+            <div className="mb-4">
+              <span className="font-semibold">Time Duration:</span> {tour.timeDuration}
+            </div>
+
             <div className="mb-4">
               <span className="font-semibold">Price:</span> ${tour.price}
             </div>
+
             <div className="mb-4">
               <span className="font-semibold">Date:</span> {new Date(tour.date).toLocaleDateString()}
             </div>
+
             <div className="mb-4">
               <span className="font-semibold">Location:</span> {tour.location}
             </div>
+
+            {tour.optionalDetails && (
+              <div className="mb-4">
+                <h2 className="text-xl font-semibold mb-2">Additional Information</h2>
+                <p className="text-gray-600">{tour.optionalDetails}</p>
+              </div>
+            )}
+
             <div className="mb-4">
               <span className="font-semibold">Partner:</span> {tour.partner?.restaurantName || 'Unknown Partner'}
             </div>
+
             <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
               Book Now
             </button>

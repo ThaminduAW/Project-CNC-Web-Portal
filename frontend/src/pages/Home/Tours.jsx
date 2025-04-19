@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { FaCalendarAlt, FaClock, FaMapMarkerAlt, FaStore } from 'react-icons/fa';
+import { getImageUrl, handleImageError } from '../../utils/imageUtils';
 
 const Tours = () => {
   const [tours, setTours] = useState([]);
@@ -88,9 +89,10 @@ const Tours = () => {
             >
               <div className="relative h-48">
                 <img
-                  src={tour.image}
+                  src={getImageUrl(tour.image)}
                   alt={tour.title}
                   className="w-full h-full object-cover"
+                  onError={handleImageError}
                 />
                 <div className="absolute top-4 right-4 bg-[#fea116ff] text-white px-3 py-1 rounded-full">
                   ${tour.price}
@@ -99,9 +101,14 @@ const Tours = () => {
               
               <div className="p-6">
                 <h3 className="text-xl font-semibold text-[#001524ff] mb-2">{tour.title}</h3>
-                <p className="text-gray-600 mb-4">{tour.description}</p>
+                <p className="text-gray-600 mb-4">{tour.briefDescription}</p>
                 
                 <div className="space-y-2">
+                  <div className="flex items-center text-gray-600">
+                    <FaClock className="w-5 h-5 mr-2 text-[#fea116ff]" />
+                    Duration: {tour.timeDuration}
+                  </div>
+                  
                   <div className="flex items-center text-gray-600">
                     <FaStore className="w-5 h-5 mr-2 text-[#fea116ff]" />
                     {tour.partner?.restaurantName || 'Restaurant name not available'}
@@ -110,11 +117,6 @@ const Tours = () => {
                   <div className="flex items-center text-gray-600">
                     <FaCalendarAlt className="w-5 h-5 mr-2 text-[#fea116ff]" />
                     Date: {new Date(tour.date).toLocaleDateString()}
-                  </div>
-                  
-                  <div className="flex items-center text-gray-600">
-                    <FaClock className="w-5 h-5 mr-2 text-[#fea116ff]" />
-                    To: {new Date(tour.availableTo).toLocaleDateString()}
                   </div>
                   
                   <div className="flex items-center text-gray-600">
