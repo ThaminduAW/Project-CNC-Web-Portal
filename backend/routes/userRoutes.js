@@ -12,7 +12,6 @@ router.get("/profile", authMiddleware, async (req, res) => {
     console.log('Profile request received, user ID:', req.user.id);
     // Get user from auth middleware
     const user = await User.findById(req.user.id);
-    console.log('Found user:', user);
     
     if (!user) {
       return res.status(404).json({ message: 'User not found' });

@@ -23,7 +23,6 @@ const authMiddleware = async (req, res, next) => {
 
     // For admin users, we still need to fetch from database to get full profile
     const user = await User.findById(decoded.id);
-    console.log('Found user:', user);
     
     if (!user) {
       return res.status(401).json({ message: "User not found." });
