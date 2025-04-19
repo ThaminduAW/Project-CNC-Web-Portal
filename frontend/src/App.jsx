@@ -8,19 +8,18 @@ import ResDetails from "./pages/Home/ResDetails";
 import Reservation from "./pages/Home/Reservation";
 import About from "./pages/Home/About";
 import Contact from "./pages/Home/Contact";
-import Events from "./pages/Home/Events";
-import MenuDetail from "./components/MenuDetail";
+import Tours from "./pages/Home/Tours";
+import TourDetail from "./components/TourDetail";
 
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import Partners from "./pages/Admin/Partners";
 import PartnerReservations from "./pages/Admin/PartnerReservations";
-import AdminPartnerEvents from "./pages/Admin/AdminPartnerEvents";
+import AdminPartnerTours from "./pages/Admin/AdminPartnerTours";
 import Messages from "./pages/Admin/Messages";
 import AdminSettings from "./pages/Admin/AdminSettings";
 
 import PartnerDashboard from "./pages/Partners/PartnerDashboard";
-import PartnerMenu from "./pages/Partners/PartnerMenu";
-import PartnerEvents from "./pages/Partners/PartnerEvents";
+import PartnerTours from "./pages/Partners/PartnerTours";
 import PartnerMessages from "./pages/Partners/PartnerMessages";
 import PartnerSettings from "./pages/Partners/PartnerSettings";
 import Reservations from "./pages/Partners/Reservations";
@@ -51,8 +50,8 @@ const App = () => {
                 <Route path="/" element={<Home />} />
                 <Route path="/restaurants" element={<Restaurants />} />
                 <Route path="/restaurant-details" element={<ResDetails />} />
-                <Route path="/events" element={<Events />} />
-                <Route path="/menu/:id" element={<MenuDetail />} />
+                <Route path="/tours" element={<Tours />} />
+                <Route path="/tours/:id" element={<TourDetail />} />
                 <Route path="/reservation" element={<Reservation />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
@@ -61,14 +60,13 @@ const App = () => {
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
                 <Route path="/admin/partners" element={<Partners />} />
                 <Route path="/admin/reservations" element={<PartnerReservations />} />
-                <Route path="/admin/events" element={<AdminPartnerEvents />} />
+                <Route path="/admin/tours" element={<AdminPartnerTours />} />
                 <Route path="/admin/messages" element={<Messages />} />
                 <Route path="/admin/settings" element={<AdminSettings />} />
 
                 {/* Partner Routes */}
                 <Route path="/partner/dashboard" element={<PartnerDashboard />} />
-                <Route path="/partner/menu" element={<PartnerMenu />} />
-                <Route path="/partner/events" element={<PartnerEvents />} />
+                <Route path="/partner/tours" element={<PartnerTours />} />
                 <Route path="/partner/reservations" element={<Reservations />} />
                 <Route path="/partner/messages" element={<PartnerMessages />} />
                 <Route path="/partner/settings" element={<PartnerSettings />} />

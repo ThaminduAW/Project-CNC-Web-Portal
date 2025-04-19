@@ -293,6 +293,9 @@ const Partners = () => {
                 <th className="p-3">Contact Person</th>
                 <th className="p-3">Email</th>
                 <th className="p-3">Phone</th>
+                <th className="p-3">Address</th>
+                <th className="p-3">Restaurant URL</th>
+                <th className="p-3">Registration Date</th>
                 <th className="p-3">Status</th>
                 <th className="p-3">Actions</th>
               </tr>
@@ -305,6 +308,20 @@ const Partners = () => {
                     <td className="p-3">{partner.fullName}</td>
                     <td className="p-3">{partner.email}</td>
                     <td className="p-3">{partner.phone || "N/A"}</td>
+                    <td className="p-3">{partner.address || "N/A"}</td>
+                    <td className="p-3">
+                      <a 
+                        href={partner.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-[#0098c9ff] hover:text-[#0087b8ff] break-all"
+                      >
+                        {partner.url}
+                      </a>
+                    </td>
+                    <td className="p-3">
+                      {partner.createdAt ? new Date(partner.createdAt).toLocaleDateString() : "N/A"}
+                    </td>
                     <td className="p-3">
                       {partner.approved ? (
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">

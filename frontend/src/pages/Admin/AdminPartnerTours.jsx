@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from 'react';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 import AdminSideBar from "../../components/AdminSideBar";
 
-const AdminPartnerEvents = () => {
-  const [events, setEvents] = useState([]);
+const AdminPartnerTours = () => {
+  const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedRestaurant, setSelectedRestaurant] = useState("all");
@@ -13,32 +14,16 @@ const AdminPartnerEvents = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
 
-  // Fetch partner events
+  // Fetch partner tours
   useEffect(() => {
-    const fetchEvents = async () => {
+    const fetchTours = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/events");
-        const data = await response.json();
-
+        const response = await fetch("http://localhost:3000/api/tours");
         if (!response.ok) {
-          throw new Error(data.message || "Failed to fetch events");
+          throw new Error('Failed to fetch tours');
         }
-
-        // Transform the data to match our frontend structure
-        const transformedEvents = data.map(event => ({
-          _id: event._id,
-          name: event.title,
-          restaurant: event.partner?.restaurantName || 'Unknown Restaurant',
-          date: event.date,
-          time: new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          capacity: event.price,
-          status: event.status,
-          description: event.description,
-          location: event.location,
-          image: event.image
-        }));
-
-        setEvents(transformedEvents);
+        const data = await response.json();
+        setTours(data);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -46,17 +31,17 @@ const AdminPartnerEvents = () => {
       }
     };
 
-    fetchEvents();
+    fetchTours();
   }, []);
 
   // Get unique restaurant names for the filter
-  const restaurantNames = [...new Set(events.map(event => event.restaurant))].filter(Boolean);
+  const restaurantNames = [...new Set(tours.map(tour => tour.partner?.restaurantName))].filter(Boolean);
 
   // Sorting function
-  const sortEvents = (events) => {
-    if (!sortConfig.key) return events;
+  const sortTours = (tours) => {
+    if (!sortConfig.key) return tours;
     
-    return [...events].sort((a, b) => {
+    return [...tours].sort((a, b) => {
       if (!a || !b) return 0;
       if (a[sortConfig.key] < b[sortConfig.key]) {
         return sortConfig.direction === 'asc' ? -1 : 1;
@@ -68,34 +53,34 @@ const AdminPartnerEvents = () => {
     });
   };
 
-  // Filter events based on all criteria
-  const filteredEvents = events.filter(event => {
-    if (!event) return false;
+  // Filter tours based on all criteria
+  const filteredTours = tours.filter(tour => {
+    if (!tour) return false;
     
-    const matchesRestaurant = selectedRestaurant === "all" || event.restaurant === selectedRestaurant;
-    const matchesStatus = selectedStatus === "all" || event.status === selectedStatus;
+    const matchesRestaurant = selectedRestaurant === "all" || tour.partner?.restaurantName === selectedRestaurant;
+    const matchesStatus = selectedStatus === "all" || tour.status === selectedStatus;
     const matchesSearch = searchQuery === "" || 
-      (event.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-      (event.restaurant?.toLowerCase() || "").includes(searchQuery.toLowerCase());
+      (tour.title?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      (tour.partner?.restaurantName?.toLowerCase() || "").includes(searchQuery.toLowerCase());
     
     let matchesDate = true;
-    if (selectedDate && event.date) {
-      const eventDate = new Date(event.date).toDateString();
+    if (selectedDate && tour.date) {
+      const tourDate = new Date(tour.date).toDateString();
       const filterDate = new Date(selectedDate).toDateString();
-      matchesDate = eventDate === filterDate;
+      matchesDate = tourDate === filterDate;
     }
 
     return matchesRestaurant && matchesStatus && matchesSearch && matchesDate;
   });
 
-  // Sort filtered events
-  const sortedEvents = sortEvents(filteredEvents);
+  // Sort filtered tours
+  const sortedTours = sortTours(filteredTours);
 
   // Pagination
-  const indexOfLastEvent = currentPage * itemsPerPage;
-  const indexOfFirstEvent = indexOfLastEvent - itemsPerPage;
-  const currentEvents = sortedEvents.slice(indexOfFirstEvent, indexOfLastEvent);
-  const totalPages = Math.ceil(sortedEvents.length / itemsPerPage);
+  const indexOfLastTour = currentPage * itemsPerPage;
+  const indexOfFirstTour = indexOfLastTour - itemsPerPage;
+  const currentTours = sortedTours.slice(indexOfFirstTour, indexOfLastTour);
+  const totalPages = Math.ceil(sortedTours.length / itemsPerPage);
 
   // Handle sort
   const handleSort = (key) => {
@@ -105,12 +90,12 @@ const AdminPartnerEvents = () => {
     }));
   };
 
-  // Handle event deletion
-  const handleDelete = async (eventId) => {
-    if (!window.confirm('Are you sure you want to delete this event?')) return;
+  // Handle tour deletion
+  const handleDelete = async (tourId) => {
+    if (!window.confirm('Are you sure you want to delete this tour?')) return;
 
     try {
-      const response = await fetch(`http://localhost:3000/api/events/${eventId}`, {
+      const response = await fetch(`http://localhost:3000/api/tours/${tourId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -118,11 +103,11 @@ const AdminPartnerEvents = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete event');
+        throw new Error('Failed to delete tour');
       }
 
-      // Update the events state by removing the deleted event
-      setEvents(prevEvents => prevEvents.filter(event => event._id !== eventId));
+      // Update the tours state by removing the deleted tour
+      setTours(prevTours => prevTours.filter(tour => tour._id !== tourId));
     } catch (err) {
       setError(err.message);
     }
@@ -135,8 +120,8 @@ const AdminPartnerEvents = () => {
 
       {/* Main Content */}
       <div className="flex-1 p-6">
-        <h1 className="text-3xl font-bold text-[#001524ff]">Partner Menu</h1>
-        <p className="text-gray-600 mb-6">View and manage all menu organized by partner restaurants.</p>
+        <h1 className="text-3xl font-bold text-[#001524ff]">Partner Tours</h1>
+        <p className="text-gray-600 mb-6">View and manage all tours organized by partner restaurants.</p>
 
         {/* Filters Section */}
         <div className="bg-white p-4 rounded-lg shadow-md mb-6">
@@ -202,7 +187,7 @@ const AdminPartnerEvents = () => {
                 id="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search menu..."
+                placeholder="Search tours..."
                 className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0098c9ff] focus:border-[#0098c9ff]"
               />
             </div>
@@ -218,9 +203,9 @@ const AdminPartnerEvents = () => {
             <strong className="font-bold">Error!</strong>
             <span className="block sm:inline"> {error}</span>
           </div>
-        ) : currentEvents.length === 0 ? (
+        ) : currentTours.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-500 text-lg">No menu found matching your criteria.</p>
+            <p className="text-gray-500 text-lg">No tours found matching your criteria.</p>
           </div>
         ) : (
           <>
@@ -228,20 +213,17 @@ const AdminPartnerEvents = () => {
               <table className="w-full bg-white shadow-md rounded-lg overflow-hidden">
                 <thead className="bg-[#0098c9ff] text-white">
                   <tr>
-                    <th className="p-3 text-left cursor-pointer hover:bg-[#0088b9ff]" onClick={() => handleSort('name')}>
-                      Menu Name {sortConfig.key === 'name' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                    <th className="p-3 text-left cursor-pointer hover:bg-[#0088b9ff]" onClick={() => handleSort('title')}>
+                      Tour Name {sortConfig.key === 'title' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th className="p-3 text-left cursor-pointer hover:bg-[#0088b9ff]" onClick={() => handleSort('restaurant')}>
-                      Restaurant {sortConfig.key === 'restaurant' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                    <th className="p-3 text-left cursor-pointer hover:bg-[#0088b9ff]" onClick={() => handleSort('partner.restaurantName')}>
+                      Restaurant {sortConfig.key === 'partner.restaurantName' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                     </th>
                     <th className="p-3 text-left cursor-pointer hover:bg-[#0088b9ff]" onClick={() => handleSort('date')}>
                       Date {sortConfig.key === 'date' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th className="p-3 text-left cursor-pointer hover:bg-[#0088b9ff]" onClick={() => handleSort('time')}>
-                      Time {sortConfig.key === 'time' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                    </th>
-                    <th className="p-3 text-left cursor-pointer hover:bg-[#0088b9ff]" onClick={() => handleSort('capacity')}>
-                      Price {sortConfig.key === 'capacity' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                    <th className="p-3 text-left cursor-pointer hover:bg-[#0088b9ff]" onClick={() => handleSort('price')}>
+                      Price {sortConfig.key === 'price' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                     </th>
                     <th className="p-3 text-left cursor-pointer hover:bg-[#0088b9ff]" onClick={() => handleSort('status')}>
                       Status {sortConfig.key === 'status' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
@@ -250,31 +232,30 @@ const AdminPartnerEvents = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentEvents.map((event) => (
-                    <tr key={event._id} className="border-b hover:bg-gray-100 transition">
-                      <td className="p-3">{event.name}</td>
-                      <td className="p-3">{event.restaurant}</td>
-                      <td className="p-3">{new Date(event.date).toLocaleDateString()}</td>
-                      <td className="p-3">{event.time}</td>
-                      <td className="p-3">${event.capacity}</td>
+                  {currentTours.map((tour) => (
+                    <tr key={tour._id} className="border-b hover:bg-gray-100 transition">
+                      <td className="p-3">{tour.title}</td>
+                      <td className="p-3">{tour.partner?.restaurantName}</td>
+                      <td className="p-3">{new Date(tour.date).toLocaleDateString()}</td>
+                      <td className="p-3">${tour.price}</td>
                       <td className="p-3">
                         <span className={`px-2 py-1 rounded-full text-sm ${
-                          event.status === 'active' ? 'bg-green-100 text-green-800' :
-                          event.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                          tour.status === 'active' ? 'bg-green-100 text-green-800' :
+                          tour.status === 'cancelled' ? 'bg-red-100 text-red-800' :
                           'bg-yellow-100 text-yellow-800'
                         }`}>
-                          {event.status}
+                          {tour.status}
                         </span>
                       </td>
                       <td className="p-3">
                         <button className="text-[#0098c9ff] hover:text-[#001524ff] mr-2">
-                          Edit
+                          <FaEdit />
                         </button>
                         <button 
-                          onClick={() => handleDelete(event._id)}
+                          onClick={() => handleDelete(tour._id)}
                           className="text-red-600 hover:text-red-800"
                         >
-                          Delete
+                          <FaTrash />
                         </button>
                       </td>
                     </tr>
@@ -324,4 +305,4 @@ const AdminPartnerEvents = () => {
   );
 };
 
-export default AdminPartnerEvents; 
+export default AdminPartnerTours; 

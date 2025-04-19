@@ -6,7 +6,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
 import authRoutes from "./routes/authRoutes.js";
-import eventRoutes from "./routes/eventRoutes.js";
+import tourRoutes from "./routes/tourRoutes.js";
 import reservationRoutes from "./routes/reservationRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
 import partnerRoutes from "./routes/partnerRoutes.js";
@@ -21,7 +21,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Create uploads directory if it doesn't exist
-const uploadsDir = path.join(__dirname, "uploads", "events");
+const uploadsDir = path.join(__dirname, "uploads", "tours");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
@@ -29,11 +29,12 @@ if (!fs.existsSync(uploadsDir)) {
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
 app.use("/api/auth", authRoutes);
-app.use("/api/events", eventRoutes);
+app.use("/api/tours", tourRoutes);
 app.use("/api/reservations", reservationRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/partners", partnerRoutes);
