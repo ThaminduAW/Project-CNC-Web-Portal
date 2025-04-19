@@ -1,13 +1,15 @@
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
-  fullName: { type: String, required: true },
-  restaurantName: { type: String, required: true },
-  address: { type: String, required: true },
+  firstName: { type: String, required: function() { return this.role === "Admin" } },
+  lastName: { type: String, required: function() { return this.role === "Admin" } },
+  fullName: { type: String, required: function() { return this.role === "Partner" } },
+  restaurantName: { type: String, required: function() { return this.role === "Partner" } },
+  address: { type: String, required: function() { return this.role === "Partner" } },
   phone: { type: String },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  url: { type: String, required: true },
+  url: { type: String, required: function() { return this.role === "Partner" } },
   role: { type: String, enum: ["Admin", "Partner"], required: true },
   approved: { type: Boolean, default: false }, // Ensures partners need admin approval
   cuisine: { type: String }, // Type of cuisine served

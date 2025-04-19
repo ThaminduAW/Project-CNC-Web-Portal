@@ -1,356 +1,382 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Container,
-  Typography,
-  Paper,
-  Grid,
-  Switch,
-  FormControlLabel,
-  Button,
-  TextField,
-  Divider,
-  Alert,
-} from '@mui/material';
-import { styled } from '@mui/material/styles';
+import axios from 'axios';
 import AdminSideBar from '../../components/AdminSideBar';
-
-const StyledPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(3),
-  marginBottom: theme.spacing(3),
-  backgroundColor: 'white',
-  borderRadius: '0.5rem',
-  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-}));
+import { FaUser, FaPhone, FaEnvelope, FaLock, FaExclamationCircle } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 
 const AdminSettings = () => {
-  const [settings, setSettings] = useState({
-    userManagement: {
-      allowUserRegistration: true,
-      requireEmailVerification: true,
-      maxLoginAttempts: 5,
-    },
-    systemSettings: {
-      maintenanceMode: false,
-      enableBackup: true,
-      backupFrequency: 'daily',
-    },
-    securitySettings: {
-      twoFactorAuth: true,
-      sessionTimeout: 30,
-      passwordExpiry: 90,
-    },
-    notifications: {
-      emailNotifications: true,
-      systemAlerts: true,
-      userActivityLogs: true,
-    },
-  });
-
-  const [admin, setAdmin] = useState({
+  const [userData, setUserData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     phoneNumber: '',
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
   });
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+
+  const [message, setMessage] = useState({ type: '', text: '' });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [passwordError, setPasswordError] = useState('');
+  const [formData, setFormData] = useState(null);
 
   useEffect(() => {
-    // Fetch admin details from localStorage or API
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (user) {
-      setAdmin(prev => ({
-        ...prev,
-        firstName: user.firstName || '',
-        lastName: user.lastName || '',
-        email: user.email || '',
-        phoneNumber: user.phoneNumber || '',
-      }));
-    }
+    fetchAdminProfile();
   }, []);
 
-  const handleSettingChange = (category, setting) => (event) => {
-    setSettings((prev) => ({
-      ...prev,
-      [category]: {
-        ...prev[category],
-        [setting]: event.target.type === 'checkbox' ? event.target.checked : event.target.value,
-      },
-    }));
+  const fetchAdminProfile = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        setMessage({ type: 'error', text: 'Authentication required. Please login again.' });
+        return;
+      }
+
+      const response = await axios.get('http://localhost:3000/api/users/profile', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.data.user) {
+        const formattedData = {
+          firstName: response.data.user.firstName || '',
+          lastName: response.data.user.lastName || '',
+          email: response.data.user.email || '',
+          phoneNumber: response.data.user.phone || '',
+        };
+
+        setUserData(formattedData);
+        setFormData(formattedData);
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      setMessage({ type: 'error', text: 'Failed to fetch profile data' });
+      
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/signin';
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setAdmin(prev => ({
+    setFormData(prev => ({
       ...prev,
       [name]: value
     }));
   };
 
-  const handleStartEditing = () => {
-    if (!admin.currentPassword) {
-      setError('Please enter your current password to edit profile');
-      return;
-    }
-    // TODO: Verify current password with backend
-    setIsEditing(true);
+  const handlePasswordInputChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    setPasswordError('');
   };
 
-  const handleSave = () => {
-    // Validate passwords
-    if (admin.newPassword !== admin.confirmPassword) {
-      setError('New passwords do not match');
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError('New passwords do not match');
       return;
     }
 
-    // TODO: Implement save functionality with backend
-    console.log('Saving admin details:', admin);
-    setSuccess('Profile updated successfully');
-    setIsEditing(false);
+    if (passwordData.newPassword.length < 6) {
+      setPasswordError('Password must be at least 6 characters long');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      console.log('Attempting to change password...');
+      const token = localStorage.getItem('token');
+      console.log('Using token:', token);
+      
+      await axios.put('http://localhost:3000/api/auth/change-password', {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      toast.success('Password updated successfully');
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+      setPasswordError('');
+    } catch (error) {
+      console.error('Error changing password:', error.response?.data || error.message);
+      toast.error(error.response?.data?.message || 'Failed to update password');
+      setPasswordError(error.response?.data?.message || 'Failed to update password');
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setMessage({ type: 'error', text: 'Authentication required. Please login again.' });
+        return;
+      }
+
+      const currentUser = JSON.parse(localStorage.getItem('user'));
+      if (!currentUser) {
+        throw new Error('No user data found. Please login again.');
+      }
+
+      const userId = currentUser._id || currentUser.id;
+      if (!userId) {
+        throw new Error('Invalid user data. Please login again.');
+      }
+
+      const dataToSend = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phone: formData.phoneNumber,
+        email: formData.email
+      };
+
+      const response = await axios.put(`http://localhost:3000/api/users/${userId}`, dataToSend, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.data) {
+        setMessage({ type: 'success', text: 'Profile updated successfully' });
+        const updatedUser = { ...currentUser, ...dataToSend };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        
+        if (response.data.token) {
+          localStorage.setItem('token', response.data.token);
+        }
+        
+        window.dispatchEvent(new CustomEvent('profileUpdated'));
+      }
+    } catch (error) {
+      console.error('Profile update error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to update profile';
+      setMessage({ type: 'error', text: errorMessage });
+      
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/signin';
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex bg-[#fdfcdcff] text-[#001524ff]">
+        <AdminSideBar />
+        <div className="flex-1 p-8">
+          <div className="flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#fea116ff]"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex bg-[#fdfcdcff] text-[#001524ff]">
       <AdminSideBar />
       <div className="flex-1 p-8">
-        <Container maxWidth="md">
-          <div className="flex justify-between items-center mb-6">
-            <Typography variant="h4" className="text-3xl font-bold">
-              Admin Profile Settings
-            </Typography>
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-[#001524ff]">Settings</h1>
+            <p className="text-gray-600 mt-2">Manage your admin profile and settings</p>
           </div>
 
-          {error && (
-            <Alert severity="error" sx={{ mb: 2, borderRadius: '0.5rem' }}>
-              {error}
-            </Alert>
+          {message.text && (
+            <div className={`mb-6 p-4 rounded-lg ${
+              message.type === 'success' 
+                ? 'bg-green-50 text-green-800 border border-green-200'
+                : 'bg-red-50 text-red-800 border border-red-200'
+            }`}>
+              {message.text}
+            </div>
           )}
 
-          {success && (
-            <Alert severity="success" sx={{ mb: 2, borderRadius: '0.5rem' }}>
-              {success}
-            </Alert>
-          )}
-
-          <StyledPaper>
-            <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="First Name"
-                  name="firstName"
-                  value={admin.firstName}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      '&:hover fieldset': {
-                        borderColor: '#fea116ff',
-                      },
-                    },
-                    '& .MuiFocused fieldset': {
-                      borderColor: '#fea116ff',
-                    },
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Last Name"
-                  name="lastName"
-                  value={admin.lastName}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      '&:hover fieldset': {
-                        borderColor: '#fea116ff',
-                      },
-                    },
-                    '& .MuiFocused fieldset': {
-                      borderColor: '#fea116ff',
-                    },
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Email"
-                  name="email"
-                  type="email"
-                  value={admin.email}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      '&:hover fieldset': {
-                        borderColor: '#fea116ff',
-                      },
-                    },
-                    '& .MuiFocused fieldset': {
-                      borderColor: '#fea116ff',
-                    },
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Phone Number"
-                  name="phoneNumber"
-                  value={admin.phoneNumber}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      '&:hover fieldset': {
-                        borderColor: '#fea116ff',
-                      },
-                    },
-                    '& .MuiFocused fieldset': {
-                      borderColor: '#fea116ff',
-                    },
-                  }}
-                />
-              </Grid>
-
-              {!isEditing ? (
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Current Password"
-                    name="currentPassword"
-                    type="password"
-                    value={admin.currentPassword}
+          <div className="bg-white rounded-xl shadow-sm p-8 mb-8">
+            <h2 className="text-xl font-semibold mb-6">Personal Information</h2>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <FaUser className="inline-block mr-2" />
+                    First Name
+                  </label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={formData?.firstName || ''}
                     onChange={handleInputChange}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        '&:hover fieldset': {
-                          borderColor: '#fea116ff',
-                        },
-                      },
-                      '& .MuiFocused fieldset': {
-                        borderColor: '#fea116ff',
-                      },
-                    }}
+                    placeholder="First Name"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
+                    required
                   />
-                </Grid>
-              ) : (
-                <>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="New Password"
-                      name="newPassword"
-                      type="password"
-                      value={admin.newPassword}
-                      onChange={handleInputChange}
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          '&:hover fieldset': {
-                            borderColor: '#fea116ff',
-                          },
-                        },
-                        '& .MuiFocused fieldset': {
-                          borderColor: '#fea116ff',
-                        },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="Confirm New Password"
-                      name="confirmPassword"
-                      type="password"
-                      value={admin.confirmPassword}
-                      onChange={handleInputChange}
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          '&:hover fieldset': {
-                            borderColor: '#fea116ff',
-                          },
-                        },
-                        '& .MuiFocused fieldset': {
-                          borderColor: '#fea116ff',
-                        },
-                      }}
-                    />
-                  </Grid>
-                </>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <FaUser className="inline-block mr-2" />
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={formData?.lastName || ''}
+                    onChange={handleInputChange}
+                    placeholder="Last Name"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <FaEnvelope className="inline-block mr-2" />
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData?.email || ''}
+                    onChange={handleInputChange}
+                    placeholder="Email"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <FaPhone className="inline-block mr-2" />
+                    Phone Number
+                  </label>
+                  <input
+                    type="text"
+                    name="phoneNumber"
+                    value={formData?.phoneNumber || ''}
+                    onChange={handleInputChange}
+                    placeholder="Phone Number"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-4">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-6 py-2 bg-[#fea116ff] text-white rounded-lg hover:bg-[#e69510ff] transition-all duration-200 flex items-center"
+                >
+                  {loading ? (
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  ) : (
+                    'Save Changes'
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm p-8">
+            <h2 className="text-xl font-semibold mb-6">
+              <FaLock className="inline-block mr-2" />
+              Change Password
+            </h2>
+            <form onSubmit={handlePasswordSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
+                <input
+                  type="password"
+                  name="currentPassword"
+                  value={passwordData.currentPassword}
+                  onChange={handlePasswordInputChange}
+                  placeholder="Enter current password"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                <input
+                  type="password"
+                  name="newPassword"
+                  value={passwordData.newPassword}
+                  onChange={handlePasswordInputChange}
+                  placeholder="Enter new password"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  value={passwordData.confirmPassword}
+                  onChange={handlePasswordInputChange}
+                  placeholder="Confirm new password"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
+                  required
+                />
+              </div>
+
+              {passwordError && (
+                <div className="text-red-600 bg-red-50 p-3 rounded-lg flex items-center">
+                  <FaExclamationCircle className="mr-2" />
+                  {passwordError}
+                </div>
               )}
 
-              <Grid item xs={12}>
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                  {!isEditing ? (
-                    <Button
-                      variant="contained"
-                      onClick={handleStartEditing}
-                      sx={{
-                        backgroundColor: '#fea116ff',
-                        '&:hover': {
-                          backgroundColor: '#e69510ff',
-                        },
-                        textTransform: 'none',
-                        borderRadius: '0.5rem',
-                        padding: '0.5rem 1.5rem',
-                      }}
-                    >
-                      Edit Profile
-                    </Button>
+              <div className="flex justify-end pt-4">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-6 py-2 bg-[#fea116ff] text-white rounded-lg hover:bg-[#e69510ff] transition-all duration-200 flex items-center"
+                >
+                  {loading ? (
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                   ) : (
-                    <>
-                      <Button
-                        variant="outlined"
-                        onClick={() => {
-                          setIsEditing(false);
-                          setError('');
-                          setSuccess('');
-                        }}
-                        sx={{
-                          borderColor: '#fea116ff',
-                          color: '#fea116ff',
-                          '&:hover': {
-                            borderColor: '#e69510ff',
-                            backgroundColor: 'rgba(254, 161, 22, 0.04)',
-                          },
-                          textTransform: 'none',
-                          borderRadius: '0.5rem',
-                          padding: '0.5rem 1.5rem',
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        variant="contained"
-                        onClick={handleSave}
-                        sx={{
-                          backgroundColor: '#fea116ff',
-                          '&:hover': {
-                            backgroundColor: '#e69510ff',
-                          },
-                          textTransform: 'none',
-                          borderRadius: '0.5rem',
-                          padding: '0.5rem 1.5rem',
-                        }}
-                      >
-                        Save Changes
-                      </Button>
-                    </>
+                    'Update Password'
                   )}
-                </Box>
-              </Grid>
-            </Grid>
-          </StyledPaper>
-        </Container>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
   );
