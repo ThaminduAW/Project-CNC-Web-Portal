@@ -7,22 +7,57 @@ import defaultProfile from "../assets/default-profile.png"; // Default profile i
 const AdminSideBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [admin, setAdmin] = useState({ fullName: "Admin", role: "Admin", profilePhoto: defaultProfile });
+  const [admin, setAdmin] = useState({ 
+    firstName: "",
+    lastName: "",
+    email: "",
+    role: "Admin", 
+    profilePhoto: defaultProfile 
+  });
   const [unreadCount, setUnreadCount] = useState(0);
   const [showBadge, setShowBadge] = useState(true);
   const [pendingRequests, setPendingRequests] = useState(0);
 
+  // Listen for changes in localStorage
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user && user.role === "Admin") {
-      setAdmin({
-        fullName: user.fullName || "Admin",
-        role: user.role || "Admin",
-        profilePhoto: user.profilePhoto || defaultProfile,
-      });
-    } else {
-      navigate("/signin"); // Redirect if not admin
-    }
+    const loadAdminData = () => {
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (user && user.role === "Admin") {
+        setAdmin({
+          firstName: user.firstName || "",
+          lastName: user.lastName || "",
+          email: user.email || "",
+          role: user.role || "Admin",
+          profilePhoto: user.profilePhoto || defaultProfile,
+        });
+      } else {
+        navigate("/signin");
+      }
+    };
+
+    // Load initial data
+    loadAdminData();
+
+    // Add event listener for storage changes
+    const handleStorageChange = (e) => {
+      if (e.key === "user") {
+        loadAdminData();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Custom event listener for profile updates
+    const handleProfileUpdate = (e) => {
+      loadAdminData();
+    };
+    
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+    };
   }, [navigate]);
 
   // Fetch pending requests count
@@ -49,12 +84,10 @@ const AdminSideBar = () => {
     };
 
     fetchPendingRequests();
-    // Poll for new requests every minute
     const interval = setInterval(fetchPendingRequests, 60000);
     return () => clearInterval(interval);
   }, []);
 
-  // Reset badge when navigating to messages
   useEffect(() => {
     if (location.pathname === '/admin/messages') {
       setShowBadge(false);
@@ -63,7 +96,6 @@ const AdminSideBar = () => {
     }
   }, [location.pathname]);
 
-  // Fetch unread message count
   useEffect(() => {
     const fetchUnreadCount = async () => {
       try {
@@ -72,7 +104,7 @@ const AdminSideBar = () => {
 
         const response = await fetch("http://localhost:3000/api/messages/unread", {
           headers: {
-            Authorization: `Bearer ${token}`, // Fixed token interpolation
+            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -86,7 +118,6 @@ const AdminSideBar = () => {
     };
 
     fetchUnreadCount();
-    // Poll for new messages every 30 seconds
     const interval = setInterval(fetchUnreadCount, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -117,9 +148,20 @@ const AdminSideBar = () => {
 
       {/* Profile Section */}
       <div className="flex flex-col items-center p-4 border-b border-gray-700">
-        <img src={admin.profilePhoto} alt="Admin" className="w-16 h-16 border border-gray-400 rounded-full" />
-        <h2 className="mt-2 font-semibold">{admin.fullName}</h2>
+        <img 
+          src={admin.profilePhoto} 
+          alt={`${admin.firstName} ${admin.lastName}`} 
+          className="w-16 h-16 border border-gray-400 rounded-full object-cover"
+        />
+        <h2 className="mt-2 font-semibold">
+          {admin.firstName && admin.lastName 
+            ? `${admin.firstName} ${admin.lastName}`
+            : "Admin"}
+        </h2>
         <p className="text-sm text-gray-300">{admin.role}</p>
+        {admin.email && (
+          <p className="text-xs text-gray-400 mt-1">{admin.email}</p>
+        )}
       </div>
 
       {/* Navigation Menu */}

@@ -30,6 +30,14 @@ const availabilitySchema = new mongoose.Schema({
     isAvailable: { 
       type: Boolean, 
       default: true 
+    },
+    price: {
+      type: Number,
+      default: 0
+    },
+    description: {
+      type: String,
+      default: ''
     }
   }]
 }, { timestamps: true });

@@ -11,7 +11,6 @@ const Reservation = () => {
     contact: "",
     restaurant: "",
     date: "",
-    time: "",
     instructions: "",
     guestCount: "1", // Add default guest count
   });
@@ -68,16 +67,11 @@ const Reservation = () => {
     // Reset time slot when date or restaurant changes
     if (name === 'date' || name === 'restaurant') {
       setSelectedTimeSlot(null);
-      setFormData(prev => ({ ...prev, time: "" }));
     }
   };
 
   const handleTimeSlotSelect = (slot) => {
     setSelectedTimeSlot(slot);
-    setFormData(prev => ({
-      ...prev,
-      time: `${slot.startTime}-${slot.endTime}`
-    }));
   };
 
   const handleSubmit = async (e) => {
@@ -89,43 +83,67 @@ const Reservation = () => {
       return;
     }
 
+    // Validate restaurant selection
+    if (!formData.restaurant) {
+      setStatus({ success: false, error: "Please select a restaurant" });
+      return;
+    }
+
+    // Find the selected restaurant object
+    const selectedRestaurant = restaurants.find(r => r._id === formData.restaurant);
+    console.log("Selected Restaurant:", selectedRestaurant);
+    console.log("All Restaurants:", restaurants);
+    console.log("Form Restaurant ID:", formData.restaurant);
+
+    if (!selectedRestaurant) {
+      setStatus({ success: false, error: "Invalid restaurant selection" });
+      return;
+    }
+
+    const reservationData = {
+      name: formData.name,
+      email: formData.email,
+      contact: formData.contact,
+      restaurant: selectedRestaurant._id,
+      date: formData.date,
+      timeSlot: {
+        startTime: selectedTimeSlot.startTime,
+        endTime: selectedTimeSlot.endTime
+      },
+      instructions: formData.instructions || '',
+      guestCount: parseInt(formData.guestCount)
+    };
+
+    console.log("Sending reservation data:", reservationData);
+
     try {
       const response = await fetch("http://localhost:3000/api/reservations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          contact: formData.contact,
-          restaurant: formData.restaurant,
-          date: formData.date,
-          timeSlot: {
-            startTime: selectedTimeSlot.startTime,
-            endTime: selectedTimeSlot.endTime
-          },
-          instructions: formData.instructions,
-          guestCount: formData.guestCount
-        }),
+        body: JSON.stringify(reservationData),
       });
 
       const data = await response.json();
-      console.log("Reservation Response:", data);
+      console.log("Server response:", data);
 
-      if (!response.ok) throw new Error(data.message || "Something went wrong.");
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to make reservation");
+      }
 
       setStatus({ success: true, error: "" });
+      // Reset form
       setFormData({
         name: "",
         email: "",
         contact: "",
         restaurant: "",
         date: "",
-        time: "",
         instructions: "",
         guestCount: "1",
       });
       setSelectedTimeSlot(null);
 
+      // Clear success message after 5 seconds
       setTimeout(() => setStatus({ success: false, error: "" }), 5000);
     } catch (err) {
       console.error("Reservation error:", err);
@@ -145,88 +163,93 @@ const Reservation = () => {
           Book your spot at one of our partner restaurants and experience the finest seafood.
         </p>
 
-        {/* Reservation Form */}
         <div className="bg-white p-6 mt-10 rounded-lg shadow-lg">
           <h2 className="text-2xl font-semibold text-center">Reserve Your Table</h2>
 
           {status.success && (
-            <p className="text-green-500 text-center mt-4">✅ Reservation made successfully! Check your email for confirmation.</p>
+            <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-green-700 text-center">
+                ✅ Reservation made successfully! Check your email for confirmation.
+              </p>
+            </div>
           )}
+          
           {status.error && (
-            <p className="text-red-500 text-center mt-4">❌ {status.error}</p>
+            <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-700 text-center">❌ {status.error}</p>
+            </div>
           )}
 
-          <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-            <input
-              type="text"
-              name="name"
-              placeholder="Your Name"
-              className="w-full px-4 py-2 border rounded-md"
-              value={formData.name}
-              onChange={handleChange}
-              required
-            />
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <input
+                type="text"
+                name="name"
+                placeholder="Your Name"
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#fea116ff]"
+                value={formData.name}
+                onChange={handleChange}
+                required
+              />
 
-            <input
-              type="email"
-              name="email"
-              placeholder="Your Email"
-              className="w-full px-4 py-2 border rounded-md"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
+              <input
+                type="email"
+                name="email"
+                placeholder="Your Email"
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#fea116ff]"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
 
-            <input
-              type="tel"
-              name="contact"
-              placeholder="Contact Number (Optional)"
-              className="w-full px-4 py-2 border rounded-md"
-              value={formData.contact}
-              onChange={handleChange}
-            />
+              <input
+                type="tel"
+                name="contact"
+                placeholder="Contact Number"
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#fea116ff]"
+                value={formData.contact}
+                onChange={handleChange}
+              />
 
-            <input
-              type="number"
-              name="guestCount"
-              min="1"
-              max="20"
-              placeholder="Number of Guests"
-              className="w-full px-4 py-2 border rounded-md"
-              value={formData.guestCount}
-              onChange={handleChange}
-              required
-            />
+              <input
+                type="number"
+                name="guestCount"
+                min="1"
+                max="20"
+                placeholder="Number of Guests"
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#fea116ff]"
+                value={formData.guestCount}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-            {/* Restaurant Selection Dropdown */}
-            <select
-              name="restaurant"
-              className="w-full px-4 py-2 border rounded-md"
-              value={formData.restaurant}
-              onChange={handleChange}
-              required
-            >
-              <option value="" disabled>Select a Restaurant</option>
-              {restaurants.length > 0 ? (
-                restaurants.map((restaurant) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <select
+                name="restaurant"
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#fea116ff]"
+                value={formData.restaurant}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Select a Restaurant</option>
+                {restaurants.map((restaurant) => (
                   <option key={restaurant._id} value={restaurant._id}>
                     {restaurant.restaurantName}
                   </option>
-                ))
-              ) : (
-                <option value="" disabled>No restaurants available</option>
-              )}
-            </select>
+                ))}
+              </select>
 
-            <input
-              type="date"
-              name="date"
-              className="w-full px-4 py-2 border rounded-md"
-              value={formData.date}
-              onChange={handleChange}
-              min={new Date().toISOString().split('T')[0]}
-              required
-            />
+              <input
+                type="date"
+                name="date"
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#fea116ff]"
+                value={formData.date}
+                onChange={handleChange}
+                min={new Date().toISOString().split('T')[0]}
+                required
+              />
+            </div>
 
             {formData.restaurant && formData.date && (
               <AvailabilityViewer
@@ -238,16 +261,16 @@ const Reservation = () => {
 
             <textarea
               name="instructions"
-              placeholder="Special Instructions (Optional)"
+              placeholder="Special Instructions or Requests (Optional)"
               rows="4"
-              className="w-full px-4 py-2 border rounded-md"
+              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#fea116ff]"
               value={formData.instructions}
               onChange={handleChange}
             />
 
             <button
               type="submit"
-              className="w-full bg-[#fea116ff] text-white py-2 rounded-md hover:bg-[#e69510ff] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-[#fea116ff] text-white py-3 rounded-md hover:bg-[#e69510ff] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={!selectedTimeSlot}
             >
               {selectedTimeSlot ? "Confirm Reservation" : "Select a Time Slot"}

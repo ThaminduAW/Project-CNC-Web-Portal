@@ -16,7 +16,8 @@ const createDefaultAdmin = async () => {
     if (!existingAdmin) {
       const hashedPassword = await bcrypt.hash("Client123=", 10);
       const admin = new User({
-        fullName: "Admin",
+        firstName: "Admin",
+        lastName: "User",
         email: adminEmail,
         password: hashedPassword,
         role: "Admin",

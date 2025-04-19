@@ -5,6 +5,7 @@ const authMiddleware = async (req, res, next) => {
   try {
     // Try to get token from Authorization header
     const authHeader = req.headers.authorization || req.header("Authorization");
+    
     if (!authHeader) {
       return res.status(401).json({ message: "Access denied. No token provided." });
     }
@@ -18,14 +19,9 @@ const authMiddleware = async (req, res, next) => {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // For admin users, we don't need to fetch from database
-    if (decoded.role === "Admin" && decoded.id === "admin") {
-      req.user = decoded;
-      return next();
-    }
-
-    // For partners, fetch the complete user object from database
+    // For admin users, we still need to fetch from database to get full profile
     const user = await User.findById(decoded.id);
+    
     if (!user) {
       return res.status(401).json({ message: "User not found." });
     }
@@ -37,13 +33,14 @@ const authMiddleware = async (req, res, next) => {
 
     // Set complete user object in request
     req.user = {
-      id: user._id,
+      id: user._id.toString(),
       role: user.role,
       approved: user.approved
     };
     
     next();
   } catch (error) {
+    console.error('Auth middleware error:', error);
     if (error.name === "JsonWebTokenError") {
       return res.status(401).json({ message: "Invalid token." });
     }

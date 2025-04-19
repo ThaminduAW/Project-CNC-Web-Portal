@@ -11,7 +11,7 @@ import reservationRoutes from "./routes/reservationRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
 import partnerRoutes from "./routes/partnerRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
-import availabilityRoutes from "./routes/availability.js";
+import availabilityRoutes from "./routes/availabilityRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import requestRoutes from './routes/requestRoutes.js';
 
