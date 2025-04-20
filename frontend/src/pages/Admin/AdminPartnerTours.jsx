@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { FaEdit, FaTrash } from 'react-icons/fa';
+import { useState, useEffect } from 'react';
+import { FaEdit, FaTrash, FaCalendarAlt, FaTable } from 'react-icons/fa';
 import AdminSideBar from "../../components/AdminSideBar";
+import AdminCalendar from '../../components/AdminCalendar';
 
 const AdminPartnerTours = () => {
   const [tours, setTours] = useState([]);
@@ -13,6 +14,7 @@ const AdminPartnerTours = () => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const [viewMode, setViewMode] = useState('table'); // 'table' or 'calendar'
 
   // Fetch partner tours
   useEffect(() => {
@@ -113,6 +115,12 @@ const AdminPartnerTours = () => {
     }
   };
 
+  // Handle calendar event click
+  const handleEventClick = (event) => {
+    // You can implement what happens when a calendar event is clicked
+    console.log('Event clicked:', event);
+  };
+
   return (
     <div className="flex bg-[#fdfcdcff] min-h-screen">
       {/* Admin Sidebar */}
@@ -120,8 +128,26 @@ const AdminPartnerTours = () => {
 
       {/* Main Content */}
       <div className="flex-1 p-6">
-        <h1 className="text-3xl font-bold text-[#001524ff]">Partner Tours</h1>
-        <p className="text-gray-600 mb-6">View and manage all tours organized by partner restaurants.</p>
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-[#001524ff]">Partner Tours</h1>
+            <p className="text-gray-600">View and manage all tours organized by partner restaurants.</p>
+          </div>
+          <div className="flex space-x-2">
+            <button
+              onClick={() => setViewMode('table')}
+              className={`p-2 rounded ${viewMode === 'table' ? 'bg-[#0098c9ff] text-white' : 'bg-gray-200'}`}
+            >
+              <FaTable className="text-lg" />
+            </button>
+            <button
+              onClick={() => setViewMode('calendar')}
+              className={`p-2 rounded ${viewMode === 'calendar' ? 'bg-[#0098c9ff] text-white' : 'bg-gray-200'}`}
+            >
+              <FaCalendarAlt className="text-lg" />
+            </button>
+          </div>
+        </div>
 
         {/* Filters Section */}
         <div className="bg-white p-4 rounded-lg shadow-md mb-6">
@@ -203,10 +229,15 @@ const AdminPartnerTours = () => {
             <strong className="font-bold">Error!</strong>
             <span className="block sm:inline"> {error}</span>
           </div>
-        ) : currentTours.length === 0 ? (
+        ) : filteredTours.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-gray-500 text-lg">No tours found matching your criteria.</p>
           </div>
+        ) : viewMode === 'calendar' ? (
+          <AdminCalendar 
+            tours={filteredTours} 
+            onEventClick={handleEventClick}
+          />
         ) : (
           <>
             <div className="overflow-x-auto">
