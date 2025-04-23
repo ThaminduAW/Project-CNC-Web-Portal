@@ -1,29 +1,104 @@
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import bgImage from '../assets/bg-home.jpg';
+import plateImage from '../assets/hero.png';
+import logo from '../assets/logo.png';
+import styles from './Hero.module.css';
+
 const Hero = () => {
   return (
-    <section className="relative bg-gradient-to-r from-[#0098c9ff] to-[#fea116ff] h-[85vh] flex flex-col items-center justify-center text-white text-center px-6">
-      
-      {/* Floating Animated Elements */}
-      <div className="absolute top-0 left-0 w-20 h-20 bg-white opacity-10 rounded-full animate-bounce"></div>
-      <div className="absolute bottom-0 right-0 w-28 h-28 bg-white opacity-10 rounded-full animate-pulse"></div>
+    <section className={`relative h-screen ${styles['hero-header']}`}>
+      {/* Background with gradient overlay */}
+      <div 
+        className="absolute inset-0 z-0"
+        style={{
+          background: `linear-gradient(rgba(173, 216, 230, .9), rgba(0, 0, 0, .5)), url(${bgImage})`,
+          backgroundPosition: 'center center',
+          backgroundRepeat: 'no-repeat',
+          backgroundSize: 'cover'
+        }}
+      />
 
-      <div className="relative z-10 max-w-3xl">
-        <h1 className="text-5xl md:text-7xl font-bold drop-shadow-lg">
-          <span className="text-[#001524ff]">Catch. Cook. Enjoy.</span> The Ultimate Seafood Experience!
-        </h1>
-        <p className="mt-4 text-lg md:text-xl text-gray-100 drop-shadow-md">
-          Join us for unforgettable culinary adventures, exclusive catch & cook experiences, and the best seafood in the world.
-        </p>
+      {/* Main Content */}
+      <div className="relative z-10 h-[calc(100vh-80px)] container mx-auto px-6 flex items-center">
+        <div className="w-full lg:w-1/2 text-white">
+          {/* Breadcrumb */}
+          <nav className="mb-4">
+            <ol className={styles.breadcrumb}>
+              <li className={styles['breadcrumb-item']}>
+               
+              </li>
+              <li className={styles['breadcrumb-item']}>
+               
+              </li>
+            </ol>
+          </nav>
 
-        {/* Call-To-Action Buttons */}
-        <div className="mt-6 flex justify-center">
-          <a href="/reservation" className="bg-white text-[#0098c9ff] px-6 py-3 rounded-lg text-lg font-semibold shadow-md hover:bg-gray-200 transition">
-            Book a Reservation
-          </a>
-          {/* <a href="/restaurants" className="bg-[#001524ff] text-white px-6 py-3 rounded-lg text-lg font-semibold shadow-md hover:bg-[#00345cff] transition">
-            Explore Restaurants
-          </a> */}
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-5xl lg:text-6xl font-bold mb-2"
+          >
+            From Ocean to Plate:
+          </motion.h1>
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-4xl lg:text-5xl font-bold mb-4"
+          >
+            Our Passion for Food and Travel
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="text-lg text-gray-200 mb-8 max-w-xl"
+          >
+            Welcome to Catch N Cook World Tour, the ultimate adventure for foodies and nature
+            enthusiasts alike. We offer immersive tours that explore and celebrate local cuisine
+            while promoting sustainable tourism and preserving the natural beauty of our
+            destinations.
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+          >
+            <Link
+              to="/reservation"
+              className="inline-block bg-[#fea116] text-white px-8 py-3 rounded text-lg font-semibold 
+                       hover:bg-[#e8920e] transition-all duration-300"
+            >
+              BOOK A TABLE
+            </Link>
+          </motion.div>
         </div>
+
+        {/* Plate Image with rotation animation */}
+        <motion.div 
+          className="hidden lg:block absolute right-0 top-1/2 transform -translate-y-1/2 w-[600px]"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8 }}
+        >
+          <img
+            src={plateImage}
+            alt="Grilled Fish Dish"
+            className={`w-full h-full object-contain ${styles['rotating-image']}`}
+          />
+        </motion.div>
       </div>
+
+      <style jsx>{`
+        @keyframes imgRotate {
+          100% {
+            transform: rotate(360deg);
+          }
+        }
+      `}</style>
     </section>
   );
 };
