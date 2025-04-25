@@ -13,22 +13,4 @@
     100% { 
         transform: rotate(360deg); 
     } 
-}
-
-.breadcrumb-item + .breadcrumb-item::before {
-    color: rgba(173, 216, 230, .5);
-}
-
-.breadcrumb {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.breadcrumb-item {
-    color: rgba(173, 216, 230, .9);
-}
-
-.breadcrumb-item:hover {
-    color: #fea116;
 } 

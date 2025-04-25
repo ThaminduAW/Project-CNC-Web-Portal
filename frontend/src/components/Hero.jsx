@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import bgImage from '../assets/bg-home.jpg';
 import plateImage from '../assets/hero.png';
-import logo from '../assets/logo.png';
 import styles from './Hero.module.css';
 
 const Hero = () => {
@@ -19,22 +18,27 @@ const Hero = () => {
           backgroundSize: 'cover'
         }}
       />
+      {/* Desktop Navigation */}
+      <nav className="hidden md:flex space-x-6">
+          <Link to="/" className="hover:text-[#fea116ff] transition">Home</Link>
+          {/* <Link to="/restaurants" className="hover:text-[#fea116ff] transition">Restaurants</Link> */}
+          <Link to="/tours" className="hover:text-[#fea116ff] transition">Tours</Link>
+          <Link to="/reservation" className="hover:text-[#fea116ff] transition">Reservation</Link>
+          <Link to="/about" className="hover:text-[#fea116ff] transition">About</Link>
+          <Link to="/contact" className="hover:text-[#fea116ff] transition">Contact</Link>
+        </nav>
+
+        {/* Sign In Button */}
+        <button 
+          className="hidden md:block bg-[#fea116ff] text-[#001524ff] px-4 py-2 rounded-md hover:bg-[#e69510ff] transition"
+          onClick={() => navigate("/signin")}
+        >
+          Sign In
+        </button>
 
       {/* Main Content */}
       <div className="relative z-10 h-[calc(100vh-80px)] container mx-auto px-6 flex items-center">
         <div className="w-full lg:w-1/2 text-white">
-          {/* Breadcrumb */}
-          <nav className="mb-4">
-            <ol className={styles.breadcrumb}>
-              <li className={styles['breadcrumb-item']}>
-               
-              </li>
-              <li className={styles['breadcrumb-item']}>
-               
-              </li>
-            </ol>
-          </nav>
-
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
