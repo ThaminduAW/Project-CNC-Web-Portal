@@ -18,23 +18,7 @@ const Hero = () => {
           backgroundSize: 'cover'
         }}
       />
-      {/* Desktop Navigation */}
-      <nav className="hidden md:flex space-x-6">
-          <Link to="/" className="hover:text-[#fea116ff] transition">Home</Link>
-          {/* <Link to="/restaurants" className="hover:text-[#fea116ff] transition">Restaurants</Link> */}
-          <Link to="/tours" className="hover:text-[#fea116ff] transition">Tours</Link>
-          <Link to="/reservation" className="hover:text-[#fea116ff] transition">Reservation</Link>
-          <Link to="/about" className="hover:text-[#fea116ff] transition">About</Link>
-          <Link to="/contact" className="hover:text-[#fea116ff] transition">Contact</Link>
-        </nav>
-
-        {/* Sign In Button */}
-        <button 
-          className="hidden md:block bg-[#fea116ff] text-[#001524ff] px-4 py-2 rounded-md hover:bg-[#e69510ff] transition"
-          onClick={() => navigate("/signin")}
-        >
-          Sign In
-        </button>
+      
 
       {/* Main Content */}
       <div className="relative z-10 h-[calc(100vh-80px)] container mx-auto px-6 flex items-center">
