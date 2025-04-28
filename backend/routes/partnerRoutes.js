@@ -3,7 +3,13 @@ import User from "../models/User.js";
 import Reservation from "../models/Reservation.js";
 import Tour from "../models/Tour.js";
 import authMiddleware from "../middleware/authMiddleware.js";
-import { getPartnerProfile, updatePartnerProfile, updatePartnerImages } from "../controllers/partnerController.js";
+import { 
+  getPartnerProfile, 
+  updatePartnerProfile,
+  getPreviousCustomers,
+  sendPromotionalNotifications,
+  updatePartnerImages
+} from '../controllers/partnerController.js';
 import upload from "../middleware/upload.js";
 
 const router = express.Router();
@@ -107,5 +113,9 @@ router.put('/images',
   ]), 
   updatePartnerImages
 );
+
+// Add new routes
+router.get('/:partnerId/customers', authMiddleware, getPreviousCustomers);
+router.post('/:partnerId/notifications', authMiddleware, sendPromotionalNotifications);
 
 export default router;
