@@ -1,0 +1,16 @@
+.hero-header {
+    background: linear-gradient(rgba(173, 216, 230, .9), rgba(0, 0, 0, .5)), url(../assets/bg-home.jpg);
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.rotating-image {
+    animation: imgRotate 50s linear infinite;
+}
+
+@keyframes imgRotate { 
+    100% { 
+        transform: rotate(360deg); 
+    } 
+} 

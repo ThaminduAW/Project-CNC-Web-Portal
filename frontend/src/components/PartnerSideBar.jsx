@@ -100,6 +100,7 @@ const PartnerSideBar = () => {
     { path: "/partner/tours", icon: FaCalendarAlt, label: "Tours" },
     { path: "/partner/reservations", icon: FaCalendarCheck, label: "Reservations" },
     { path: "/partner/messages", icon: FaComments, label: "Messages", badge: showBadge && unreadCount },
+    { path: "/partner/notifications", icon: FaEnvelope, label: "Promotions" },
     { path: "/partner/settings", icon: FaCog, label: "Settings" },
   ];
 

@@ -70,46 +70,46 @@ const Home = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <h2 className="text-4xl font-bold mb-4">Featured Menu Items</h2>
+              <h2 className="text-4xl font-bold mb-4">Featured Tours</h2>
               <div className="w-24 h-1 bg-[#fea116ff] mx-auto mb-4"></div>
-              <p className="text-gray-600 text-lg">Discover our most popular seafood dishes from partner restaurants.</p>
+              <p className="text-gray-600 text-lg">Discover our most popular fishing and cooking tours.</p>
             </motion.div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {menuItems.map((item, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {tours.slice(0, 3).map((tour, index) => (
               <motion.div
-                key={item.id}
+                key={tour._id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="bg-white rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300 relative group"
                 whileHover={{ y: -5 }}
               >
-                <div className="relative w-full h-[400px] bg-gray-200">
-                  {item.image && (
+                <div className="relative w-full h-[300px] bg-gray-200">
+                  {tour.image && (
                     <img 
-                      src={`http://localhost:3000${item.image}`}
-                      alt={item.title}
+                      src={`http://localhost:3000${tour.image}`}
+                      alt={tour.title}
                       className="w-full h-full object-cover"
                     />
                   )}
                   <div className="absolute top-4 right-4 bg-[#fea116ff] text-white px-4 py-2 rounded-full text-sm font-semibold z-10">
-                    ${item.price}
+                    ${tour.price}
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                      <h3 className="text-2xl font-bold mb-3">{item.title}</h3>
-                      <p className="text-gray-100 mb-4 line-clamp-2 text-lg">{item.description}</p>
+                      <h3 className="text-2xl font-bold mb-3">{tour.title}</h3>
+                      <p className="text-gray-100 mb-4 line-clamp-2 text-lg">{tour.description}</p>
                       <div className="flex items-center text-base text-gray-200 mb-6">
                         <FaMapMarkerAlt className="mr-2 text-[#fea116ff]" />
-                        <span>{item.restaurant}</span>
+                        <span>{tour.location}</span>
                       </div>
                       <button
-                        onClick={() => navigate(`/menu/${item.id}`)}
+                        onClick={() => navigate(`/tours/${tour._id}`)}
                         className="w-full bg-[#fea116ff] text-white py-3 rounded-lg hover:bg-[#e8920eff] transition-colors font-semibold flex items-center justify-center text-lg"
                       >
-                        View Menu <FaUtensils className="ml-2" />
+                        View Tour <FaFish className="ml-2" />
                       </button>
                     </div>
                   </div>
@@ -125,10 +125,10 @@ const Home = () => {
             transition={{ duration: 0.6, delay: 0.4 }}
           >
             <button
-              onClick={() => navigate('/events')}
+              onClick={() => navigate('/tours')}
               className="bg-[#001524ff] text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-[#00345cff] transition-all duration-300 transform hover:scale-105 inline-flex items-center"
             >
-              View Full Menu <FaFish className="ml-2" />
+              View All Tours <FaFish className="ml-2" />
             </button>
           </motion.div>
         </div>
