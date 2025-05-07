@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { FaUser, FaCalendarAlt, FaEnvelope, FaCog, FaSignOutAlt, FaHome, FaUtensils, FaComments, FaCalendarCheck, FaClipboardList } from "react-icons/fa";
 import logo from "../assets/logo.png";
 import defaultProfile from "../assets/default-profile.png";
+import { baseURL } from '../../utils/baseURL';
 
 const PartnerSideBar = () => {
   const navigate = useNavigate();
@@ -67,7 +68,7 @@ const PartnerSideBar = () => {
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        const response = await fetch("http://localhost:3000/api/messages/unread", {
+        const response = await fetch(`${baseURL}/messages/unread`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

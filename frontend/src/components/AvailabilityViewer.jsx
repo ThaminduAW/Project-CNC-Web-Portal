@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { FaClock, FaUsers, FaDollarSign, FaInfoCircle } from 'react-icons/fa';
+import { baseURL } from '../../utils/baseURL';
 
 const AvailabilityViewer = ({ restaurantId, date, onTimeSlotSelect }) => {
   const [timeSlots, setTimeSlots] = useState([]);
@@ -18,7 +19,7 @@ const AvailabilityViewer = ({ restaurantId, date, onTimeSlotSelect }) => {
         const token = localStorage.getItem('token');
 
         const response = await fetch(
-          `http://localhost:3000/api/availability/${restaurantId}/${format(new Date(date), 'yyyy-MM-dd')}`,
+          `${baseURL}/availability/${restaurantId}/${format(new Date(date), 'yyyy-MM-dd')}`,
           {
             headers: {
               'Content-Type': 'application/json',
