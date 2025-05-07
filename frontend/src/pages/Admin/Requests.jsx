@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AdminSideBar from '../../components/AdminSideBar';
 import { FaClock, FaUser, FaEnvelope, FaCheck, FaTimes } from 'react-icons/fa';
+import { baseURL } from '../../utils/baseURL';
 
 const Requests = () => {
   const [requests, setRequests] = useState([]);
@@ -18,7 +19,7 @@ const Requests = () => {
         throw new Error('No authentication token found');
       }
 
-      const response = await fetch('http://localhost:3000/api/requests', {
+      const response = await fetch(`${baseURL}/requests`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -40,7 +41,7 @@ const Requests = () => {
   const handleRequestAction = async (requestId, action) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/requests/${requestId}/${action}`, {
+      const response = await fetch(`${baseURL}/requests/${requestId}/${action}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

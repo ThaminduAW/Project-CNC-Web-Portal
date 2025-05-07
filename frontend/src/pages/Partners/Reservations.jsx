@@ -3,6 +3,7 @@ import { FaCheck, FaTimes, FaSearch, FaFilter, FaCalendarAlt, FaClock, FaUsers, 
 import PartnerSideBar from '../../components/PartnerSideBar';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
+import { baseURL } from '../../utils/baseURL';
 
 const Reservations = () => {
   const [activeTab, setActiveTab] = useState('reservations');
@@ -50,7 +51,7 @@ const Reservations = () => {
         return;
       }
 
-      const response = await fetch('http://localhost:3000/api/reservations/partner', {
+      const response = await fetch(`${baseURL}/reservations/partner`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -95,7 +96,7 @@ const Reservations = () => {
         throw new Error('User data not found. Please sign in again.');
       }
 
-      const response = await fetch(`http://localhost:3000/api/availability/${userId}/${format(selectedDate, 'yyyy-MM-dd')}`, {
+      const response = await fetch(`${baseURL}/availability/${userId}/${format(selectedDate, 'yyyy-MM-dd')}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -132,7 +133,7 @@ const Reservations = () => {
         return;
       }
 
-      const response = await fetch(`http://localhost:3000/api/reservations/${reservationId}/status`, {
+      const response = await fetch(`${baseURL}/reservations/${reservationId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -169,7 +170,7 @@ const Reservations = () => {
         return;
       }
 
-      const response = await fetch(`http://localhost:3000/api/reservations/${reservationId}`, {
+      const response = await fetch(`${baseURL}/reservations/${reservationId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -230,7 +231,7 @@ const Reservations = () => {
 
       console.log('Sending regular time slot data:', timeSlotData); // Debug log
 
-      const response = await fetch(`http://localhost:3000/api/availability/custom`, {
+      const response = await fetch(`${baseURL}/availability/custom`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -294,7 +295,7 @@ const Reservations = () => {
 
       console.log('Sending time slot data:', timeSlotData); // Debug log
 
-      const response = await fetch(`http://localhost:3000/api/availability/custom`, {
+      const response = await fetch(`${baseURL}/availability/custom`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -339,7 +340,7 @@ const Reservations = () => {
         throw new Error('User data not found');
       }
 
-      const response = await fetch(`http://localhost:3000/api/availability/${selectedTimeSlot._id}`, {
+      const response = await fetch(`${baseURL}/availability/${selectedTimeSlot._id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -380,7 +381,7 @@ const Reservations = () => {
         return;
       }
 
-      const response = await fetch(`http://localhost:3000/api/availability/${timeSlotId}`, {
+      const response = await fetch(`${baseURL}/availability/${timeSlotId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

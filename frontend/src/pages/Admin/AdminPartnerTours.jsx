@@ -3,6 +3,7 @@ import { FaEdit, FaTrash, FaCalendarAlt, FaTable, FaPlus } from 'react-icons/fa'
 import AdminSideBar from "../../components/AdminSideBar";
 import AdminCalendar from '../../components/AdminCalendar';
 import { useNavigate } from 'react-router-dom';
+import { baseURL } from '../../utils/baseURL';
 
 const AdminPartnerTours = () => {
   const [tours, setTours] = useState([]);
@@ -55,7 +56,7 @@ const AdminPartnerTours = () => {
   const fetchTours = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch("http://localhost:3000/api/tours", {
+      const response = await fetch(`${baseURL}/tours`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -76,7 +77,7 @@ const AdminPartnerTours = () => {
   const fetchPartners = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/partners', {
+      const response = await fetch(`${baseURL}/partners`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -152,7 +153,7 @@ const AdminPartnerTours = () => {
     if (!window.confirm('Are you sure you want to delete this tour?')) return;
 
     try {
-      const response = await fetch(`http://localhost:3000/api/tours/${tourId}`, {
+      const response = await fetch(`${baseURL}/tours/${tourId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -202,7 +203,7 @@ const AdminPartnerTours = () => {
         formData.append(key, newTour[key]);
       });
 
-      const response = await fetch('http://localhost:3000/api/tours', {
+      const response = await fetch(`${baseURL}/tours`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -249,7 +250,7 @@ const AdminPartnerTours = () => {
     const token = localStorage.getItem('token');
     const newStatus = tour.status === 'active' ? 'inactive' : 'active';
     try {
-      const response = await fetch(`http://localhost:3000/api/tours/${tour._id}`, {
+      const response = await fetch(`${baseURL}/tours/${tour._id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`

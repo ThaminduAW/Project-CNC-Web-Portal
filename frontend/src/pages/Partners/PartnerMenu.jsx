@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { FaPlus, FaTrash, FaUtensils, FaEdit, FaCheck, FaCalendarAlt, FaMapMarkerAlt, FaClock, FaDollarSign, FaUsers } from 'react-icons/fa';
 import axios from 'axios';
 import PartnerSideBar from '../../components/PartnerSideBar';
+import { baseURL } from '../../utils/baseURL';
 
 const PartnerMenu = () => {
   const [activeTab, setActiveTab] = useState('view');
@@ -47,7 +48,7 @@ const PartnerMenu = () => {
       try {
         const token = localStorage.getItem('token');
         const partnerId = getPartnerId();
-        const response = await axios.get(`http://localhost:3000/api/tours/partner/${partnerId}`, {
+        const response = await axios.get(`${baseURL}/tours/partner/${partnerId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setTours(response.data);
@@ -73,7 +74,7 @@ const PartnerMenu = () => {
         throw new Error('Authentication token not found. Please log in again.');
       }
 
-      const response = await axios.get('http://localhost:3000/api/tours/available', {
+      const response = await axios.get(`${baseURL}/tours/available`, {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -122,7 +123,7 @@ const PartnerMenu = () => {
       }
 
       await axios.post(
-        `http://localhost:3000/api/tours/${tourId}/partner`,
+        `${baseURL}/tours/${tourId}/partner`,
         {},
         {
           headers: { 
@@ -135,7 +136,7 @@ const PartnerMenu = () => {
       // Refresh tours list
       const partnerId = getPartnerId();
       const response = await axios.get(
-        `http://localhost:3000/api/tours/partner/${partnerId}`,
+        `${baseURL}/tours/partner/${partnerId}`,
         {
           headers: { 
             Authorization: `Bearer ${token}`,
@@ -178,7 +179,7 @@ const PartnerMenu = () => {
     const fetchMenu = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`http://localhost:3000/api/partner/menu?tour=${selectedTour._id}`,
+        const response = await axios.get(`${baseURL}/partner/menu?tour=${selectedTour._id}`,
           { headers: { Authorization: `Bearer ${token}` } });
         setMenuItems(response.data);
       } catch (err) {
@@ -193,7 +194,7 @@ const PartnerMenu = () => {
   // Helper to fetch a tour by ID
   const fetchTourById = async (tourId) => {
     const token = localStorage.getItem('token');
-    const response = await axios.get(`http://localhost:3000/api/tours/${tourId}`,
+    const response = await axios.get(`${baseURL}/tours/${tourId}`,
       { headers: { Authorization: `Bearer ${token}` } });
     return response.data;
   };
@@ -223,11 +224,11 @@ const PartnerMenu = () => {
         tour: selectedTour?._id
       };
       console.log('Adding menu item:', payload); // Debug log
-      await axios.post('http://localhost:3000/api/partner/menu', payload, {
+      await axios.post(`${baseURL}/partner/menu`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Refresh menu items
-      const response = await axios.get(`http://localhost:3000/api/partner/menu?tour=${selectedTour._id}`,
+      const response = await axios.get(`${baseURL}/partner/menu?tour=${selectedTour._id}`,
         { headers: { Authorization: `Bearer ${token}` } });
       setMenuItems(response.data);
       setFormData({ name: '', description: '', price: '', category: 'main' });
@@ -254,11 +255,11 @@ const PartnerMenu = () => {
     setError(null);
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:3000/api/partner/menu/${editId}`, formData, {
+      await axios.put(`${baseURL}/partner/menu/${editId}`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Refresh menu items
-      const response = await axios.get(`http://localhost:3000/api/partner/menu?tour=${selectedTour._id}`,
+      const response = await axios.get(`${baseURL}/partner/menu?tour=${selectedTour._id}`,
         { headers: { Authorization: `Bearer ${token}` } });
       setMenuItems(response.data);
       setFormData({ name: '', description: '', price: '', category: 'main' });
@@ -274,11 +275,11 @@ const PartnerMenu = () => {
     if (!window.confirm('Are you sure you want to delete this item?')) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:3000/api/partner/menu/${menuItems[idx]._id}`, {
+      await axios.delete(`${baseURL}/partner/menu/${menuItems[idx]._id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Refresh menu items
-      const response = await axios.get(`http://localhost:3000/api/partner/menu?tour=${selectedTour._id}`,
+      const response = await axios.get(`${baseURL}/partner/menu?tour=${selectedTour._id}`,
         { headers: { Authorization: `Bearer ${token}` } });
       setMenuItems(response.data);
     } catch (err) {
@@ -301,13 +302,13 @@ const PartnerMenu = () => {
       if (!token) {
         throw new Error('Authentication token not found. Please log in again.');
       }
-      await axios.delete(`http://localhost:3000/api/tours/${tourId}/partner`, {
+      await axios.delete(`${baseURL}/tours/${tourId}/partner`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Refresh tours list
       const partnerId = getPartnerId();
       const response = await axios.get(
-        `http://localhost:3000/api/tours/partner/${partnerId}`,
+        `${baseURL}/tours/partner/${partnerId}`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
