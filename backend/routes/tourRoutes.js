@@ -50,7 +50,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // Create new tour (admin only)
-router.post("/", verifyAdmin, upload.single('image'), async (req, res) => {
+router.post("/", verifyToken, verifyAdmin, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'Image is required' });
@@ -77,7 +77,7 @@ router.post("/", verifyAdmin, upload.single('image'), async (req, res) => {
 });
 
 // Update tour (admin only)
-router.put("/:id", verifyAdmin, upload.single('image'), async (req, res) => {
+router.put("/:id", verifyToken, verifyAdmin, upload.single('image'), async (req, res) => {
   try {
     const tour = await Tour.findById(req.params.id);
     if (!tour) {
