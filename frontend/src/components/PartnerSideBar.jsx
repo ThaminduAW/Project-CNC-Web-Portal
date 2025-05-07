@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { FaUser, FaCalendarAlt, FaEnvelope, FaCog, FaSignOutAlt, FaHome, FaUtensils, FaComments, FaCalendarCheck, FaClipboardList } from "react-icons/fa";
 import logo from "../assets/logo.png";
 import defaultProfile from "../assets/default-profile.png";
-import { baseURL } from '../../utils/baseURL';
+import { baseURL } from '../utils/baseURL';
 
 const PartnerSideBar = () => {
   const navigate = useNavigate();
