@@ -59,7 +59,7 @@ router.post("/", verifyToken, verifyAdmin, upload.single('image'), async (req, r
     const tourData = {
       ...req.body,
       image: `/uploads/tours/${req.file.filename}`,
-      restaurants: JSON.parse(req.body.restaurants || '[]')
+      restaurants: [] // Initialize with empty restaurants array
     };
     
     const tour = new Tour(tourData);
@@ -86,8 +86,7 @@ router.put("/:id", verifyToken, verifyAdmin, upload.single('image'), async (req,
 
     const updateData = {
       ...req.body,
-      image: req.file ? `/uploads/tours/${req.file.filename}` : tour.image,
-      restaurants: JSON.parse(req.body.restaurants || JSON.stringify(tour.restaurants))
+      image: req.file ? `/uploads/tours/${req.file.filename}` : tour.image
     };
 
     if (req.file && tour.image) {

@@ -13,8 +13,7 @@ const tourSchema = new mongoose.Schema({
   restaurants: [{
     restaurant: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true
+      ref: 'User'
     },
     menu: [{
       name: { type: String, required: true },

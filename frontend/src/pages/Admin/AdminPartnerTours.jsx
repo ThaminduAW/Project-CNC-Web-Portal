@@ -26,9 +26,7 @@ const AdminPartnerTours = () => {
     price: 0,
     date: '',
     optionalDetails: '',
-    status: 'active',
-    partnerId: '',
-    restaurants: []
+    status: 'active'
   });
   const [partners, setPartners] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -201,14 +199,8 @@ const AdminPartnerTours = () => {
       
       // Add other tour data
       Object.keys(newTour).forEach(key => {
-        if (key === 'restaurants') {
-          formData.append(key, JSON.stringify([{ restaurant: newTour.partnerId }]));
-        } else {
-          formData.append(key, newTour[key]);
-        }
+        formData.append(key, newTour[key]);
       });
-
-      console.log('Creating tour with data:', Object.fromEntries(formData));
 
       const response = await fetch('http://localhost:3000/api/tours', {
         method: 'POST',
@@ -217,15 +209,12 @@ const AdminPartnerTours = () => {
         },
         body: formData
       });
-
-      console.log('Response status:', response.status);
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
         console.error('Error response:', errorData);
         
         if (response.status === 401) {
-          // Clear invalid auth data and redirect to login
           localStorage.removeItem('token');
           localStorage.removeItem('user');
           navigate('/signin');
@@ -235,8 +224,6 @@ const AdminPartnerTours = () => {
       }
 
       const createdTour = await response.json();
-      console.log('Created tour:', createdTour);
-      
       setTours(prevTours => [...prevTours, createdTour]);
       setShowCreateModal(false);
       setNewTour({
@@ -248,9 +235,7 @@ const AdminPartnerTours = () => {
         price: 0,
         date: '',
         optionalDetails: '',
-        status: 'active',
-        partnerId: '',
-        restaurants: []
+        status: 'active'
       });
       setSelectedImage(null);
     } catch (err) {
@@ -332,9 +317,9 @@ const AdminPartnerTours = () => {
               </button>
               <h2 className="text-2xl font-bold text-[#001524ff] mb-6">Create New Tour</h2>
               <form onSubmit={handleCreateTour} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Tour Name</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Title</label>
                     <input
                       type="text"
                       value={newTour.title}
@@ -342,30 +327,6 @@ const AdminPartnerTours = () => {
                       className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0098c9ff]"
                       required
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Date</label>
-                    <input
-                      type="date"
-                      value={newTour.date}
-                      onChange={(e) => setNewTour({...newTour, date: e.target.value})}
-                      className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0098c9ff]"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Partner Restaurant</label>
-                    <select
-                      value={newTour.partnerId}
-                      onChange={e => setNewTour({ ...newTour, partnerId: e.target.value })}
-                      className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0098c9ff]"
-                      required
-                    >
-                      <option value="">Select a partner</option>
-                      {partners.map(partner => (
-                        <option key={partner._id} value={partner._id}>{partner.restaurantName}</option>
-                      ))}
-                    </select>
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
@@ -378,6 +339,16 @@ const AdminPartnerTours = () => {
                       <option value="active">Available</option>
                       <option value="inactive">Unavailable</option>
                     </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Date</label>
+                    <input
+                      type="date"
+                      value={newTour.date}
+                      onChange={(e) => setNewTour({...newTour, date: e.target.value})}
+                      className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0098c9ff]"
+                      required
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Location</label>
@@ -768,7 +739,6 @@ const AdminPartnerTours = () => {
                     formData.append('date', editTour.date);
                     formData.append('optionalDetails', editTour.optionalDetails || '');
                     formData.append('status', editTour.status);
-                    formData.append('restaurants', JSON.stringify([{ restaurant: editTour.partnerId || (editTour.restaurants && editTour.restaurants[0]?.restaurant) }]));
                     if (editTour.imageFile) formData.append('image', editTour.imageFile);
                     const response = await fetch(`http://localhost:3000/api/tours/${editTour._id}`, {
                       method: 'PUT',
@@ -808,20 +778,6 @@ const AdminPartnerTours = () => {
                       className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0098c9ff]"
                       required
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Partner Restaurant</label>
-                    <select
-                      value={editTour.partnerId || (editTour.restaurants && editTour.restaurants[0]?.restaurant) || ''}
-                      onChange={e => setEditTour({ ...editTour, partnerId: e.target.value })}
-                      className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0098c9ff]"
-                      required
-                    >
-                      <option value="">Select a partner</option>
-                      {partners.map(partner => (
-                        <option key={partner._id} value={partner._id}>{partner.restaurantName}</option>
-                      ))}
-                    </select>
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
