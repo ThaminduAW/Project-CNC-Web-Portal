@@ -179,7 +179,7 @@ router.delete("/partners/decline/:id", async (req, res) => {
   }
 });
 
-// ✅ PATCH - Update an approved partner's details
+// PATCH - Update an approved partner's details
 router.patch("/partners/update/:id", async (req, res) => {
   try {
     const { fullName, restaurantName, address, phone } = req.body;
@@ -195,7 +195,7 @@ router.patch("/partners/update/:id", async (req, res) => {
   }
 });
 
-// ✅ DELETE - Remove an approved partner
+// DELETE - Remove an approved partner
 router.delete("/partners/delete/:id", async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id);

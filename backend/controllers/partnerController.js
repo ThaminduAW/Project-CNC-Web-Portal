@@ -102,7 +102,7 @@ export const sendPromotionalNotifications = async (req, res) => {
     // Use emails directly
     const customers = selectedCustomers.map(email => ({
       email,
-      name: email // You can improve this if you send the name from the frontend
+      name: email 
     }));
 
     // Send emails to selected customers
