@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import PartnerSideBar from "../../components/PartnerSideBar";
 import { FaCalendarAlt, FaUsers, FaStore, FaStar, FaPhone, FaEnvelope, FaMapMarkerAlt, FaRedo } from 'react-icons/fa';
 import axios from 'axios';
+import { baseURL } from '../../utils/baseURL';  
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_URL = import.meta.env.VITE_API_URL || `${baseURL}`;
 
 const PartnerDashboard = () => {
   const [loading, setLoading] = useState(true);

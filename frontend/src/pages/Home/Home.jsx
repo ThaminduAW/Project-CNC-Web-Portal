@@ -5,6 +5,7 @@ import Hero from "../../components/Hero";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import { FaUtensils, FaFish, FaStar, FaMapMarkerAlt } from 'react-icons/fa';
+import { baseURL } from "../../utils/baseURL";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ const Home = () => {
   useEffect(() => {
     const fetchRestaurants = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/partners");
+        const response = await fetch(`${baseURL}/partners`);
         const data = await response.json();
         setRestaurants(data.slice(0, 3)); // Display top 3 restaurants ok
       } catch (error) {
@@ -33,7 +34,7 @@ const Home = () => {
   useEffect(() => {
     const fetchTours = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/tours");
+        const response = await fetch(`${baseURL}/tours`);
         if (!response.ok) {
           throw new Error('Failed to fetch tours');
         }
@@ -89,7 +90,7 @@ const Home = () => {
                 <div className="relative w-full h-[300px] bg-gray-200">
                   {tour.image && (
                     <img 
-                      src={`http://localhost:3000${tour.image}`}
+                      src={`${baseURL}${tour.image}`}
                       alt={tour.title}
                       className="w-full h-full object-cover"
                     />

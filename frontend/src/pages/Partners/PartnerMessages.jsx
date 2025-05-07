@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import PartnerSideBar from "../../components/PartnerSideBar";
 import { FaPaperPlane, FaSpinner, FaEllipsisH, FaSmile, FaPaperclip, FaSearch, FaComments, FaCheck, FaCheckDouble } from "react-icons/fa";
+import { baseURL } from "../../utils/baseURL";
 
 const PartnerMessages = () => {
   const navigate = useNavigate();
@@ -97,7 +98,7 @@ const PartnerMessages = () => {
   const updateMessageStatus = async (messageId, status) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:3000/api/messages/${messageId}/status`, {
+      const response = await fetch(`${baseURL}/messages/${messageId}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -146,7 +147,7 @@ const PartnerMessages = () => {
           return;
         }
 
-        const response = await fetch("http://localhost:3000/api/admin/list", {
+        const response = await fetch(`${baseURL}/admin/list`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -181,7 +182,7 @@ const PartnerMessages = () => {
           return;
         }
 
-        const response = await fetch(`http://localhost:3000/api/messages/conversation/${selectedAdmin}`, {
+        const response = await fetch(`${baseURL}/messages/conversation/${selectedAdmin}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -225,7 +226,7 @@ const PartnerMessages = () => {
     setSending(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:3000/api/messages", {
+      const response = await fetch(`${baseURL}/messages`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

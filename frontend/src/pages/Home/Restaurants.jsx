@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import restaurantImage from "../../assets/restaurant.jpg";
+import { baseURL } from "../../utils/baseURL";
 
 const Restaurants = () => {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ const Restaurants = () => {
   useEffect(() => {
     const fetchRestaurants = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/partners");
+        const response = await fetch(`${baseURL}/partners`);
         if (!response.ok) throw new Error("Failed to fetch restaurants");
 
         const data = await response.json();

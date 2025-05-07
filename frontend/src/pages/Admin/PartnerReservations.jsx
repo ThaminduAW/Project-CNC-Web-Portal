@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import AdminSideBar from "../../components/AdminSideBar";
+import { baseURL } from "../../utils/baseURL";
 
 const PartnerReservations = () => {
   const [reservations, setReservations] = useState([]);
@@ -10,7 +11,7 @@ const PartnerReservations = () => {
   useEffect(() => {
     const fetchReservations = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/reservations");
+        const response = await fetch(`${baseURL}/reservations`);
         const data = await response.json();
 
         if (!response.ok) {
