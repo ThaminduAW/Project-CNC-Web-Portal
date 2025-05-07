@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { format, addDays } from 'date-fns';
 import { toast } from 'react-toastify';
+import { baseURL } from '../../utils/baseURL';
 
 const AvailabilityManager = () => {
   const { user } = useAuth();
@@ -32,7 +33,7 @@ const AvailabilityManager = () => {
   const fetchAvailability = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`/api/availability/${user._id}/${selectedDate}`);
+      const response = await axios.get(`${baseURL}/availability/${user._id}/${selectedDate}`);
       setTimeSlots(response.data.timeSlots);
     } catch (error) {
       if (error.response?.status === 404) {
@@ -48,7 +49,7 @@ const AvailabilityManager = () => {
   const handleSave = async () => {
     try {
       setLoading(true);
-      await axios.post('/api/availability', {
+      await axios.post(`${baseURL}/availability`, {
         restaurantId: user._id,
         date: selectedDate,
         timeSlots

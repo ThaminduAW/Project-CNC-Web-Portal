@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getImageUrl, handleImageError } from '../utils/imageUtils';
 import Header from './Header';
 import Footer from './Footer';
+import { baseURL } from '../../utils/baseURL';
 
 const TourDetail = () => {
   const { id } = useParams();
@@ -14,7 +15,7 @@ const TourDetail = () => {
   useEffect(() => {
     const fetchTour = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/tours/${id}`);
+        const response = await fetch(`${baseURL}/tours/${id}`);
         if (!response.ok) {
           throw new Error('Failed to fetch tour');
         }
