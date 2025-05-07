@@ -151,10 +151,45 @@ const TourDetail = () => {
                       <span className="text-gray-600">Location:</span>
                       <span className="font-medium text-[#001524ff]">{tour.location}</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Partner:</span>
-                      <span className="font-medium text-[#001524ff]">{tour.partner?.restaurantName || 'Unknown Partner'}</span>
-                    </div>
+                  </div>
+                </div>
+
+                {/* Participating Restaurants Section */}
+                <div className="bg-white p-6 rounded-xl shadow-sm">
+                  <h2 className="text-2xl font-semibold text-[#fea116ff] mb-6">Participating Restaurants</h2>
+                  <div className="space-y-8">
+                    {tour.restaurants.map((restaurantData, index) => (
+                      <div key={index} className="border-b border-gray-200 last:border-0 pb-6 last:pb-0">
+                        <h3 className="text-xl font-semibold text-[#001524ff] mb-4">
+                          {restaurantData.restaurant.restaurantName}
+                        </h3>
+                        
+                        {/* Restaurant Menu */}
+                        {restaurantData.menu && restaurantData.menu.length > 0 ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {restaurantData.menu.map((item, itemIndex) => (
+                              <div key={itemIndex} className="bg-gray-50 p-4 rounded-lg">
+                                {item.image && (
+                                  <img
+                                    src={getImageUrl(item.image)}
+                                    alt={item.name}
+                                    className="w-full h-40 object-cover rounded-lg mb-3"
+                                    onError={handleImageError}
+                                  />
+                                )}
+                                <h4 className="font-medium text-[#001524ff]">{item.name}</h4>
+                                {item.description && (
+                                  <p className="text-sm text-gray-600 mt-1">{item.description}</p>
+                                )}
+                                <p className="text-[#fea116ff] font-medium mt-2">${item.price}</p>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-gray-500 italic">No menu items available yet</p>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
 

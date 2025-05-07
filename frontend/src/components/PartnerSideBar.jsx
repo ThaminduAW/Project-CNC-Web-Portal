@@ -97,7 +97,6 @@ const PartnerSideBar = () => {
   const menuItems = [
     { path: "/partner/dashboard", icon: FaHome, label: "Dashboard" },
     { path: "/partner/events", icon: FaUtensils, label: "Events" },
-    { path: "/partner/tours", icon: FaCalendarAlt, label: "Tours" },
     { path: "/partner/reservations", icon: FaCalendarCheck, label: "Reservations" },
     { path: "/partner/messages", icon: FaComments, label: "Messages", badge: showBadge && unreadCount },
     { path: "/partner/notifications", icon: FaEnvelope, label: "Promotions" },

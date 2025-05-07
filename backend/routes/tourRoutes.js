@@ -1,6 +1,6 @@
 import express from "express";
 import Tour from "../models/Tour.js";
-import { verifyToken } from '../middleware/auth.js';
+import { verifyToken, verifyAdmin } from '../middleware/auth.js';
 import upload from '../middleware/upload.js';
 import path from 'path';
 import fs from 'fs';
@@ -10,21 +10,23 @@ const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Get all tours
+// Get all active tours
 router.get("/", async (req, res) => {
   try {
     const tours = await Tour.find({ status: 'active' })
-      .populate('partner', 'restaurantName');
+      .populate('restaurants.restaurant', 'restaurantName');
     res.json(tours);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// Get partner's tours
+// Get partner's assigned tours
 router.get("/partner/:partnerId", verifyToken, async (req, res) => {
   try {
-    const tours = await Tour.find({ partner: req.params.partnerId });
+    const tours = await Tour.find({
+      'restaurants.restaurant': req.params.partnerId
+    }).populate('restaurants.restaurant', 'restaurantName');
     res.json(tours);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -35,7 +37,7 @@ router.get("/partner/:partnerId", verifyToken, async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const tour = await Tour.findById(req.params.id)
-      .populate('partner', 'restaurantName address phone email');
+      .populate('restaurants.restaurant', 'restaurantName address phone email');
     
     if (!tour) {
       return res.status(404).json({ message: 'Tour not found' });
@@ -47,8 +49,8 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Create new tour
-router.post("/", verifyToken, upload.single('image'), async (req, res) => {
+// Create new tour (admin only)
+router.post("/", verifyAdmin, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'Image is required' });
@@ -56,15 +58,14 @@ router.post("/", verifyToken, upload.single('image'), async (req, res) => {
 
     const tourData = {
       ...req.body,
-      partner: req.user.id,
-      image: `/uploads/tours/${req.file.filename}`
+      image: `/uploads/tours/${req.file.filename}`,
+      restaurants: JSON.parse(req.body.restaurants || '[]')
     };
     
     const tour = new Tour(tourData);
     const newTour = await tour.save();
     res.status(201).json(newTour);
   } catch (error) {
-    // If there was an error and a file was uploaded, delete it
     if (req.file) {
       const filePath = path.join(__dirname, '..', 'uploads', 'tours', req.file.filename);
       fs.unlink(filePath, (err) => {
@@ -75,25 +76,20 @@ router.post("/", verifyToken, upload.single('image'), async (req, res) => {
   }
 });
 
-// Update tour
-router.put("/:id", verifyToken, upload.single('image'), async (req, res) => {
+// Update tour (admin only)
+router.put("/:id", verifyAdmin, upload.single('image'), async (req, res) => {
   try {
     const tour = await Tour.findById(req.params.id);
     if (!tour) {
       return res.status(404).json({ message: 'Tour not found' });
     }
 
-    // Check if the user is the tour owner
-    if (tour.partner.toString() !== req.user.id) {
-      return res.status(403).json({ message: 'Not authorized to update this tour' });
-    }
-
     const updateData = {
       ...req.body,
-      image: req.file ? `/uploads/tours/${req.file.filename}` : tour.image
+      image: req.file ? `/uploads/tours/${req.file.filename}` : tour.image,
+      restaurants: JSON.parse(req.body.restaurants || JSON.stringify(tour.restaurants))
     };
 
-    // If a new image is uploaded, delete the old one
     if (req.file && tour.image) {
       const oldImagePath = path.join(__dirname, '..', tour.image);
       fs.unlink(oldImagePath, (err) => {
@@ -109,7 +105,6 @@ router.put("/:id", verifyToken, upload.single('image'), async (req, res) => {
 
     res.json(updatedTour);
   } catch (error) {
-    // If there was an error and a new file was uploaded, delete it
     if (req.file) {
       const filePath = path.join(__dirname, '..', 'uploads', 'tours', req.file.filename);
       fs.unlink(filePath, (err) => {
@@ -120,20 +115,42 @@ router.put("/:id", verifyToken, upload.single('image'), async (req, res) => {
   }
 });
 
-// Delete tour
-router.delete("/:id", verifyToken, async (req, res) => {
+// Update partner's menu for a tour
+router.put("/:tourId/menu/:partnerId", verifyToken, async (req, res) => {
+  try {
+    const tour = await Tour.findById(req.params.tourId);
+    if (!tour) {
+      return res.status(404).json({ message: 'Tour not found' });
+    }
+
+    // Find the restaurant in the tour
+    const restaurantIndex = tour.restaurants.findIndex(
+      r => r.restaurant.toString() === req.params.partnerId
+    );
+
+    if (restaurantIndex === -1) {
+      return res.status(404).json({ message: 'Restaurant not found in this tour' });
+    }
+
+    // Update the menu
+    tour.restaurants[restaurantIndex].menu = req.body.menu;
+    const updatedTour = await tour.save();
+
+    res.json(updatedTour);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// Delete tour (admin only)
+router.delete("/:id", verifyAdmin, async (req, res) => {
   try {
     const tour = await Tour.findById(req.params.id);
     if (!tour) {
       return res.status(404).json({ message: 'Tour not found' });
     }
-    
-    // Check if the user is the tour owner
-    if (tour.partner.toString() !== req.user.id) {
-      return res.status(403).json({ message: 'Not authorized to delete this tour' });
-    }
 
-    // Delete the tour's image if it exists
+    // Delete tour image
     if (tour.image) {
       const imagePath = path.join(__dirname, '..', tour.image);
       fs.unlink(imagePath, (err) => {

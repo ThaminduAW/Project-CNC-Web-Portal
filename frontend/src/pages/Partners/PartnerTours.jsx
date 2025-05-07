@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PartnerSideBar from '../../components/PartnerSideBar';
-import { FaPlus, FaEdit, FaTrash, FaCalendarAlt, FaMapMarkerAlt, FaClock, FaDollarSign, FaImage } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaCalendarAlt, FaMapMarkerAlt, FaClock, FaDollarSign, FaImage, FaUtensils } from 'react-icons/fa';
 import { getImageUrl, handleImageError } from '../../utils/imageUtils';
 
 const PartnerTours = () => {
@@ -21,6 +21,14 @@ const PartnerTours = () => {
     date: '',
     optionalDetails: '',
     status: 'active'
+  });
+  const [showMenuModal, setShowMenuModal] = useState(false);
+  const [menuItems, setMenuItems] = useState([]);
+  const [newMenuItem, setNewMenuItem] = useState({
+    name: '',
+    description: '',
+    price: '',
+    image: null
   });
 
   // Get partner ID from localStorage
@@ -250,6 +258,82 @@ const PartnerTours = () => {
     setShowEditModal(true);
   };
 
+  // Handle menu item input changes
+  const handleMenuItemChange = (e) => {
+    const { name, value, files } = e.target;
+    if (name === 'image') {
+      setNewMenuItem(prev => ({
+        ...prev,
+        image: files[0]
+      }));
+    } else {
+      setNewMenuItem(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+  };
+
+  // Add new menu item
+  const handleAddMenuItem = () => {
+    if (!newMenuItem.name || !newMenuItem.price) {
+      setError('Name and price are required');
+      return;
+    }
+
+    setMenuItems([...menuItems, { ...newMenuItem }]);
+    setNewMenuItem({
+      name: '',
+      description: '',
+      price: '',
+      image: null
+    });
+  };
+
+  // Remove menu item
+  const handleRemoveMenuItem = (index) => {
+    setMenuItems(menuItems.filter((_, i) => i !== index));
+  };
+
+  // Save menu
+  const handleSaveMenu = async () => {
+    try {
+      const partnerId = getPartnerId();
+      const token = localStorage.getItem('token');
+
+      const response = await fetch(`http://localhost:3000/api/tours/${selectedTour._id}/menu/${partnerId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ menu: menuItems })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update menu');
+      }
+
+      const updatedTour = await response.json();
+      setTours(tours.map(tour => 
+        tour._id === updatedTour._id ? updatedTour : tour
+      ));
+      setShowMenuModal(false);
+      setSelectedTour(null);
+      setMenuItems([]);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  // Open menu modal
+  const openMenuModal = (tour) => {
+    const restaurant = tour.restaurants.find(r => r.restaurant._id === getPartnerId());
+    setSelectedTour(tour);
+    setMenuItems(restaurant?.menu || []);
+    setShowMenuModal(true);
+  };
+
   if (loading) {
     return (
       <div className="flex bg-[#fdfcdcff] text-[#001524ff]">
@@ -273,16 +357,9 @@ const PartnerTours = () => {
           {/* Header Section */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-[#001524ff] tracking-tight">Manage Tours</h1>
-              <p className="text-gray-600 mt-1">Create and manage your culinary tour experiences</p>
+              <h1 className="text-2xl md:text-3xl font-bold text-[#001524ff] tracking-tight">My Tour Menus</h1>
+              <p className="text-gray-600 mt-1">Manage your menus for tours assigned to your restaurant</p>
             </div>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="w-full md:w-auto bg-[#fea116ff] text-white px-6 py-3 rounded-lg hover:bg-[#e69510ff] transition-all duration-300 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-            >
-              <FaPlus className="text-lg" />
-              <span>Add New Tour</span>
-            </button>
           </div>
 
           {error && (
@@ -336,51 +413,31 @@ const PartnerTours = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between space-x-3 pt-4 border-t border-gray-100">
-                    <button
-                      onClick={() => handleToggleAvailability(tour._id, tour.status)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex-grow text-center ${
-                        tour.status === 'active'
-                          ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                          : 'bg-green-50 text-green-600 hover:bg-green-100'
-                      }`}
-                    >
-                      {tour.status === 'active' ? 'Make Unavailable' : 'Make Available'}
-                    </button>
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => openEditModal(tour)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
-                        title="Edit Tour"
-                      >
-                        <FaEdit className="text-lg" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteTour(tour._id)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
-                        title="Delete Tour"
-                      >
-                        <FaTrash className="text-lg" />
-                      </button>
-                    </div>
-                  </div>
+                  <button
+                    onClick={() => openMenuModal(tour)}
+                    className="w-full bg-[#fea116ff] text-white px-4 py-2 rounded-lg hover:bg-[#e69510ff] transition-all duration-200 flex items-center justify-center space-x-2 mt-4"
+                  >
+                    <FaUtensils className="text-lg" />
+                    <span>Manage Menu</span>
+                  </button>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Add/Edit Tour Modal */}
-          {(showAddModal || showEditModal) && (
+          {/* Menu Modal */}
+          {showMenuModal && selectedTour && (
             <div className="fixed inset-0 flex items-center justify-center z-50 p-4 bg-black bg-opacity-50">
               <div className="bg-white rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative">
                 <div className="flex justify-between items-center mb-6 sticky top-0 bg-white pb-4 border-b">
                   <h2 className="text-2xl font-bold text-[#001524ff]">
-                    {showAddModal ? 'Add New Tour' : 'Edit Tour'}
+                    Manage Menu for {selectedTour.title}
                   </h2>
                   <button
                     onClick={() => {
-                      showAddModal ? setShowAddModal(false) : setShowEditModal(false);
+                      setShowMenuModal(false);
                       setSelectedTour(null);
+                      setMenuItems([]);
                     }}
                     className="text-gray-500 hover:text-gray-700 transition-colors duration-200"
                   >
@@ -390,197 +447,110 @@ const PartnerTours = () => {
                   </button>
                 </div>
 
-                <form onSubmit={showAddModal ? handleAddTour : handleEditTour} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="col-span-2">
+                {/* Add New Menu Item Form */}
+                <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                  <h3 className="text-lg font-semibold mb-4">Add New Menu Item</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Tour Title <span className="text-red-500">*</span>
+                        Name <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
-                        name="title"
-                        value={formData.title}
-                        onChange={handleChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent transition-all duration-200"
+                        name="name"
+                        value={newMenuItem.name}
+                        onChange={handleMenuItemChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
                         required
                       />
                     </div>
-
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Brief Description <span className="text-red-500">*</span>
-                      </label>
-                      <textarea
-                        name="briefDescription"
-                        value={formData.briefDescription}
-                        onChange={handleChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent transition-all duration-200"
-                        rows="2"
-                        required
-                      />
-                    </div>
-
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Detailed Description <span className="text-red-500">*</span>
-                      </label>
-                      <textarea
-                        name="detailedDescription"
-                        value={formData.detailedDescription}
-                        onChange={handleChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent transition-all duration-200"
-                        rows="4"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Time Duration <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <FaClock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                        <input
-                          type="text"
-                          name="timeDuration"
-                          value={formData.timeDuration}
-                          onChange={handleChange}
-                          placeholder="e.g., 2 hours, Half day"
-                          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent transition-all duration-200"
-                          required
-                        />
-                      </div>
-                    </div>
-
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Price <span className="text-red-500">*</span>
                       </label>
-                      <div className="relative">
-                        <FaDollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                        <input
-                          type="number"
-                          name="price"
-                          value={formData.price}
-                          onChange={handleChange}
-                          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent transition-all duration-200"
-                          required
-                        />
-                      </div>
+                      <input
+                        type="number"
+                        name="price"
+                        value={newMenuItem.price}
+                        onChange={handleMenuItemChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
+                        required
+                      />
                     </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Location <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <FaMapMarkerAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                        <input
-                          type="text"
-                          name="location"
-                          value={formData.location}
-                          onChange={handleChange}
-                          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent transition-all duration-200"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Date <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <FaCalendarAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                        <input
-                          type="date"
-                          name="date"
-                          value={formData.date}
-                          onChange={handleChange}
-                          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent transition-all duration-200"
-                          required
-                        />
-                      </div>
-                    </div>
-
                     <div className="col-span-2">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Tour Image {!showEditModal && <span className="text-red-500">*</span>}
-                      </label>
-                      <div className="relative">
-                        <div className="flex items-center justify-center w-full">
-                          <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                              <FaImage className="w-10 h-10 mb-3 text-gray-400" />
-                              <p className="mb-2 text-sm text-gray-500">
-                                <span className="font-semibold">Click to upload</span> or drag and drop
-                              </p>
-                              <p className="text-xs text-gray-500">PNG, JPG or JPEG (MAX. 800x400px)</p>
-                            </div>
-                            <input
-                              type="file"
-                              name="image"
-                              onChange={handleChange}
-                              className="hidden"
-                              accept="image/*"
-                              required={!showEditModal}
-                            />
-                          </label>
-                        </div>
-                      </div>
-                      {showEditModal && (
-                        <p className="text-sm text-gray-500 mt-1">Leave empty to keep current image</p>
-                      )}
-                    </div>
-
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Optional Details
+                        Description
                       </label>
                       <textarea
-                        name="optionalDetails"
-                        value={formData.optionalDetails}
-                        onChange={handleChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent transition-all duration-200"
-                        rows="3"
-                        placeholder="Additional information about the tour"
+                        name="description"
+                        value={newMenuItem.description}
+                        onChange={handleMenuItemChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
+                        rows="2"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Image
+                      </label>
+                      <input
+                        type="file"
+                        name="image"
+                        onChange={handleMenuItemChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
+                        accept="image/*"
                       />
                     </div>
                   </div>
+                  <button
+                    onClick={handleAddMenuItem}
+                    className="mt-4 bg-[#fea116ff] text-white px-4 py-2 rounded-lg hover:bg-[#e69510ff] transition-all duration-200"
+                  >
+                    Add Item
+                  </button>
+                </div>
 
-                  {/* If editing, show current image preview */}
-                  {showEditModal && selectedTour && selectedTour.image && (
-                    <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Current Image</label>
-                      <img
-                        src={getImageUrl(selectedTour.image)}
-                        alt="Current tour"
-                        className="w-full max-h-48 object-cover rounded-lg"
-                        onError={handleImageError}
-                      />
+                {/* Menu Items List */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Current Menu Items</h3>
+                  {menuItems.map((item, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <h4 className="font-medium">{item.name}</h4>
+                        <p className="text-sm text-gray-600">{item.description}</p>
+                        <p className="text-[#fea116ff] font-medium">${item.price}</p>
+                      </div>
+                      <button
+                        onClick={() => handleRemoveMenuItem(index)}
+                        className="text-red-600 hover:text-red-800"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
                     </div>
-                  )}
+                  ))}
+                </div>
 
-                  <div className="flex justify-end space-x-4 pt-6 border-t sticky bottom-0 bg-white">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        showAddModal ? setShowAddModal(false) : setShowEditModal(false);
-                        setSelectedTour(null);
-                      }}
-                      className="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-200"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-6 py-2.5 bg-[#fea116ff] text-white rounded-lg hover:bg-[#e69510ff] transition-all duration-200 flex items-center space-x-2"
-                    >
-                      <span>{showAddModal ? 'Add Tour' : 'Update Tour'}</span>
-                      {showAddModal ? <FaPlus /> : <FaEdit />}
-                    </button>
-                  </div>
-                </form>
+                {/* Save Button */}
+                <div className="flex justify-end space-x-4 pt-6 border-t sticky bottom-0 bg-white">
+                  <button
+                    onClick={() => {
+                      setShowMenuModal(false);
+                      setSelectedTour(null);
+                      setMenuItems([]);
+                    }}
+                    className="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-200"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveMenu}
+                    className="px-6 py-2.5 bg-[#fea116ff] text-white rounded-lg hover:bg-[#e69510ff] transition-all duration-200"
+                  >
+                    Save Menu
+                  </button>
+                </div>
               </div>
             </div>
           )}

@@ -10,11 +10,19 @@ const tourSchema = new mongoose.Schema({
   image: { type: String, required: true },
   date: { type: Date, required: true },
   optionalDetails: { type: String },
-  partner: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'User', 
-    required: true 
-  },
+  restaurants: [{
+    restaurant: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    menu: [{
+      name: { type: String, required: true },
+      description: { type: String },
+      price: { type: Number, required: true },
+      image: { type: String }
+    }]
+  }],
   status: { 
     type: String, 
     enum: ['active', 'cancelled', 'completed'],
