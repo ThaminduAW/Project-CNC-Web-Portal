@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/logo.png";
 import { motion } from "framer-motion";
+import { baseURL } from "../../utils/baseURL";
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -57,7 +58,7 @@ const SignUp = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:3000/api/auth/signup", {
+      const response = await fetch(`${baseURL}/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

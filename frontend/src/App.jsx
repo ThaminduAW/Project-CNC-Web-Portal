@@ -20,7 +20,7 @@ import AdminSettings from "./pages/Admin/AdminSettings";
 import Requests from "./pages/Admin/Requests";
 
 import PartnerDashboard from "./pages/Partners/PartnerDashboard";
-import PartnerTours from "./pages/Partners/PartnerTours";
+import PartnerMenu from "./pages/Partners/PartnerMenu";
 import PartnerMessages from "./pages/Partners/PartnerMessages";
 import PartnerSettings from "./pages/Partners/PartnerSettings";
 import Reservations from "./pages/Partners/Reservations";
@@ -70,7 +70,7 @@ const App = () => {
 
                 {/* Partner Routes */}
                 <Route path="/partner/dashboard" element={<PartnerDashboard />} />
-                <Route path="/partner/tours" element={<PartnerTours />} />
+                <Route path="/partner/menu" element={<PartnerMenu />} />
                 <Route path="/partner/reservations" element={<Reservations />} />
                 <Route path="/partner/messages" element={<PartnerMessages />} />
                 <Route path="/partner/settings" element={<PartnerSettings />} />
