@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getImageUrl, handleImageError } from '../utils/imageUtils';
 import Header from './Header';
 import Footer from './Footer';
-import { baseURL } from '../../utils/baseURL';
+import { baseURL } from '../utils/baseURL';
 
 const TourDetail = () => {
   const { id } = useParams();

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { FaUser, FaUsers, FaCalendarAlt, FaEnvelope, FaCog, FaSignOutAlt, FaHome, FaComments, FaBuilding, FaCalendarCheck, FaClipboardList, FaBell } from "react-icons/fa";
 import logo from "../assets/logo.png"; // Ensure path is correct
 import defaultProfile from "../assets/default-profile.png"; // Default profile image
-import { baseURL } from '../../utils/baseURL';
+import { baseURL } from '../utils/baseURL';
 
 const AdminSideBar = () => {
   const navigate = useNavigate();

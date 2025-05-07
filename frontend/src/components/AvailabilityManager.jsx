@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { format, addDays } from 'date-fns';
 import { toast } from 'react-toastify';
-import { baseURL } from '../../utils/baseURL';
+import { baseURL } from '../utils/baseURL';
 
 const AvailabilityManager = () => {
   const { user } = useAuth();

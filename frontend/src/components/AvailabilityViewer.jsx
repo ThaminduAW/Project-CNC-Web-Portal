@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { FaClock, FaUsers, FaDollarSign, FaInfoCircle } from 'react-icons/fa';
-import { baseURL } from '../../utils/baseURL';
+import { baseURL } from '../utils/baseURL';
 
 const AvailabilityViewer = ({ restaurantId, date, onTimeSlotSelect }) => {
   const [timeSlots, setTimeSlots] = useState([]);
