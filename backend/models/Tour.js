@@ -9,6 +9,8 @@ const tourSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   image: { type: String, required: true },
   date: { type: Date, required: true },
+  maxParticipants: { type: Number, required: true, default: 20 },
+  currentParticipants: { type: Number, default: 0 },
   optionalDetails: { type: String },
   restaurants: [{
     restaurant: {
