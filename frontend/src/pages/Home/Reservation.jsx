@@ -156,7 +156,7 @@ const Reservation = () => {
     <div className="bg-[#fdfcdcff] text-[#001524ff]">
       <Header />
 
-      <div className="container mx-auto px-6 md:px-12 py-12 max-w-5xl">
+      <div className="container mx-auto px-6 md:px-12 py-12 max-w-5xl pt-20">
         <h1 className="text-3xl md:text-4xl font-bold text-center">
           Make a <span className="text-[#fea116ff]">Reservation</span>
         </h1>
