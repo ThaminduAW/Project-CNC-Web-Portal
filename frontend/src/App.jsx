@@ -29,6 +29,7 @@ import PromotionalNotifications from "./pages/Partners/PromotionalNotifications"
 
 import SignIn from "./pages/Authentication/SignIn";
 import SignUp from "./pages/Authentication/SignUp";
+import ForgotPassword from "./pages/Authentication/ForgotPassword";
 
 import NotFound from "./components/NotFound"; 
 
@@ -80,6 +81,7 @@ const App = () => {
                 {/* Authentication Routes */}
                 <Route path="/signin" element={<SignIn />} />
                 <Route path="/signup" element={<SignUp />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
 
                 {/* 404 Page */}
                 <Route path="*" element={<NotFound />} />
