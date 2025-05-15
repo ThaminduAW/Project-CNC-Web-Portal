@@ -80,7 +80,7 @@ const Hero = () => {
         </motion.div>
       </div>
 
-      <style jsx>{`
+      <style jsx="true">{`
         @keyframes imgRotate {
           100% {
             transform: rotate(360deg);
