@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FaPlus, FaTrash, FaUtensils, FaEdit, FaCheck, FaCalendarAlt, FaMapMarkerAlt, FaClock, FaDollarSign, FaUsers } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaUtensils, FaEdit, FaCheck, FaCalendarAlt, FaMapMarkerAlt, FaClock, FaDollarSign, FaUsers, FaFish } from 'react-icons/fa';
 import axios from 'axios';
 import PartnerSideBar from '../../components/PartnerSideBar';
 import { baseURL } from '../../utils/baseURL';
@@ -18,21 +18,24 @@ const PartnerMenu = () => {
   const [activeCategory, setActiveCategory] = useState('all');
 
   const CATEGORY_LABELS = {
-    appetizer: 'Appetizer',
-    main: 'Main Course',
-    dessert: 'Dessert',
-    beverage: 'Beverage'
+    basic: 'Basic Service',
+    premium: 'Premium Service',
+    custom: 'Custom Service'
   };
 
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    price: '',
-    category: 'main'
+    category: 'basic',
+    portionPrice: '',
+    cookingTime: '',
+    maxFoodPerOrder: 1,
+    includes: []
   });
 
   const [editIndex, setEditIndex] = useState(null);
   const [editId, setEditId] = useState(null);
+  const [newInclude, setNewInclude] = useState('');
 
   // Get partner ID from localStorage
   const getPartnerId = () => {
@@ -210,7 +213,22 @@ const PartnerMenu = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleImageChange = (e) => {} // No-op
+  const handleAddInclude = () => {
+    if (newInclude.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        includes: [...prev.includes, newInclude.trim()]
+      }));
+      setNewInclude('');
+    }
+  };
+
+  const handleRemoveInclude = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      includes: prev.includes.filter((_, i) => i !== index)
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -220,10 +238,10 @@ const PartnerMenu = () => {
       const partnerId = getPartnerId();
       const payload = {
         ...formData,
-        price: Number(formData.price),
+        portionPrice: Number(formData.portionPrice),
+        maxFoodPerOrder: Number(formData.maxFoodPerOrder),
         tour: selectedTour?._id
       };
-      console.log('Adding menu item:', payload); // Debug log
       await axios.post(`${baseURL}/partner/menu`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -231,10 +249,18 @@ const PartnerMenu = () => {
       const response = await axios.get(`${baseURL}/partner/menu?tour=${selectedTour._id}`,
         { headers: { Authorization: `Bearer ${token}` } });
       setMenuItems(response.data);
-      setFormData({ name: '', description: '', price: '', category: 'main' });
+      setFormData({
+        name: '',
+        description: '',
+        category: 'basic',
+        portionPrice: '',
+        cookingTime: '',
+        maxFoodPerOrder: 1,
+        includes: []
+      });
       setActiveTab('view');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to add menu item');
+      setError(err.response?.data?.message || 'Failed to add service');
     }
   };
 
@@ -244,8 +270,11 @@ const PartnerMenu = () => {
     setFormData({
       name: menuItems[idx].name,
       description: menuItems[idx].description,
-      price: menuItems[idx].price,
-      category: menuItems[idx].category
+      category: menuItems[idx].category,
+      portionPrice: menuItems[idx].portionPrice,
+      cookingTime: menuItems[idx].cookingTime,
+      maxFoodPerOrder: menuItems[idx].maxFoodPerOrder,
+      includes: menuItems[idx].includes || []
     });
     setActiveTab('add');
   };
@@ -262,17 +291,25 @@ const PartnerMenu = () => {
       const response = await axios.get(`${baseURL}/partner/menu?tour=${selectedTour._id}`,
         { headers: { Authorization: `Bearer ${token}` } });
       setMenuItems(response.data);
-      setFormData({ name: '', description: '', price: '', category: 'main' });
+      setFormData({
+        name: '',
+        description: '',
+        category: 'basic',
+        portionPrice: '',
+        cookingTime: '',
+        maxFoodPerOrder: 1,
+        includes: []
+      });
       setEditIndex(null);
       setEditId(null);
       setActiveTab('view');
     } catch (err) {
-      setError('Failed to update menu item');
+      setError('Failed to update service');
     }
   };
 
   const handleDelete = async (idx) => {
-    if (!window.confirm('Are you sure you want to delete this item?')) return;
+    if (!window.confirm('Are you sure you want to delete this service?')) return;
     try {
       const token = localStorage.getItem('token');
       await axios.delete(`${baseURL}/partner/menu/${menuItems[idx]._id}`, {
@@ -283,7 +320,7 @@ const PartnerMenu = () => {
         { headers: { Authorization: `Bearer ${token}` } });
       setMenuItems(response.data);
     } catch (err) {
-      setError('Failed to delete menu item');
+      setError('Failed to delete service');
     }
   };
 
@@ -402,7 +439,7 @@ const PartnerMenu = () => {
                             className="w-full h-full object-cover"
                           />
                           <div className="absolute top-4 right-4 bg-white px-3 py-1 rounded-full text-sm font-medium text-gray-900 shadow">
-                            ${tour.price}
+                            ${tour.portionPrice}
                           </div>
                         </div>
                       )}
@@ -479,7 +516,6 @@ const PartnerMenu = () => {
                 <button
                   onClick={() => handleLeaveTour(selectedTour._id)}
                   disabled={leavingTour === selectedTour._id}
-                  aria-label="Leave selected tour"
                   className={`h-[48px] px-10 py-3 rounded-lg flex items-center gap-2 font-semibold text-base shadow-lg transition-all duration-300 bg-red-500 text-white hover:bg-red-600 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 ${leavingTour === selectedTour._id ? 'opacity-60 cursor-not-allowed' : ''}`}
                 >
                   {leavingTour === selectedTour._id ? (
@@ -500,18 +536,18 @@ const PartnerMenu = () => {
           {/* Menu Management */}
           <div className="bg-gray-50 rounded-xl shadow-lg p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-semibold text-gray-900">Menu Items</h2>
+              <h2 className="text-2xl font-semibold text-gray-900">Cooking Services</h2>
               <button
                 onClick={() => setActiveTab(activeTab === 'view' ? 'add' : 'view')}
                 className="bg-[#fea116ff] text-white px-6 py-3 rounded-lg hover:bg-[#fea116cc] flex items-center gap-2 shadow-lg transition-all duration-300 hover:shadow-xl"
               >
                 {activeTab === 'view' ? (
                   <>
-                    <FaPlus /> Add New Item
+                    <FaPlus /> Add New Service
                   </>
                 ) : (
                   <>
-                    <FaUtensils /> View Menu
+                    <FaFish /> View Services
                   </>
                 )}
               </button>
@@ -529,7 +565,7 @@ const PartnerMenu = () => {
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                   >
-                    All Items
+                    All Services
                   </button>
                   {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
                     <button
@@ -546,16 +582,16 @@ const PartnerMenu = () => {
                   ))}
                 </div>
 
-                {/* Menu Items Grid */}
+                {/* Services Grid */}
                 {loading ? (
                   <div className="flex items-center justify-center h-64">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#fea116ff]"></div>
                   </div>
                 ) : filteredMenuItems.length === 0 ? (
                   <div className="text-center py-12">
-                    <FaUtensils className="mx-auto h-12 w-12 text-gray-400" />
-                    <h3 className="mt-2 text-sm font-medium text-gray-900">No menu items</h3>
-                    <p className="mt-1 text-sm text-gray-500">Get started by adding a new menu item.</p>
+                    <FaFish className="mx-auto h-12 w-12 text-gray-400" />
+                    <h3 className="mt-2 text-sm font-medium text-gray-900">No cooking services</h3>
+                    <p className="mt-1 text-sm text-gray-500">Get started by adding a new cooking service.</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -582,8 +618,30 @@ const PartnerMenu = () => {
                         </div>
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.name}</h3>
                         <p className="text-gray-600 mb-4 line-clamp-2">{item.description}</p>
+                        <div className="space-y-2 mb-4">
+                          <div className="flex items-center text-gray-600">
+                            <FaClock className="mr-2" />
+                            <span>Cooking Time: {item.cookingTime}</span>
+                          </div>
+                          <div className="flex items-center text-gray-600">
+                            <FaUtensils className="mr-2" />
+                            <span>Max Portions per Order: {item.maxFoodPerOrder}</span>
+                          </div>
+                        </div>
+                        {item.includes && item.includes.length > 0 && (
+                          <div className="mb-4">
+                            <h4 className="text-sm font-medium text-gray-700 mb-2">Includes:</h4>
+                            <div className="flex flex-wrap gap-2">
+                              {item.includes.map((include, i) => (
+                                <span key={i} className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
+                                  {include}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                         <div className="flex justify-between items-center">
-                          <span className="text-xl font-bold text-[#fea116ff]">${item.price}</span>
+                          <span className="text-xl font-bold text-[#fea116ff]">${item.portionPrice}</span>
                         </div>
                       </div>
                     ))}
@@ -594,7 +652,7 @@ const PartnerMenu = () => {
               <form onSubmit={editIndex !== null ? handleSaveEdit : handleSubmit} className="max-w-2xl mx-auto">
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Food Name</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Service Name</label>
                     <input
                       type="text"
                       name="name"
@@ -616,18 +674,6 @@ const PartnerMenu = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Price</label>
-                    <input
-                      type="number"
-                      name="price"
-                      value={formData.price}
-                      onChange={handleInputChange}
-                      step="0.01"
-                      className="block w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
-                      required
-                    />
-                  </div>
-                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
                     <select
                       name="category"
@@ -641,11 +687,83 @@ const PartnerMenu = () => {
                       ))}
                     </select>
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Portion Price</label>
+                    <input
+                      type="number"
+                      name="portionPrice"
+                      value={formData.portionPrice}
+                      onChange={handleInputChange}
+                      step="0.01"
+                      className="block w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Cooking Time</label>
+                    <input
+                      type="text"
+                      name="cookingTime"
+                      value={formData.cookingTime}
+                      onChange={handleInputChange}
+                      placeholder="e.g., 30 minutes"
+                      className="block w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Maximum Food per Order</label>
+                    <input
+                      type="number"
+                      name="maxFoodPerOrder"
+                      value={formData.maxFoodPerOrder}
+                      onChange={handleInputChange}
+                      min="1"
+                      className="block w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">What's Included</label>
+                    <div className="flex gap-2 mb-2">
+                      <input
+                        type="text"
+                        value={newInclude}
+                        onChange={(e) => setNewInclude(e.target.value)}
+                        placeholder="e.g., Seasoning, Side Dishes"
+                        className="block w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddInclude}
+                        className="bg-[#fea116ff] text-white px-4 py-2 rounded-lg hover:bg-[#fea116cc]"
+                      >
+                        Add
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {formData.includes.map((include, index) => (
+                        <span
+                          key={index}
+                          className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm flex items-center gap-2"
+                        >
+                          {include}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveInclude(index)}
+                            className="text-gray-400 hover:text-gray-600"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                   <button
                     type="submit"
                     className="w-full bg-[#fea116ff] text-white py-3 px-4 rounded-lg hover:bg-[#fea116cc] focus:outline-none focus:ring-2 focus:ring-[#fea116ff] focus:ring-offset-2 font-semibold transition-all duration-300"
                   >
-                    {editIndex !== null ? 'Save Changes' : 'Add Menu Item'}
+                    {editIndex !== null ? 'Save Changes' : 'Add Service'}
                   </button>
                 </div>
               </form>

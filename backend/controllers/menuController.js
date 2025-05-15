@@ -20,11 +20,21 @@ export const getPartnerMenu = async (req, res) => {
 export const addMenuItem = async (req, res) => {
   try {
     const partnerId = req.user.id;
-    const { name, description, price, category, tour } = req.body;
+    const { name, description, portionPrice, category, cookingTime, maxFoodPerOrder, includes, tour } = req.body;
     if (!tour) return res.status(400).json({ message: 'Tour is required' });
     
     // Create menu item
-    const menuItem = new Menu({ partner: partnerId, tour, name, description, price, category });
+    const menuItem = new Menu({ 
+      partner: partnerId, 
+      tour, 
+      name, 
+      description, 
+      portionPrice, 
+      category,
+      cookingTime,
+      maxFoodPerOrder,
+      includes
+    });
     await menuItem.save();
 
     // Update tour's restaurant menu
@@ -45,8 +55,11 @@ export const addMenuItem = async (req, res) => {
     tourDoc.restaurants[restaurantIndex].menu.push({
       name: menuItem.name,
       description: menuItem.description,
-      price: menuItem.price,
-      image: menuItem.image
+      portionPrice: menuItem.portionPrice,
+      category: menuItem.category,
+      cookingTime: menuItem.cookingTime,
+      maxFoodPerOrder: menuItem.maxFoodPerOrder,
+      includes: menuItem.includes
     });
 
     await tourDoc.save();
@@ -62,12 +75,12 @@ export const editMenuItem = async (req, res) => {
   try {
     const partnerId = req.user.id;
     const { id } = req.params;
-    const { name, description, price, category } = req.body;
+    const { name, description, portionPrice, category, cookingTime, maxFoodPerOrder, includes } = req.body;
 
     // Update menu item
     const updated = await Menu.findOneAndUpdate(
       { _id: id, partner: partnerId },
-      { name, description, price, category },
+      { name, description, portionPrice, category, cookingTime, maxFoodPerOrder, includes },
       { new: true }
     );
 
@@ -96,8 +109,11 @@ export const editMenuItem = async (req, res) => {
       tourDoc.restaurants[restaurantIndex].menu[menuIndex] = {
         name: updated.name,
         description: updated.description,
-        price: updated.price,
-        image: updated.image
+        portionPrice: updated.portionPrice,
+        category: updated.category,
+        cookingTime: updated.cookingTime,
+        maxFoodPerOrder: updated.maxFoodPerOrder,
+        includes: updated.includes
       };
       await tourDoc.save();
     }

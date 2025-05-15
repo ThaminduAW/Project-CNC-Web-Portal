@@ -19,9 +19,16 @@ const tourSchema = new mongoose.Schema({
     },
     menu: [{
       name: { type: String, required: true },
-      description: { type: String },
-      price: { type: Number, required: true },
-      image: { type: String }
+      description: { type: String, required: true },
+      portionPrice: { type: Number, required: true },
+      category: { 
+        type: String, 
+        enum: ['basic', 'premium', 'custom'],
+        default: 'basic'
+      },
+      cookingTime: { type: String, required: true },
+      maxFoodPerOrder: { type: Number, default: 1 },
+      includes: [{ type: String }]
     }]
   }],
   status: { 
