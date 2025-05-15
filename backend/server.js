@@ -15,6 +15,7 @@ import availabilityRoutes from "./routes/availabilityRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import requestRoutes from './routes/requestRoutes.js';
 import menuRoutes from "./routes/menuRoutes.js";
+import uploadRoutes from './routes/uploadRoutes.js';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -54,6 +55,7 @@ app.use("/api/availability", availabilityRoutes);
 app.use("/api/users", userRoutes);
 app.use('/api/requests', requestRoutes);
 app.use("/api/partner/menu", menuRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {

@@ -5,8 +5,9 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import axios from 'axios';
 import PartnerSideBar from '../../components/PartnerSideBar';
-import { FaClock, FaMapMarkerAlt, FaGlobe, FaUtensils, FaUser, FaPhone, FaEnvelope, FaLock, FaCalendarAlt, FaExclamationCircle, FaKey, FaSave } from 'react-icons/fa';
+import { FaClock, FaMapMarkerAlt, FaGlobe, FaUtensils, FaUser, FaPhone, FaEnvelope, FaLock, FaCalendarAlt, FaExclamationCircle, FaKey, FaSave, FaPlus, FaTrash, FaInfoCircle, FaList, FaCamera } from 'react-icons/fa';
 import { baseURL } from '../../utils/baseURL';
+
 const PartnerSettings = () => {
   const [userData, setUserData] = useState({
     fullName: '',
@@ -16,6 +17,9 @@ const PartnerSettings = () => {
     email: '',
     url: '',
     cuisine: '',
+    about: '',
+    features: [],
+    restaurantPhoto: '',
     operatingHours: {
       monday: { open: '', close: '' },
       tuesday: { open: '', close: '' },
@@ -37,6 +41,8 @@ const PartnerSettings = () => {
   const [passwordError, setPasswordError] = useState('');
   const [pendingChanges, setPendingChanges] = useState(false);
   const [formData, setFormData] = useState(null);
+
+  const [newFeature, setNewFeature] = useState({ name: '', description: '', icon: '⭐' });
 
   useEffect(() => {
     fetchUserProfile();
@@ -79,6 +85,9 @@ const PartnerSettings = () => {
           email: response.data.user.email || '',
           url: response.data.user.url || '',
           cuisine: response.data.user.cuisine || '',
+          about: response.data.user.about || '',
+          features: response.data.user.features || [],
+          restaurantPhoto: response.data.user.restaurantPhoto || '',
           operatingHours: response.data.user.operatingHours ? 
             formatOperatingHours(response.data.user.operatingHours) : 
             {
@@ -257,6 +266,8 @@ const PartnerSettings = () => {
         phone: formData.phone,
         email: formData.email,
         url: formData.url,
+        about: formData.about,
+        features: formData.features,
         operatingHours: formatTimeForBackend(formData.operatingHours)
       };
 
@@ -299,6 +310,71 @@ const PartnerSettings = () => {
         localStorage.removeItem('user');
         window.location.href = '/signin';
       }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddFeature = () => {
+    if (newFeature.name.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        features: [...(prev.features || []), { ...newFeature }]
+      }));
+      setNewFeature({ name: '', description: '', icon: '⭐' });
+    }
+  };
+
+  const handleRemoveFeature = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      features: prev.features.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      setMessage({ type: 'error', text: 'Please upload an image file' });
+      return;
+    }
+
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage({ type: 'error', text: 'Image size should be less than 5MB' });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const formData = new FormData();
+      formData.append('photo', file);
+
+      const token = localStorage.getItem('token');
+      const response = await axios.post(`${baseURL}/upload/photo`, formData, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      if (response.data.photoUrl) {
+        // If the backend returns a relative path, build the full URL
+        const photoUrl = response.data.photoUrl.startsWith('http')
+          ? response.data.photoUrl
+          : `${baseURL}${response.data.photoUrl}`;
+        setFormData(prev => ({
+          ...prev,
+          restaurantPhoto: photoUrl
+        }));
+        setMessage({ type: 'success', text: 'Photo uploaded successfully' });
+      }
+    } catch (error) {
+      console.error('Photo upload error:', error);
+      setMessage({ type: 'error', text: 'Failed to upload photo' });
     } finally {
       setLoading(false);
     }
@@ -356,7 +432,7 @@ const PartnerSettings = () => {
               }`}>
                 <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                   {message.type === 'success' ? (
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 10-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   ) : (
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                   )}
@@ -366,6 +442,53 @@ const PartnerSettings = () => {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-8">
+              {/* Restaurant Photo Section */}
+              <div className="bg-white rounded-xl shadow-md p-6">
+                <h2 className="text-xl font-semibold text-[#001524ff] mb-6 flex items-center">
+                  <FaCamera className="mr-2 text-[#fea116ff]" />
+                  Restaurant Photo
+                </h2>
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-6">
+                    <div className="relative w-48 h-48">
+                      {formData?.restaurantPhoto ? (
+                        <img
+                          src={formData.restaurantPhoto}
+                          alt="Restaurant"
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
+                          <FaCamera className="text-4xl text-gray-400" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Upload Restaurant Photo
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoUpload}
+                        className="hidden"
+                        id="photo-upload"
+                      />
+                      <label
+                        htmlFor="photo-upload"
+                        className="inline-flex items-center px-4 py-2 bg-[#fea116ff] text-white rounded-lg hover:bg-[#e69510ff] transition-all duration-200 cursor-pointer"
+                      >
+                        <FaCamera className="mr-2" />
+                        Choose Photo
+                      </label>
+                      <p className="mt-2 text-sm text-gray-500">
+                        Recommended size: 800x600px. Max file size: 5MB
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Personal Information */}
               <div className="bg-white rounded-xl shadow-md p-6">
                 <h2 className="text-xl font-semibold text-[#001524ff] mb-6">Personal Information</h2>
@@ -456,6 +579,101 @@ const PartnerSettings = () => {
                 </div>
               </div>
 
+              {/* About Section */}
+              <div className="bg-white rounded-xl shadow-md p-6">
+                <h2 className="text-xl font-semibold text-[#001524ff] mb-6 flex items-center">
+                  <FaInfoCircle className="mr-2 text-[#fea116ff]" />
+                  About Your Restaurant
+                </h2>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Restaurant Description</label>
+                    <textarea
+                      name="about"
+                      value={formData?.about || userData.about}
+                      onChange={handleInputChange}
+                      placeholder="Tell us about your restaurant..."
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent transition-all duration-200"
+                      rows="4"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Features Section */}
+              <div className="bg-white rounded-xl shadow-md p-6">
+                <h2 className="text-xl font-semibold text-[#001524ff] mb-6 flex items-center">
+                  <FaList className="mr-2 text-[#fea116ff]" />
+                  Restaurant Features
+                </h2>
+                <div className="space-y-6">
+                  {/* Existing Features */}
+                  {formData?.features?.map((feature, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div className="flex items-center space-x-4">
+                        <span className="text-2xl">{feature.icon}</span>
+                        <div>
+                          <h3 className="font-medium">{feature.name}</h3>
+                          <p className="text-sm text-gray-600">{feature.description}</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveFeature(index)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
+                  ))}
+
+                  {/* Add New Feature Form */}
+                  <div className="border-t pt-6">
+                    <h3 className="text-lg font-medium mb-4">Add New Feature</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Icon</label>
+                        <input
+                          type="text"
+                          value={newFeature.icon}
+                          onChange={(e) => setNewFeature(prev => ({ ...prev, icon: e.target.value }))}
+                          placeholder="e.g., ⭐"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                        <input
+                          type="text"
+                          value={newFeature.name}
+                          onChange={(e) => setNewFeature(prev => ({ ...prev, name: e.target.value }))}
+                          placeholder="Feature name"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                        <input
+                          type="text"
+                          value={newFeature.description}
+                          onChange={(e) => setNewFeature(prev => ({ ...prev, description: e.target.value }))}
+                          placeholder="Feature description"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
+                        />
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleAddFeature}
+                      className="mt-4 px-4 py-2 bg-[#fea116ff] text-white rounded-lg hover:bg-[#e69510ff] transition-all duration-200 flex items-center"
+                    >
+                      <FaPlus className="mr-2" />
+                      Add Feature
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               {/* Operating Hours */}
               <div className="bg-white rounded-xl shadow-md p-6">
                 <h2 className="text-xl font-semibold text-[#001524ff] mb-6 flex items-center">
@@ -516,7 +734,7 @@ const PartnerSettings = () => {
                 </div>
                 
                 {/* Save Changes Button */}
-                <div className="flex justify-end mt-6 pt-6 border-t border-gray-200">
+                <div className="flex justify-end mt-6">
                   <button
                     type="submit"
                     disabled={loading}

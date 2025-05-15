@@ -4,6 +4,7 @@ import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import restaurantImage from "../../assets/restaurant.jpg";
 import { baseURL } from "../../utils/baseURL";
+import { FaUtensils } from "react-icons/fa";
 
 const Restaurants = () => {
   const navigate = useNavigate();
@@ -36,7 +37,7 @@ const Restaurants = () => {
   return (
     <div className="bg-[#fdfcdcff] text-[#001524ff]">
       <Header />
-      <main className="container mx-auto px-6 md:px-12 py-12 max-w-5xl">
+      <main className="container mx-auto px-6 md:px-12 py-12 max-w-5xl pt-30">
         {/* Header Section */}
         <div className="text-center mb-12">
           <h1 className="text-3xl md:text-4xl font-bold">
@@ -69,6 +70,21 @@ const Restaurants = () => {
                 key={restaurant._id} 
                 className="bg-white rounded-lg shadow-lg overflow-hidden transform transition-transform hover:scale-105"
               >
+                {/* Restaurant Photo */}
+                {restaurant.restaurantPhoto ? (
+                  <div className="h-48 relative">
+                    <img
+                      src={restaurant.restaurantPhoto}
+                      alt={restaurant.restaurantName}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="h-48 bg-gray-100 flex items-center justify-center">
+                    <FaUtensils className="text-4xl text-gray-400" />
+                  </div>
+                )}
+
                 <div className="p-6">
                   <h3 className="text-2xl font-bold mb-4 text-[#001524ff]">
                     {restaurant.restaurantName}
