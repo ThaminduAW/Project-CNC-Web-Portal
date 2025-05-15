@@ -43,7 +43,7 @@ const ResDetails = () => {
     return (
       <div className="bg-[#fdfcdcff] text-[#001524ff] min-h-screen">
         <Header />
-        <main className="container mx-auto px-6 md:px-12 py-12 max-w-5xl">
+        <main className="container mx-auto px-6 md:px-12 py-12 max-w-5xl pt-30">
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#fea116ff] mx-auto"></div>
             <p className="mt-4 text-gray-600">Loading restaurant details...</p>
@@ -77,7 +77,7 @@ const ResDetails = () => {
   return (
     <div className="bg-[#fdfcdcff] text-[#001524ff] min-h-screen">
       <Header />
-      <main className="container mx-auto px-6 md:px-12 py-12 max-w-5xl">
+      <main className="container mx-auto px-6 md:px-12 py-12 max-w-5xl pt-30">
         {/* Header Section */}
         <div className="text-center mb-12">
           <h1 className="text-3xl md:text-4xl font-bold">
