@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { FaUser, FaUsers, FaCalendarAlt, FaEnvelope, FaCog, FaSignOutAlt, FaHome, FaComments, FaBuilding, FaCalendarCheck, FaClipboardList, FaBell } from "react-icons/fa";
 import logo from "../assets/logo.png"; // Ensure path is correct
 import defaultProfile from "../assets/default-profile.png"; // Default profile image
+import { baseURL } from '../utils/baseURL';
 
 const AdminSideBar = () => {
   const navigate = useNavigate();
@@ -67,7 +68,7 @@ const AdminSideBar = () => {
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        const response = await fetch("http://localhost:3000/api/requests", {
+        const response = await fetch(`${baseURL}/requests`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -102,7 +103,7 @@ const AdminSideBar = () => {
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        const response = await fetch("http://localhost:3000/api/messages/unread", {
+        const response = await fetch(`${baseURL}/messages/unread`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

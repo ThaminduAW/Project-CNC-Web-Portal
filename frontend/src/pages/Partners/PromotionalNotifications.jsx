@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import PartnerSideBar from "../../components/PartnerSideBar";
 import { FaEnvelope, FaUsers, FaPaperPlane, FaHistory } from 'react-icons/fa';
 import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+import { baseURL } from '../../utils/baseURL';
+const API_URL = import.meta.env.VITE_API_URL || `${baseURL}`;
 
 const PromotionalNotifications = () => {
   const [loading, setLoading] = useState(true);

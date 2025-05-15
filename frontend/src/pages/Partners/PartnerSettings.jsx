@@ -6,7 +6,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import axios from 'axios';
 import PartnerSideBar from '../../components/PartnerSideBar';
 import { FaClock, FaMapMarkerAlt, FaGlobe, FaUtensils, FaUser, FaPhone, FaEnvelope, FaLock, FaCalendarAlt, FaExclamationCircle, FaKey, FaSave } from 'react-icons/fa';
-
+import { baseURL } from '../../utils/baseURL';
 const PartnerSettings = () => {
   const [userData, setUserData] = useState({
     fullName: '',
@@ -51,7 +51,7 @@ const PartnerSettings = () => {
         return;
       }
 
-      const response = await axios.get('http://localhost:3000/api/users/profile', {
+      const response = await axios.get(`${baseURL}/users/profile`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -97,7 +97,7 @@ const PartnerSettings = () => {
       }
 
       // Check for pending requests
-      const pendingResponse = await axios.get('http://localhost:3000/api/requests/my-requests', {
+      const pendingResponse = await axios.get(`${baseURL}/requests/my-requests`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -173,7 +173,7 @@ const PartnerSettings = () => {
         return;
       }
 
-      const response = await axios.put('http://localhost:3000/api/auth/change-password', {
+      const response = await axios.put(`${baseURL}/auth/change-password`, {
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword
       }, {
@@ -273,7 +273,7 @@ const PartnerSettings = () => {
       console.log('Sending request with data:', requestData);
 
       // Create a change request
-      const response = await axios.post('http://localhost:3000/api/requests', requestData, {
+      const response = await axios.post(`${baseURL}/requests`, requestData, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

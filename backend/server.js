@@ -14,6 +14,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 import availabilityRoutes from "./routes/availabilityRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import requestRoutes from './routes/requestRoutes.js';
+import menuRoutes from "./routes/menuRoutes.js";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -31,9 +32,9 @@ if (!fs.existsSync(toursUploadsDir)) {
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:5173', // Your frontend URL
+  origin: '*', // Your frontend URL
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
@@ -52,6 +53,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/availability", availabilityRoutes);
 app.use("/api/users", userRoutes);
 app.use('/api/requests', requestRoutes);
+app.use("/api/partner/menu", menuRoutes);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {

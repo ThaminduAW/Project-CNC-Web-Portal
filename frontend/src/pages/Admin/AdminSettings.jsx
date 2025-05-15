@@ -3,6 +3,7 @@ import axios from 'axios';
 import AdminSideBar from '../../components/AdminSideBar';
 import { FaUser, FaPhone, FaEnvelope, FaLock, FaExclamationCircle } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { baseURL } from '../../utils/baseURL';
 
 const AdminSettings = () => {
   const [userData, setUserData] = useState({
@@ -38,7 +39,7 @@ const AdminSettings = () => {
         return;
       }
 
-      const response = await axios.get('http://localhost:3000/api/users/profile', {
+      const response = await axios.get(`${baseURL}/users/profile`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -106,7 +107,7 @@ const AdminSettings = () => {
       const token = localStorage.getItem('token');
       console.log('Using token:', token);
       
-      await axios.put('http://localhost:3000/api/auth/change-password', {
+      await axios.put(`${baseURL}/auth/change-password`, {
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword
       }, {
@@ -159,7 +160,7 @@ const AdminSettings = () => {
         email: formData.email
       };
 
-      const response = await axios.put(`http://localhost:3000/api/users/${userId}`, dataToSend, {
+      const response = await axios.put(`${baseURL}/users/${userId}`, dataToSend, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import { baseURL } from "../../utils/baseURL";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -20,7 +21,7 @@ const Contact = () => {
     setStatus({ success: false, error: "" });
 
     try {
-      const response = await fetch("http://localhost:3000/api/contact", {
+      const response = await fetch(`${baseURL}/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -45,7 +46,7 @@ const Contact = () => {
     <div className="bg-[#fdfcdcff] text-[#001524ff]">
       <Header />
 
-      <div className="container mx-auto px-6 md:px-12 py-12 max-w-5xl">
+      <div className="container mx-auto px-6 md:px-12 py-12 max-w-5xl pt-20">
         <h1 className="text-3xl md:text-4xl font-bold text-center">
           Get in Touch with <span className="text-[#fea116ff]">CNC World Tour</span>
         </h1>

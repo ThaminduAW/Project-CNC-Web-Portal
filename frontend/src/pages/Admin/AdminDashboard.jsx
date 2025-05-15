@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import AdminSideBar from "../../components/AdminSideBar";
 import { FaUsers, FaStore, FaCalendarAlt, FaChartLine } from 'react-icons/fa';
+import { baseURL } from '../../utils/baseURL';
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({
@@ -17,15 +18,15 @@ const AdminDashboard = () => {
     const fetchStats = async () => {
       try {
         // Fetch partners count
-        const partnersResponse = await fetch('http://localhost:3000/api/partners');
+        const partnersResponse = await fetch(`${baseURL}/partners`);
         const partnersData = await partnersResponse.json();
         
         // Fetch tours count
-        const toursResponse = await fetch('http://localhost:3000/api/tours');
+        const toursResponse = await fetch(`${baseURL}/tours`);
         const toursData = await toursResponse.json();
         
         // Fetch reservations count
-        const reservationsResponse = await fetch('http://localhost:3000/api/reservations');
+        const reservationsResponse = await fetch(`${baseURL}/reservations`);
         const reservationsData = await reservationsResponse.json();
 
         setStats({

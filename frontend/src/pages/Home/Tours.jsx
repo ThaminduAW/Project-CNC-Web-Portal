@@ -5,6 +5,7 @@ import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { FaCalendarAlt, FaClock, FaMapMarkerAlt, FaStore } from 'react-icons/fa';
 import { getImageUrl, handleImageError } from '../../utils/imageUtils';
+import { baseURL } from '../../utils/baseURL';
 
 const Tours = () => {
   const [tours, setTours] = useState([]);
@@ -15,7 +16,7 @@ const Tours = () => {
   useEffect(() => {
     const fetchTours = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/tours');
+        const response = await fetch(`${baseURL}/tours`);
         if (!response.ok) {
           throw new Error('Failed to fetch tours');
         }
@@ -66,7 +67,7 @@ const Tours = () => {
   return (
     <div className="bg-[#fdfcdcff] text-[#001524ff]">
       <Header />
-      <main className="container mx-auto px-6 md:px-12 py-12 max-w-5xl">
+      <main className="container mx-auto px-6 md:px-12 py-12 max-w-5xl pt-20">
         {/* Header Section */}
         <div className="text-center mb-12">
           <h1 className="text-3xl md:text-4xl font-bold">

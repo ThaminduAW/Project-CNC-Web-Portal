@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import AvailabilityViewer from "../../components/AvailabilityViewer";
+import { baseURL } from "../../utils/baseURL";  
 
 const Reservation = () => {
   const [restaurants, setRestaurants] = useState([]); // Stores fetched restaurants
@@ -21,7 +22,7 @@ const Reservation = () => {
   useEffect(() => {
     const fetchRestaurants = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/partners", {
+        const response = await fetch(`${baseURL}/partners`, {
           headers: {
             'Content-Type': 'application/json'
           }
@@ -117,7 +118,7 @@ const Reservation = () => {
     console.log("Sending reservation data:", reservationData);
 
     try {
-      const response = await fetch("http://localhost:3000/api/reservations", {
+      const response = await fetch(`${baseURL}/reservations`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(reservationData),
@@ -155,7 +156,7 @@ const Reservation = () => {
     <div className="bg-[#fdfcdcff] text-[#001524ff]">
       <Header />
 
-      <div className="container mx-auto px-6 md:px-12 py-12 max-w-5xl">
+      <div className="container mx-auto px-6 md:px-12 py-12 max-w-5xl pt-20">
         <h1 className="text-3xl md:text-4xl font-bold text-center">
           Make a <span className="text-[#fea116ff]">Reservation</span>
         </h1>

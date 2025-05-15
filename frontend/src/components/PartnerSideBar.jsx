@@ -1,8 +1,9 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { FaUser, FaCalendarAlt, FaEnvelope, FaCog, FaSignOutAlt, FaHome, FaUtensils, FaComments, FaCalendarCheck } from "react-icons/fa";
+import { FaUser, FaCalendarAlt, FaEnvelope, FaCog, FaSignOutAlt, FaHome, FaUtensils, FaComments, FaCalendarCheck, FaClipboardList } from "react-icons/fa";
 import logo from "../assets/logo.png";
 import defaultProfile from "../assets/default-profile.png";
+import { baseURL } from '../utils/baseURL';
 
 const PartnerSideBar = () => {
   const navigate = useNavigate();
@@ -67,7 +68,7 @@ const PartnerSideBar = () => {
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        const response = await fetch("http://localhost:3000/api/messages/unread", {
+        const response = await fetch(`${baseURL}/messages/unread`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -97,15 +98,15 @@ const PartnerSideBar = () => {
   const menuItems = [
     { path: "/partner/dashboard", icon: FaHome, label: "Dashboard" },
     { path: "/partner/events", icon: FaUtensils, label: "Events" },
-    { path: "/partner/tours", icon: FaCalendarAlt, label: "Tours" },
     { path: "/partner/reservations", icon: FaCalendarCheck, label: "Reservations" },
+    { path: "/partner/menu", icon: FaClipboardList, label: "Menu Management" },
     { path: "/partner/messages", icon: FaComments, label: "Messages", badge: showBadge && unreadCount },
     { path: "/partner/notifications", icon: FaEnvelope, label: "Promotions" },
     { path: "/partner/settings", icon: FaCog, label: "Settings" },
   ];
 
   return (
-    <div className="fixed top-0 left-0 h-screen w-64 bg-[#001524ff] text-white flex flex-col overflow-hidden">
+    <div className="h-screen w-64 bg-[#001524ff] text-white flex flex-col overflow-hidden sticky top-0">
       {/* Logo & Name */}
       <div className="flex items-center justify-center p-4 border-b border-gray-700">
         <img src={logo} alt="CNC Logo" className="h-10 mr-2" />

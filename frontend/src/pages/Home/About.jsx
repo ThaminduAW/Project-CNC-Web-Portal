@@ -9,7 +9,7 @@ const About = () => {
       <Header />
 
       {/* About Section */}
-      <div className="container mx-auto px-6 md:px-12 py-12 max-w-5xl">
+      <div className="container mx-auto px-6 md:px-12 py-12 max-w-5xl pt-30">
         
         {/* Title */}
         <h1 className="text-3xl md:text-4xl font-bold text-center">
@@ -34,25 +34,30 @@ const About = () => {
         </div>
 
         {/* Why Choose CNC Section */}
-        <div className="bg-white p-6 md:p-10 mt-12 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-semibold text-center">Why Choose CNC World Tour?</h2>
-          <p className="text-gray-600 text-center mt-2">
+        <div className="bg-white/30 backdrop-blur-lg p-6 md:p-10 mt-12 rounded-2xl shadow-2xl border border-white/30">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-2 bg-gradient-to-r from-[#0098c9ff] via-[#fea116ff] to-[#001524ff] bg-clip-text text-transparent drop-shadow-lg">
+            Why Choose CNC World Tour?
+          </h2>
+          <p className="text-gray-700 text-center mt-2 font-medium">
             More than just a tour – it's an adventure that immerses you in the beauty of the ocean and the traditions of sustainable fishing.
           </p>
 
           {/* Key Highlights */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-            <div className="p-4 bg-[#fea116ff] text-white rounded-lg shadow-md text-center">
-              <h3 className="font-semibold">🌊 Connect with Nature</h3>
-              <p className="text-sm">Experience the thrill of catching fresh seafood in its natural habitat.</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+            <div className="p-6 bg-white/40 backdrop-blur-lg rounded-xl shadow-lg text-center border border-white/30 hover:border-[#fea116ff] transition-all duration-300 group relative overflow-hidden">
+              <div className="absolute -inset-1 rounded-xl pointer-events-none group-hover:animate-glow border-2 border-transparent group-hover:border-[#fea116ff] transition-all duration-300"></div>
+              <h3 className="font-semibold text-xl mb-2 bg-gradient-to-r from-[#fea116ff] to-[#0098c9ff] bg-clip-text text-transparent drop-shadow">🌊 Connect with Nature</h3>
+              <p className="text-sm text-gray-700 font-medium">Experience the thrill of catching fresh seafood in its natural habitat.</p>
             </div>
-            <div className="p-4 bg-[#fea116ff] text-white rounded-lg shadow-md text-center">
-              <h3 className="font-semibold">🍽 Culinary Mastery</h3>
-              <p className="text-sm">Learn from expert chefs and turn your catch into a gourmet delight.</p>
+            <div className="p-6 bg-white/40 backdrop-blur-lg rounded-xl shadow-lg text-center border border-white/30 hover:border-[#fea116ff] transition-all duration-300 group relative overflow-hidden">
+              <div className="absolute -inset-1 rounded-xl pointer-events-none group-hover:animate-glow border-2 border-transparent group-hover:border-[#fea116ff] transition-all duration-300"></div>
+              <h3 className="font-semibold text-xl mb-2 bg-gradient-to-r from-[#0098c9ff] to-[#fea116ff] bg-clip-text text-transparent drop-shadow">🍽 Culinary Mastery</h3>
+              <p className="text-sm text-gray-700 font-medium">Learn from expert chefs and turn your catch into a gourmet delight.</p>
             </div>
-            <div className="p-4 bg-[#fea116ff] text-white rounded-lg shadow-md text-center">
-              <h3 className="font-semibold">🌍 Sustainable Practices</h3>
-              <p className="text-sm">Understand and embrace responsible fishing techniques for a better future.</p>
+            <div className="p-6 bg-white/40 backdrop-blur-lg rounded-xl shadow-lg text-center border border-white/30 hover:border-[#fea116ff] transition-all duration-300 group relative overflow-hidden">
+              <div className="absolute -inset-1 rounded-xl pointer-events-none group-hover:animate-glow border-2 border-transparent group-hover:border-[#fea116ff] transition-all duration-300"></div>
+              <h3 className="font-semibold text-xl mb-2 bg-gradient-to-r from-[#fea116ff] to-[#001524ff] bg-clip-text text-transparent drop-shadow">🌍 Sustainable Practices</h3>
+              <p className="text-sm text-gray-700 font-medium">Understand and embrace responsible fishing techniques for a better future.</p>
             </div>
           </div>
         </div>

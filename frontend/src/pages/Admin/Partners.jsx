@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import AdminSideBar from "../../components/AdminSideBar";
+import { baseURL } from "../../utils/baseURL";
 
 const Partners = () => {
   const [partners, setPartners] = useState([]);
@@ -30,7 +31,7 @@ const Partners = () => {
           return;
         }
 
-        const response = await fetch("http://localhost:3000/api/admin/partners", {
+        const response = await fetch(`${baseURL}/admin/partners`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -70,7 +71,7 @@ const Partners = () => {
         return;
       }
 
-      const response = await fetch(`http://localhost:3000/api/admin/partners/approve/${partnerId}`, {
+      const response = await fetch(`${baseURL}/admin/partners/approve/${partnerId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -117,7 +118,7 @@ const Partners = () => {
         return;
       }
 
-      const response = await fetch(`http://localhost:3000/api/admin/partners/delete/${partnerId}`, {
+      const response = await fetch(`${baseURL}/admin/partners/delete/${partnerId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -193,7 +194,7 @@ const Partners = () => {
         approved: true
       };
 
-      const response = await fetch("http://localhost:3000/api/admin/partners/add", {
+      const response = await fetch(`${baseURL}/admin/partners/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

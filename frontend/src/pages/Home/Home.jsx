@@ -5,6 +5,8 @@ import Hero from "../../components/Hero";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import { FaUtensils, FaFish, FaStar, FaMapMarkerAlt } from 'react-icons/fa';
+import { baseURL } from "../../utils/baseURL";
+import { getImageUrl, handleImageError } from '../../utils/imageUtils';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -17,7 +19,7 @@ const Home = () => {
   useEffect(() => {
     const fetchRestaurants = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/partners");
+        const response = await fetch(`${baseURL}/partners`);
         const data = await response.json();
         setRestaurants(data.slice(0, 3)); // Display top 3 restaurants ok
       } catch (error) {
@@ -33,7 +35,7 @@ const Home = () => {
   useEffect(() => {
     const fetchTours = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/tours");
+        const response = await fetch(`${baseURL}/tours`);
         if (!response.ok) {
           throw new Error('Failed to fetch tours');
         }
@@ -89,9 +91,10 @@ const Home = () => {
                 <div className="relative w-full h-[300px] bg-gray-200">
                   {tour.image && (
                     <img 
-                      src={`http://localhost:3000${tour.image}`}
+                      src={getImageUrl(tour.image)}
                       alt={tour.title}
                       className="w-full h-full object-cover"
+                      onError={handleImageError}
                     />
                   )}
                   <div className="absolute top-4 right-4 bg-[#fea116ff] text-white px-4 py-2 rounded-full text-sm font-semibold z-10">
@@ -137,8 +140,8 @@ const Home = () => {
       {/* Experiences Section */}
       <section className="relative py-16 bg-gradient-to-b from-white to-[#fdfcdcff]">
         {/* Decorative Elements */}
-        <div className="absolute top-0 left-0 w-64 h-64 bg-[#0098c9ff] opacity-5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-64 h-64 bg-[#fea116ff] opacity-5 rounded-full blur-3xl"></div>
+        <div className="absolute top-0 left-0 w-64 h-64 bg-[#0098c9ff] opacity-20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-0 w-64 h-64 bg-[#fea116ff] opacity-20 rounded-full blur-3xl animate-pulse"></div>
         
         <div className="container mx-auto px-6 md:px-12 max-w-7xl relative">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -150,9 +153,11 @@ const Home = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6 }}
                 >
-                  <h2 className="text-4xl font-bold mb-4">Experience the Adventure</h2>
-                  <div className="w-24 h-1 bg-[#fea116ff] mb-4"></div>
-                  <p className="text-gray-600 text-lg">Discover the thrill of fishing and cooking your own seafood.</p>
+                  <h2 className="text-4xl font-extrabold mb-4 bg-gradient-to-r from-[#0098c9ff] via-[#fea116ff] to-[#001524ff] bg-clip-text text-transparent drop-shadow-lg">
+                    Experience the Adventure
+                  </h2>
+                  <div className="w-24 h-1 bg-gradient-to-r from-[#fea116ff] to-[#0098c9ff] mb-4 rounded-full animate-pulse"></div>
+                  <p className="text-gray-700 text-lg font-medium">Discover the thrill of fishing and cooking your own seafood.</p>
                 </motion.div>
               </div>
 
@@ -162,8 +167,8 @@ const Home = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.1 }}
-                  className="relative group overflow-hidden rounded-xl shadow-lg col-span-2"
-                  whileHover={{ scale: 1.01 }}
+                  className="relative group overflow-hidden rounded-2xl shadow-xl col-span-2 bg-white/30 backdrop-blur-lg border border-white/30 hover:border-[#fea116ff] transition-all duration-300"
+                  whileHover={{ scale: 1.03 }}
                 >
                   <div className="aspect-w-16 aspect-h-9">
                     <img 
@@ -172,15 +177,17 @@ const Home = () => {
                       className="object-cover w-full h-full transform group-hover:scale-110 transition-transform duration-700"
                     />
                   </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                      <h3 className="text-2xl font-bold mb-2">Deep Sea Fishing</h3>
-                      <p className="text-sm mb-4">Experience the thrill of catching your own fish in the deep blue sea.</p>
-                      <button className="bg-[#fea116ff] text-white px-4 py-2 rounded-lg hover:bg-[#e8920eff] transition-colors font-semibold">
-                        Learn More →
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end">
+                    <div className="p-6 text-white">
+                      <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-[#fea116ff] to-[#0098c9ff] bg-clip-text text-transparent drop-shadow-lg">Deep Sea Fishing</h3>
+                      <p className="text-base mb-4 text-gray-100">Experience the thrill of catching your own fish in the deep blue sea.</p>
+                      <button className="relative px-6 py-2 rounded-full font-semibold bg-gradient-to-r from-[#0098c9ff] to-[#fea116ff] text-white shadow-lg hover:from-[#fea116ff] hover:to-[#0098c9ff] transition-all duration-300 overflow-hidden">
+                        <span className="relative z-10">Learn More →</span>
+                        <span className="absolute inset-0 rounded-full border-2 border-[#fea116ff] opacity-0 group-hover:opacity-100 animate-pulse"></span>
                       </button>
                     </div>
                   </div>
+                  <div className="absolute -inset-1 rounded-2xl pointer-events-none group-hover:animate-glow border-2 border-transparent group-hover:border-[#fea116ff] transition-all duration-300"></div>
                 </motion.div>
               </div>
 
@@ -190,12 +197,7 @@ const Home = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.6 }}
               >
-                {/* <button
-                  onClick={() => navigate('/events')}
-                  className="bg-[#001524ff] text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-[#00345cff] transition-all duration-300 transform hover:scale-105 inline-flex items-center"
-                >
-                  Explore All Experiences <FaFish className="ml-2" />
-                </button> */}
+                {/* Optionally add a floating Web3-style button here */}
               </motion.div>
             </div>
 
@@ -207,23 +209,23 @@ const Home = () => {
               className="lg:pl-12"
             >
               <div className="text-[#fea116ff] text-lg font-semibold mb-2">About Us</div>
-              <h2 className="text-4xl font-bold mb-6 flex items-center gap-3">
+              <h2 className="text-4xl font-extrabold mb-6 flex items-center gap-3 bg-gradient-to-r from-[#0098c9ff] via-[#fea116ff] to-[#001524ff] bg-clip-text text-transparent drop-shadow-lg">
                 Welcome to <span className="text-[#fea116ff] flex items-center">Catch & Cook <FaUtensils className="ml-2" /></span>
               </h2>
-              <p className="text-gray-600 mb-8 leading-relaxed">
+              <p className="text-gray-700 mb-8 leading-relaxed font-medium">
                 At Catch and Cook World Tour, we are driven by a passion for authentic culinary experiences and a profound love for the sea. Our journey is spearheaded by our visionary founder, Kim, whose deep-rooted connection to seafood spans two decades. With unparalleled expertise in catching and cooking seafood, Kim has embarked on a mission to share the unparalleled joy of harvesting and savoring the ocean's bounty.
               </p>
 
               <div className="grid grid-cols-2 gap-8 mb-8">
                 <div className="flex items-center gap-4">
-                  <div className="text-4xl text-[#fea116ff]">15</div>
+                  <div className="text-4xl text-[#fea116ff] font-extrabold drop-shadow-lg">15</div>
                   <div>
                     <div className="font-semibold">Years of</div>
                     <div className="text-gray-600">EXPERIENCE</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <div className="text-4xl text-[#fea116ff]">50</div>
+                  <div className="text-4xl text-[#fea116ff] font-extrabold drop-shadow-lg">50</div>
                   <div>
                     <div className="font-semibold">Popular</div>
                     <div className="text-gray-600">RESTAURANTS</div>
@@ -231,8 +233,9 @@ const Home = () => {
                 </div>
               </div>
 
-              <button className="bg-[#fea116ff] text-white px-8 py-4 rounded-lg font-semibold hover:bg-[#e8920eff] transition-all duration-300 transform hover:scale-105">
-                READ MORE
+              <button className="relative px-8 py-4 rounded-full font-bold bg-gradient-to-r from-[#fea116ff] to-[#0098c9ff] text-white shadow-xl hover:from-[#0098c9ff] hover:to-[#fea116ff] transition-all duration-300 overflow-hidden">
+                <span className="relative z-10">READ MORE</span>
+                <span className="absolute inset-0 rounded-full border-2 border-[#0098c9ff] opacity-0 hover:opacity-100 animate-pulse"></span>
               </button>
             </motion.div>
           </div>

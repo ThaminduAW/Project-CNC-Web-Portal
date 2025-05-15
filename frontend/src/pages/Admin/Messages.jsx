@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminSideBar from "../../components/AdminSideBar";
 import { FaPaperPlane, FaSpinner, FaEllipsisH, FaSmile, FaPaperclip, FaSearch, FaComments, FaCircle } from "react-icons/fa";
+import { baseURL } from "../../utils/baseURL";
 
 const Messages = () => {
   const navigate = useNavigate();
@@ -39,7 +40,7 @@ const Messages = () => {
         return;
       }
 
-      const response = await fetch("http://localhost:3000/api/admin/partners", {
+      const response = await fetch(`${baseURL}/admin/partners`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -55,7 +56,7 @@ const Messages = () => {
       const partnerData = await Promise.all(
         data.map(async (partner) => {
           const messagesResponse = await fetch(
-            `http://localhost:3000/api/messages/conversation/${partner._id}`,
+            `${baseURL}/messages/conversation/${partner._id}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -110,7 +111,7 @@ const Messages = () => {
           return;
         }
 
-        const response = await fetch(`http://localhost:3000/api/messages/conversation/${selectedPartner}`, {
+        const response = await fetch(`${baseURL}/messages/conversation/${selectedPartner}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -126,7 +127,7 @@ const Messages = () => {
         scrollToBottom();
 
         // Mark messages as read
-        await fetch(`http://localhost:3000/api/messages/read/${selectedPartner}`, {
+        await fetch(`${baseURL}/messages/read/${selectedPartner}`, {
           method: 'PATCH',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -154,7 +155,7 @@ const Messages = () => {
     setSending(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:3000/api/messages", {
+      const response = await fetch(`${baseURL}/messages`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

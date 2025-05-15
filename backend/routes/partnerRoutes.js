@@ -28,7 +28,7 @@ router.get("/", async (req, res) => {
 // GET partner dashboard data
 router.get("/:id/dashboard", authMiddleware, async (req, res) => {
   try {
-    console.log("Fetching dashboard for partner ID:", req.params.id);
+    // console.log("Fetching dashboard for partner ID:", req.params.id);
     const partner = await User.findById(req.params.id);
     
     if (!partner) {
