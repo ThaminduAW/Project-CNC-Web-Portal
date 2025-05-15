@@ -19,7 +19,12 @@ const Restaurants = () => {
         if (!response.ok) throw new Error("Failed to fetch restaurants");
 
         const data = await response.json();
-        setRestaurants(data);
+        // Transform the data to include full photo URLs
+        const restaurantsWithPhotos = data.map(restaurant => ({
+          ...restaurant,
+          restaurantPhoto: restaurant.restaurantPhoto ? `${baseURL}${restaurant.restaurantPhoto}` : null
+        }));
+        setRestaurants(restaurantsWithPhotos);
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -31,7 +36,7 @@ const Restaurants = () => {
   }, []);
 
   const handleViewDetails = (restaurant) => {
-    navigate('/restaurant-details', { state: { restaurant } });
+    navigate(`/restaurant-details/${restaurant._id}`);
   };
 
   return (
@@ -71,19 +76,23 @@ const Restaurants = () => {
                 className="bg-white rounded-lg shadow-lg overflow-hidden transform transition-transform hover:scale-105"
               >
                 {/* Restaurant Photo */}
-                {restaurant.restaurantPhoto ? (
-                  <div className="h-48 relative">
+                <div className="h-48 relative">
+                  {restaurant.restaurantPhoto ? (
                     <img
                       src={restaurant.restaurantPhoto}
                       alt={restaurant.restaurantName}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = restaurantImage;
+                      }}
                     />
-                  </div>
-                ) : (
-                  <div className="h-48 bg-gray-100 flex items-center justify-center">
-                    <FaUtensils className="text-4xl text-gray-400" />
-                  </div>
-                )}
+                  ) : (
+                    <div className="h-48 bg-gray-100 flex items-center justify-center">
+                      <FaUtensils className="text-4xl text-gray-400" />
+                    </div>
+                  )}
+                </div>
 
                 <div className="p-6">
                   <h3 className="text-2xl font-bold mb-4 text-[#001524ff]">

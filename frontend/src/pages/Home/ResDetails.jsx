@@ -1,20 +1,66 @@
-import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
+import { baseURL } from '../../utils/baseURL';
 
 const ResDetails = () => {
-  const location = useLocation();
+  const { id } = useParams();
   const navigate = useNavigate();
-  const restaurant = location.state?.restaurant;
+  const [restaurant, setRestaurant] = useState(null);
+  const [menuItems, setMenuItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  if (!restaurant) {
+  useEffect(() => {
+    const fetchRestaurant = async () => {
+      try {
+        const response = await fetch(`${baseURL}/partners/${id}`);
+        if (!response.ok) throw new Error('Failed to fetch restaurant details');
+        const data = await response.json();
+        setRestaurant({
+          ...data,
+          restaurantPhoto: data.restaurantPhoto ? `${baseURL}${data.restaurantPhoto}` : null
+        });
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+    const fetchMenu = async () => {
+      try {
+        const response = await fetch(`${baseURL}/partners/${id}/menu`);
+        if (!response.ok) throw new Error('Failed to fetch menu items');
+        const data = await response.json();
+        setMenuItems(data);
+      } catch (err) {
+        // Optionally handle error
+      }
+    };
+    Promise.all([fetchRestaurant(), fetchMenu()]).finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) {
     return (
-      <div className="bg-[#fdfcdcff] text-[#001524ff]">
+      <div className="bg-[#fdfcdcff] text-[#001524ff] min-h-screen">
+        <Header />
+        <main className="container mx-auto px-6 md:px-12 py-12 max-w-5xl">
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#fea116ff] mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading restaurant details...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error || !restaurant) {
+    return (
+      <div className="bg-[#fdfcdcff] text-[#001524ff] min-h-screen">
         <Header />
         <main className="container mx-auto px-6 md:px-12 py-12 max-w-5xl">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-red-500">Restaurant not found</h1>
+            <h1 className="text-2xl font-bold text-red-500">{error || 'Restaurant not found'}</h1>
             <button
               onClick={() => navigate('/restaurants')}
               className="mt-4 bg-[#fea116ff] text-white px-6 py-2 rounded-md hover:bg-[#e8920eff] transition-colors"
@@ -29,7 +75,7 @@ const ResDetails = () => {
   }
 
   return (
-    <div className="bg-[#fdfcdcff] text-[#001524ff]">
+    <div className="bg-[#fdfcdcff] text-[#001524ff] min-h-screen">
       <Header />
       <main className="container mx-auto px-6 md:px-12 py-12 max-w-5xl">
         {/* Header Section */}
@@ -51,6 +97,7 @@ const ResDetails = () => {
                 src={restaurant.restaurantPhoto}
                 alt={restaurant.restaurantName}
                 className="w-full h-full object-cover"
+                onError={e => { e.target.onerror = null; e.target.src = '/restaurant.jpg'; }}
               />
             </div>
           )}
@@ -68,7 +115,6 @@ const ResDetails = () => {
                       <p className="text-gray-600">{restaurant.fullName}</p>
                     </div>
                   </div>
-                  
                   {restaurant.address && (
                     <div className="flex items-center">
                       <span className="text-[#fea116ff] mr-2">📍</span>
@@ -78,7 +124,6 @@ const ResDetails = () => {
                       </div>
                     </div>
                   )}
-                  
                   {restaurant.phone && (
                     <div className="flex items-center">
                       <span className="text-[#fea116ff] mr-2">📞</span>
@@ -88,7 +133,6 @@ const ResDetails = () => {
                       </div>
                     </div>
                   )}
-                  
                   {restaurant.email && (
                     <div className="flex items-center">
                       <span className="text-[#fea116ff] mr-2">✉️</span>
@@ -99,8 +143,27 @@ const ResDetails = () => {
                     </div>
                   )}
                 </div>
+                {/* Operating Hours */}
+                {restaurant.operatingHours && (
+                  <div className="mt-8">
+                    <h3 className="text-xl font-semibold mb-2">Operating Hours</h3>
+                    <table className="min-w-full text-left text-gray-700">
+                      <tbody>
+                        {Object.entries(restaurant.operatingHours).map(([day, hours]) => (
+                          <tr key={day}>
+                            <td className="pr-4 font-medium capitalize">{day}:</td>
+                            <td>
+                              {hours && hours.open && hours.close
+                                ? `${hours.open} - ${hours.close}`
+                                : 'Closed'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
-
               <div>
                 <h2 className="text-2xl font-bold mb-4">Features & Amenities</h2>
                 <div className="grid grid-cols-2 gap-4">
@@ -134,7 +197,6 @@ const ResDetails = () => {
                 </div>
               </div>
             </div>
-
             {/* About Section */}
             {restaurant.about && (
               <div className="border-t border-gray-200 pt-8 mb-8">
@@ -144,28 +206,27 @@ const ResDetails = () => {
                 </p>
               </div>
             )}
-
             {/* Cooking Services Section */}
-            {restaurant.cookingServices && restaurant.cookingServices.length > 0 && (
+            {menuItems && menuItems.length > 0 && (
               <div className="border-t border-gray-200 pt-8 mb-8">
                 <h2 className="text-2xl font-bold mb-6">Cooking Services</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {restaurant.cookingServices.map((service, index) => (
+                  {menuItems.map((service, index) => (
                     <div key={index} className="bg-gray-50 rounded-lg p-6">
                       <h3 className="text-xl font-semibold mb-2">{service.name}</h3>
                       <p className="text-gray-600 mb-4">{service.description}</p>
                       <div className="space-y-2">
                         <div className="flex justify-between">
                           <span className="font-medium">Duration:</span>
-                          <span>{service.duration}</span>
+                          <span>{service.cookingTime}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="font-medium">Price:</span>
-                          <span>${service.price}</span>
+                          <span>${service.portionPrice}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="font-medium">Max Participants:</span>
-                          <span>{service.maxParticipants}</span>
+                          <span className="font-medium">Max Portions per Order:</span>
+                          <span>{service.maxFoodPerOrder}</span>
                         </div>
                         {service.includes && service.includes.length > 0 && (
                           <div className="mt-4">
@@ -183,7 +244,6 @@ const ResDetails = () => {
                 </div>
               </div>
             )}
-
             {/* Action Buttons */}
             <div className="flex flex-col md:flex-row gap-4 mt-8">
               <button
