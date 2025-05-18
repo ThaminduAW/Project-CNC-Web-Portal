@@ -134,29 +134,31 @@ const PromotionalNotifications = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#fdfcdcff]">
-      <PartnerSideBar />
-      <main className="ml-64 min-h-screen">
-        <div className="p-8">
-          <h1 className="text-3xl font-bold mb-8">
+    <div className="flex min-h-screen bg-[#fdfcdcff] relative">
+      <div className="fixed left-0 top-0 h-full z-30">
+        <PartnerSideBar />
+      </div>
+      <div className="flex-1 ml-[240px] p-6 md:p-8 overflow-x-hidden min-h-screen">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-3xl font-bold mb-6">
             <span className="text-[#fea116ff]">Promotional Notifications</span>
           </h1>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
               <p className="text-red-600">{error}</p>
             </div>
           )}
 
           {success && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
               <p className="text-green-600">Notifications sent successfully!</p>
             </div>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
             {/* Notification Form */}
-            <div className="bg-white p-6 rounded-lg shadow-lg">
+            <div className="bg-white p-6 rounded-lg shadow-lg self-start">
               <h2 className="text-xl font-bold mb-6 flex items-center">
                 <FaPaperPlane className="text-2xl text-[#fea116ff] mr-2" />
                 Create New Notification
@@ -203,7 +205,7 @@ const PromotionalNotifications = () => {
             </div>
 
             {/* Customer List */}
-            <div className="bg-white p-6 rounded-lg shadow-lg">
+            <div className="bg-white p-6 rounded-lg shadow-lg self-start">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold flex items-center">
                   <FaUsers className="text-2xl text-[#fea116ff] mr-2" />
@@ -245,7 +247,7 @@ const PromotionalNotifications = () => {
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 };
