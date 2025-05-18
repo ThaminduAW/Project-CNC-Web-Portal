@@ -5,6 +5,7 @@ import Footer from "../../components/Footer";
 import restaurantImage from "../../assets/restaurant.jpg";
 import { baseURL } from "../../utils/baseURL";
 import { FaUtensils } from "react-icons/fa";
+import { getImageUrl, handleImageError } from "../../utils/imageUtils";
 
 const Restaurants = () => {
   const navigate = useNavigate();
@@ -19,12 +20,7 @@ const Restaurants = () => {
         if (!response.ok) throw new Error("Failed to fetch restaurants");
 
         const data = await response.json();
-        // Transform the data to include full photo URLs
-        const restaurantsWithPhotos = data.map(restaurant => ({
-          ...restaurant,
-          restaurantPhoto: restaurant.restaurantPhoto ? `${baseURL}${restaurant.restaurantPhoto}` : null
-        }));
-        setRestaurants(restaurantsWithPhotos);
+        setRestaurants(data);
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -79,13 +75,10 @@ const Restaurants = () => {
                 <div className="h-48 relative">
                   {restaurant.restaurantPhoto ? (
                     <img
-                      src={restaurant.restaurantPhoto}
+                      src={getImageUrl(restaurant.restaurantPhoto)}
                       alt={restaurant.restaurantName}
                       className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = restaurantImage;
-                      }}
+                      onError={handleImageError}
                     />
                   ) : (
                     <div className="h-48 bg-gray-100 flex items-center justify-center">
