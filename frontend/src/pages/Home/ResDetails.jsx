@@ -4,6 +4,7 @@ import { FaPepperHot, FaLeaf, FaDollarSign } from 'react-icons/fa';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { baseURL } from '../../utils/baseURL';
+import { getImageUrl, handleImageError } from '../../utils/imageUtils';
 
 const ResDetails = () => {
   const { id } = useParams();
@@ -45,10 +46,7 @@ const ResDetails = () => {
         const response = await fetch(`${baseURL}/partners/${id}`);
         if (!response.ok) throw new Error('Failed to fetch restaurant details');
         const data = await response.json();
-        setRestaurant({
-          ...data,
-          restaurantPhoto: data.restaurantPhoto ? `${baseURL}${data.restaurantPhoto}` : null
-        });
+        setRestaurant(data);
       } catch (err) {
         setError(err.message);
       }
@@ -58,11 +56,7 @@ const ResDetails = () => {
         const response = await fetch(`${baseURL}/partners/${id}/menu`);
         if (!response.ok) throw new Error('Failed to fetch menu items');
         const data = await response.json();
-        const menuWithFullUrls = data.map(item => ({
-          ...item,
-          image: item.image ? `${baseURL}${item.image}` : null
-        }));
-        setMenuItems(menuWithFullUrls);
+        setMenuItems(data);
       } catch (err) {
         // Optionally handle error
       }
@@ -129,13 +123,10 @@ const ResDetails = () => {
           {restaurant.restaurantPhoto && (
             <div className="w-full h-96 relative">
               <img
-                src={restaurant.restaurantPhoto}
+                src={getImageUrl(restaurant.restaurantPhoto)}
                 alt={restaurant.restaurantName}
                 className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = '/restaurant.jpg';
-                }}
+                onError={handleImageError}
               />
             </div>
           )}
