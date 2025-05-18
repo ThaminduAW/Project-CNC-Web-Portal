@@ -29,8 +29,9 @@ const __dirname = path.dirname(__filename);
 const uploadsDir = path.join(__dirname, "uploads");
 const toursUploadsDir = path.join(uploadsDir, "tours");
 const restaurantsUploadsDir = path.join(uploadsDir, "restaurants");
+const dishesUploadsDir = path.join(uploadsDir, "dishes");
 
-[uploadsDir, toursUploadsDir, restaurantsUploadsDir].forEach(dir => {
+[uploadsDir, toursUploadsDir, restaurantsUploadsDir, dishesUploadsDir].forEach(dir => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }

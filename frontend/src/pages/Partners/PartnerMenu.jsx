@@ -6,15 +6,9 @@ import { baseURL } from '../../utils/baseURL';
 
 const PartnerMenu = () => {
   const [activeTab, setActiveTab] = useState('view');
-  const [tours, setTours] = useState([]);
-  const [availableTours, setAvailableTours] = useState([]);
-  const [selectedTour, setSelectedTour] = useState(null);
   const [menuItems, setMenuItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [loadingAvailableTours, setLoadingAvailableTours] = useState(false);
-  const [joiningTour, setJoiningTour] = useState(null);
   const [error, setError] = useState(null);
-  const [showAvailableTours, setShowAvailableTours] = useState(false);
   const [activeCategory, setActiveCategory] = useState('all');
 
   const SPICY_LEVELS = {
@@ -56,146 +50,15 @@ const PartnerMenu = () => {
     return user?._id || user?.id;
   };
 
-  // Fetch tours for this partner
+  // Fetch menu items
   useEffect(() => {
-    const fetchTours = async () => {
+    const fetchMenu = async () => {
       setLoading(true);
       setError(null);
       try {
         const token = localStorage.getItem('token');
         const partnerId = getPartnerId();
-        const response = await axios.get(`${baseURL}/tours/partner/${partnerId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setTours(response.data);
-        if (response.data.length > 0) {
-          setSelectedTour(response.data[0]);
-        }
-      } catch (err) {
-        setError('Failed to fetch tours');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchTours();
-  }, []);
-
-  // Fetch available tours
-  const fetchAvailableTours = async () => {
-    setLoadingAvailableTours(true);
-    setError(null);
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('Authentication token not found. Please log in again.');
-      }
-
-      const response = await axios.get(`${baseURL}/tours/available`, {
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.data) {
-        setAvailableTours(response.data);
-      } else {
-        throw new Error('No data received from server');
-      }
-    } catch (err) {
-      console.error('Error fetching available tours:', err);
-      
-      // Handle specific error cases
-      if (err.response?.status === 401) {
-        setError('Your session has expired. Please log in again.');
-        // Optionally redirect to login page
-        // window.location.href = '/login';
-      } else if (err.response?.status === 403) {
-        setError('You do not have permission to view available tours.');
-      } else if (err.response?.data?.message) {
-        setError(err.response.data.message);
-      } else if (err.message) {
-        setError(err.message);
-      } else {
-        setError('Failed to fetch available tours. Please try again later.');
-      }
-      
-      setAvailableTours([]);
-    } finally {
-      setLoadingAvailableTours(false);
-    }
-  };
-
-  // Handle joining a tour
-  const handleJoinTour = async (tourId) => {
-    if (!window.confirm('Are you sure you want to join this tour?')) return;
-    
-    setJoiningTour(tourId);
-    setError(null);
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('Authentication token not found. Please log in again.');
-      }
-
-      await axios.post(
-        `${baseURL}/tours/${tourId}/partner`,
-        {},
-        {
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      // Refresh tours list
-      const partnerId = getPartnerId();
-      const response = await axios.get(
-        `${baseURL}/tours/partner/${partnerId}`,
-        {
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      setTours(response.data);
-      setShowAvailableTours(false);
-      setError(null);
-    } catch (err) {
-      console.error('Error joining tour:', err);
-      
-      // Handle specific error cases
-      if (err.response?.status === 401) {
-        setError('Your session has expired. Please log in again.');
-        // Optionally redirect to login page
-        // window.location.href = '/login';
-      } else if (err.response?.status === 403) {
-        setError('You do not have permission to join this tour.');
-      } else if (err.response?.data?.message) {
-        setError(err.response.data.message);
-      } else if (err.message) {
-        setError(err.message);
-      } else {
-        setError('Failed to join tour. Please try again later.');
-      }
-    } finally {
-      setJoiningTour(null);
-    }
-  };
-
-  // Fetch menu items for selected tour
-  useEffect(() => {
-    if (!selectedTour) return;
-    setMenuItems([]);
-    setLoading(true);
-    setError(null);
-    const fetchMenu = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`${baseURL}/partner/menu?tour=${selectedTour._id}`,
+        const response = await axios.get(`${baseURL}/partner/menu?partner=${partnerId}`,
           { headers: { Authorization: `Bearer ${token}` } });
         setMenuItems(response.data);
       } catch (err) {
@@ -205,21 +68,7 @@ const PartnerMenu = () => {
       }
     };
     fetchMenu();
-  }, [selectedTour]);
-
-  // Helper to fetch a tour by ID
-  const fetchTourById = async (tourId) => {
-    const token = localStorage.getItem('token');
-    const response = await axios.get(`${baseURL}/tours/${tourId}`,
-      { headers: { Authorization: `Bearer ${token}` } });
-    return response.data;
-  };
-
-  const handleTourChange = (e) => {
-    const tour = tours.find(t => t._id === e.target.value);
-    setSelectedTour(tour);
-    setActiveTab('view');
-  };
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -261,13 +110,13 @@ const PartnerMenu = () => {
       const payload = {
         ...formData,
         price: Number(formData.price),
-        tour: selectedTour?._id
+        partner: partnerId
       };
       await axios.post(`${baseURL}/partner/menu`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Refresh menu items
-      const response = await axios.get(`${baseURL}/partner/menu?tour=${selectedTour._id}`,
+      const response = await axios.get(`${baseURL}/partner/menu?partner=${partnerId}`,
         { headers: { Authorization: `Bearer ${token}` } });
       setMenuItems(response.data);
       setFormData({
@@ -307,11 +156,12 @@ const PartnerMenu = () => {
     setError(null);
     try {
       const token = localStorage.getItem('token');
+      const partnerId = getPartnerId();
       await axios.put(`${baseURL}/partner/menu/${editId}`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Refresh menu items
-      const response = await axios.get(`${baseURL}/partner/menu?tour=${selectedTour._id}`,
+      const response = await axios.get(`${baseURL}/partner/menu?partner=${partnerId}`,
         { headers: { Authorization: `Bearer ${token}` } });
       setMenuItems(response.data);
       setFormData({
@@ -336,11 +186,12 @@ const PartnerMenu = () => {
     if (!window.confirm('Are you sure you want to delete this menu item?')) return;
     try {
       const token = localStorage.getItem('token');
+      const partnerId = getPartnerId();
       await axios.delete(`${baseURL}/partner/menu/${menuItems[idx]._id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Refresh menu items
-      const response = await axios.get(`${baseURL}/partner/menu?tour=${selectedTour._id}`,
+      const response = await axios.get(`${baseURL}/partner/menu?partner=${partnerId}`,
         { headers: { Authorization: `Bearer ${token}` } });
       setMenuItems(response.data);
     } catch (err) {
@@ -352,70 +203,46 @@ const PartnerMenu = () => {
     ? menuItems 
     : menuItems.filter(item => item.category === activeCategory);
 
-  // Handle leaving a tour
-  const [leavingTour, setLeavingTour] = useState(null);
-  const handleLeaveTour = async (tourId) => {
-    if (!window.confirm('Are you sure you want to leave this tour?')) return;
-    setLeavingTour(tourId);
-    setError(null);
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('Authentication token not found. Please log in again.');
-      }
-      await axios.delete(`${baseURL}/tours/${tourId}/partner`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      // Refresh tours list
-      const partnerId = getPartnerId();
-      const response = await axios.get(
-        `${baseURL}/tours/partner/${partnerId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-      setTours(response.data);
-      // If the current selected tour was left, select another or null
-      if (selectedTour && selectedTour._id === tourId) {
-        setSelectedTour(response.data[0] || null);
-      }
-      setError(null);
-    } catch (err) {
-      console.error('Error leaving tour:', err);
-      if (err.response?.status === 401) {
-        setError('Your session has expired. Please log in again.');
-      } else if (err.response?.status === 403) {
-        setError('You do not have permission to leave this tour.');
-      } else if (err.response?.data?.message) {
-        setError(err.response.data.message);
-      } else if (err.message) {
-        setError(err.message);
-      } else {
-        setError('Failed to leave tour. Please try again later.');
-      }
-    } finally {
-      setLeavingTour(null);
-    }
-  };
-
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
-    if (file) {
+    if (!file) return;
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please upload an image file');
+      return;
+    }
+
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image size should be less than 5MB');
+      return;
+    }
+
+    try {
+      setLoading(true);
       const formData = new FormData();
       formData.append('image', file);
 
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.post(`${baseURL}/upload`, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${token}`
-          }
-        });
-        setFormData(prev => ({ ...prev, image: response.data.imageUrl }));
-      } catch (err) {
-        setError('Failed to upload image');
+      const token = localStorage.getItem('token');
+      const response = await axios.post(`${baseURL}/upload`, formData, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      if (response.data.imageUrl) {
+        setFormData(prev => ({
+          ...prev,
+          image: response.data.imageUrl
+        }));
       }
+    } catch (err) {
+      console.error('Photo upload error:', err);
+      setError('Failed to upload photo');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -430,17 +257,6 @@ const PartnerMenu = () => {
             <h1 className="text-3xl font-bold text-gray-900">
               Manage <span className="text-[#fea116ff]">Restaurant Menu</span>
             </h1>
-            <button
-              onClick={() => {
-                setShowAvailableTours(!showAvailableTours);
-                if (!showAvailableTours) {
-                  fetchAvailableTours();
-                }
-              }}
-              className="bg-[#fea116ff] text-white px-6 py-3 rounded-lg hover:bg-[#fea116cc] flex items-center gap-2 shadow-lg transition-all duration-300 hover:shadow-xl"
-            >
-              <FaPlus /> {showAvailableTours ? 'Hide Available Tours' : 'Show Available Tours'}
-            </button>
           </div>
 
           {error && (
@@ -457,126 +273,6 @@ const PartnerMenu = () => {
               </div>
             </div>
           )}
-
-          {/* Available Tours Section */}
-          {showAvailableTours && (
-            <div className="bg-gray-50 rounded-xl shadow-lg p-6 mb-8">
-              <h2 className="text-2xl font-semibold mb-6 text-gray-900">Available Tours</h2>
-              {loadingAvailableTours ? (
-                <div className="flex items-center justify-center h-32">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#fea116ff]"></div>
-                </div>
-              ) : availableTours.length === 0 ? (
-                <div className="text-center py-12">
-                  <FaCalendarAlt className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">No available tours</h3>
-                  <p className="mt-1 text-sm text-gray-500">Check back later for new tour opportunities.</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {availableTours.map(tour => (
-                    <div key={tour._id} className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300">
-                      {tour.image && (
-                        <div className="relative h-48">
-                          <img 
-                            src={tour.image} 
-                            alt={tour.title}
-                            className="w-full h-full object-cover"
-                          />
-                          <div className="absolute top-4 right-4 bg-white px-3 py-1 rounded-full text-sm font-medium text-gray-900 shadow">
-                            ${tour.portionPrice}
-                          </div>
-                        </div>
-                      )}
-                      <div className="p-6">
-                        <h3 className="text-xl font-semibold text-gray-900 mb-2">{tour.title}</h3>
-                        <p className="text-gray-600 mb-4 line-clamp-2">{tour.briefDescription}</p>
-                        <div className="space-y-2 mb-6">
-                          <div className="flex items-center text-gray-600">
-                            <FaCalendarAlt className="mr-2" />
-                            <span>{new Date(tour.date).toLocaleDateString()}</span>
-                          </div>
-                          <div className="flex items-center text-gray-600">
-                            <FaMapMarkerAlt className="mr-2" />
-                            <span>{tour.location}</span>
-                          </div>
-                          <div className="flex items-center text-gray-600">
-                            <FaClock className="mr-2" />
-                            <span>{tour.timeDuration}</span>
-                          </div>
-                          <div className="flex items-center text-gray-600">
-                            <FaUsers className="mr-2" />
-                            <span>{tour.availableSpots} spots available</span>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => handleJoinTour(tour._id)}
-                          disabled={tour.isFull || joiningTour === tour._id}
-                          className={`w-full px-4 py-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 ${
-                            tour.isFull 
-                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                              : joiningTour === tour._id
-                              ? 'bg-[#fea116cc] text-white'
-                              : 'bg-[#fea116ff] hover:bg-[#fea116cc] text-white'
-                          }`}
-                        >
-                          {joiningTour === tour._id ? (
-                            <>
-                              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                              Joining...
-                            </>
-                          ) : tour.isFull ? (
-                            'Tour Full'
-                          ) : (
-                            <>
-                              <FaCheck /> Join Tour
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Tour Selection */}
-          <div className="bg-gray-50 rounded-xl shadow-lg p-6 mb-8">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Select Tour</label>
-            <div className="flex gap-4 items-center">
-              <select
-                className="block w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent text-base font-medium shadow-sm transition-all duration-300"
-                value={selectedTour?._id || ''}
-                onChange={handleTourChange}
-                aria-label="Select Tour"
-              >
-                {tours.map(tour => (
-                  <option key={tour._id} value={tour._id}>
-                    {tour.title} ({new Date(tour.date).toLocaleDateString()})
-                  </option>
-                ))}
-              </select>
-              {selectedTour && (
-                <button
-                  onClick={() => handleLeaveTour(selectedTour._id)}
-                  disabled={leavingTour === selectedTour._id}
-                  className={`h-[48px] px-10 py-3 rounded-lg flex items-center gap-2 font-semibold text-base shadow-lg transition-all duration-300 bg-red-500 text-white hover:bg-red-600 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 ${leavingTour === selectedTour._id ? 'opacity-60 cursor-not-allowed' : ''}`}
-                >
-                  {leavingTour === selectedTour._id ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      Leaving...
-                    </>
-                  ) : (
-                    <>
-                      <FaTrash /> Leave Tour
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
-          </div>
 
           {/* Menu Management */}
           <div className="bg-gray-50 rounded-xl shadow-lg p-6">
@@ -645,9 +341,13 @@ const PartnerMenu = () => {
                         {item.image && (
                           <div className="relative h-48">
                             <img 
-                              src={item.image} 
+                              src={item.image}
                               alt={item.name}
                               className="w-full h-full object-cover"
+                              onError={(e) => {
+                                console.error('Image load error:', e);
+                                e.target.src = 'https://via.placeholder.com/400x300?text=No+Image';
+                              }}
                             />
                           </div>
                         )}
@@ -824,6 +524,10 @@ const PartnerMenu = () => {
                             src={formData.image}
                             alt="Dish preview"
                             className="h-32 w-32 object-cover rounded-lg"
+                            onError={(e) => {
+                              console.error('Image load error:', e);
+                              e.target.src = 'https://via.placeholder.com/400x300?text=No+Image';
+                            }}
                           />
                         ) : (
                           <div className="h-32 w-32 bg-gray-100 rounded-lg flex items-center justify-center">

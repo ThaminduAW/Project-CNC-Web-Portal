@@ -10,8 +10,24 @@ const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Configure multer storage
-const storage = multer.diskStorage({
+// Configure multer storage for dishes
+const dishStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = path.join(__dirname, '..', 'uploads', 'dishes');
+    // Create directory if it doesn't exist
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+// Configure multer storage for restaurant photos
+const restaurantStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     const uploadDir = path.join(__dirname, '..', 'uploads', 'restaurants');
     // Create directory if it doesn't exist
@@ -35,16 +51,52 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-const upload = multer({
-  storage: storage,
+const dishUpload = multer({
+  storage: dishStorage,
   fileFilter: fileFilter,
   limits: {
     fileSize: 5 * 1024 * 1024 // 5MB limit
   }
 });
 
+const restaurantUpload = multer({
+  storage: restaurantStorage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  }
+});
+
+// Upload dish image
+router.post('/', authMiddleware, dishUpload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    // Construct the full URL for the image
+    const protocol = req.protocol;
+    const host = req.get('host');
+    const imageUrl = `${protocol}://${host}/uploads/dishes/${req.file.filename}`;
+    
+    res.json({
+      message: 'Image uploaded successfully',
+      imageUrl: imageUrl
+    });
+  } catch (error) {
+    // Delete uploaded file if there's an error
+    if (req.file) {
+      fs.unlink(req.file.path, (err) => {
+        if (err) console.error('Error deleting file:', err);
+      });
+    }
+    console.error('Image upload error:', error);
+    res.status(500).json({ message: 'Error uploading image' });
+  }
+});
+
 // Upload restaurant photo
-router.post('/photo', authMiddleware, upload.single('photo'), async (req, res) => {
+router.post('/photo', authMiddleware, restaurantUpload.single('photo'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
@@ -67,13 +119,18 @@ router.post('/photo', authMiddleware, upload.single('photo'), async (req, res) =
       });
     }
 
+    // Construct the full URL for the photo
+    const protocol = req.protocol;
+    const host = req.get('host');
+    const photoUrl = `${protocol}://${host}/uploads/restaurants/${req.file.filename}`;
+
     // Update user's restaurant photo
     user.restaurantPhoto = `/uploads/restaurants/${req.file.filename}`;
     await user.save();
 
     res.json({
       message: 'Photo uploaded successfully',
-      photoUrl: user.restaurantPhoto
+      photoUrl: photoUrl
     });
   } catch (error) {
     // Delete uploaded file if there's an error

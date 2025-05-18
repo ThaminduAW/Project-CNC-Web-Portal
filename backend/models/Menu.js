@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 
 const menuSchema = new mongoose.Schema({
   partner: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  tour: { type: mongoose.Schema.Types.ObjectId, ref: "Tour", required: true },
   name: { type: String, required: true }, // Dish name
   description: { type: String, required: true }, // Detailed description of the dish
   image: { type: String }, // URL/path to the dish image
