@@ -20,15 +20,22 @@ const tourSchema = new mongoose.Schema({
     menu: [{
       name: { type: String, required: true },
       description: { type: String, required: true },
-      portionPrice: { type: Number, required: true },
+      ingredients: [{ type: String }],
+      price: { type: Number, required: true },
+      spicyLevel: { 
+        type: String, 
+        enum: ['none', 'mild', 'medium', 'hot', 'extraHot'],
+        default: 'none'
+      },
+      dietaryTags: [{
+        type: String,
+        enum: ['vegetarian', 'vegan', 'glutenFree', 'dairyFree', 'nutFree', 'halal', 'keto']
+      }],
       category: { 
         type: String, 
-        enum: ['basic', 'premium', 'custom'],
-        default: 'basic'
-      },
-      cookingTime: { type: String, required: true },
-      maxFoodPerOrder: { type: Number, default: 1 },
-      includes: [{ type: String }]
+        enum: ['appetizer', 'main', 'dessert', 'beverage'],
+        default: 'main'
+      }
     }]
   }],
   status: { 

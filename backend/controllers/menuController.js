@@ -20,7 +20,7 @@ export const getPartnerMenu = async (req, res) => {
 export const addMenuItem = async (req, res) => {
   try {
     const partnerId = req.user.id;
-    const { name, description, portionPrice, category, cookingTime, maxFoodPerOrder, includes, tour } = req.body;
+    const { name, description, ingredients, price, spicyLevel, dietaryTags, category, tour } = req.body;
     if (!tour) return res.status(400).json({ message: 'Tour is required' });
     
     // Create menu item
@@ -29,11 +29,11 @@ export const addMenuItem = async (req, res) => {
       tour, 
       name, 
       description, 
-      portionPrice, 
-      category,
-      cookingTime,
-      maxFoodPerOrder,
-      includes
+      ingredients,
+      price,
+      spicyLevel,
+      dietaryTags,
+      category
     });
     await menuItem.save();
 
@@ -55,11 +55,11 @@ export const addMenuItem = async (req, res) => {
     tourDoc.restaurants[restaurantIndex].menu.push({
       name: menuItem.name,
       description: menuItem.description,
-      portionPrice: menuItem.portionPrice,
-      category: menuItem.category,
-      cookingTime: menuItem.cookingTime,
-      maxFoodPerOrder: menuItem.maxFoodPerOrder,
-      includes: menuItem.includes
+      ingredients: menuItem.ingredients,
+      price: menuItem.price,
+      spicyLevel: menuItem.spicyLevel,
+      dietaryTags: menuItem.dietaryTags,
+      category: menuItem.category
     });
 
     await tourDoc.save();
@@ -75,12 +75,12 @@ export const editMenuItem = async (req, res) => {
   try {
     const partnerId = req.user.id;
     const { id } = req.params;
-    const { name, description, portionPrice, category, cookingTime, maxFoodPerOrder, includes } = req.body;
+    const { name, description, ingredients, price, spicyLevel, dietaryTags, category } = req.body;
 
     // Update menu item
     const updated = await Menu.findOneAndUpdate(
       { _id: id, partner: partnerId },
-      { name, description, portionPrice, category, cookingTime, maxFoodPerOrder, includes },
+      { name, description, ingredients, price, spicyLevel, dietaryTags, category },
       { new: true }
     );
 
@@ -109,11 +109,11 @@ export const editMenuItem = async (req, res) => {
       tourDoc.restaurants[restaurantIndex].menu[menuIndex] = {
         name: updated.name,
         description: updated.description,
-        portionPrice: updated.portionPrice,
-        category: updated.category,
-        cookingTime: updated.cookingTime,
-        maxFoodPerOrder: updated.maxFoodPerOrder,
-        includes: updated.includes
+        ingredients: updated.ingredients,
+        price: updated.price,
+        spicyLevel: updated.spicyLevel,
+        dietaryTags: updated.dietaryTags,
+        category: updated.category
       };
       await tourDoc.save();
     }

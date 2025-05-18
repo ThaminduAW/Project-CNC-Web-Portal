@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FaPlus, FaTrash, FaUtensils, FaEdit, FaCheck, FaCalendarAlt, FaMapMarkerAlt, FaClock, FaDollarSign, FaUsers, FaFish } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaUtensils, FaEdit, FaCheck, FaCalendarAlt, FaMapMarkerAlt, FaClock, FaDollarSign, FaUsers, FaFish, FaPepperHot, FaImage } from 'react-icons/fa';
 import axios from 'axios';
 import PartnerSideBar from '../../components/PartnerSideBar';
 import { baseURL } from '../../utils/baseURL';
@@ -17,25 +17,38 @@ const PartnerMenu = () => {
   const [showAvailableTours, setShowAvailableTours] = useState(false);
   const [activeCategory, setActiveCategory] = useState('all');
 
-  const CATEGORY_LABELS = {
-    basic: 'Basic Service',
-    premium: 'Premium Service',
-    custom: 'Custom Service'
+  const SPICY_LEVELS = {
+    none: 'Not Spicy',
+    mild: 'Mild',
+    medium: 'Medium',
+    hot: 'Hot',
+    extraHot: 'Extra Hot'
+  };
+
+  const DIETARY_TAGS = {
+    vegetarian: 'Vegetarian',
+    vegan: 'Vegan',
+    glutenFree: 'Gluten Free',
+    dairyFree: 'Dairy Free',
+    nutFree: 'Nut Free',
+    halal: 'Halal',
+    keto: 'Keto'
   };
 
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    category: 'basic',
-    portionPrice: '',
-    cookingTime: '',
-    maxFoodPerOrder: 1,
-    includes: []
+    image: '',
+    ingredients: [],
+    price: '',
+    spicyLevel: 'none',
+    dietaryTags: [],
+    category: 'main'
   });
 
   const [editIndex, setEditIndex] = useState(null);
   const [editId, setEditId] = useState(null);
-  const [newInclude, setNewInclude] = useState('');
+  const [newIngredient, setNewIngredient] = useState('');
 
   // Get partner ID from localStorage
   const getPartnerId = () => {
@@ -213,20 +226,29 @@ const PartnerMenu = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleAddInclude = () => {
-    if (newInclude.trim()) {
+  const handleAddIngredient = () => {
+    if (newIngredient.trim()) {
       setFormData(prev => ({
         ...prev,
-        includes: [...prev.includes, newInclude.trim()]
+        ingredients: [...prev.ingredients, newIngredient.trim()]
       }));
-      setNewInclude('');
+      setNewIngredient('');
     }
   };
 
-  const handleRemoveInclude = (index) => {
+  const handleRemoveIngredient = (index) => {
     setFormData(prev => ({
       ...prev,
-      includes: prev.includes.filter((_, i) => i !== index)
+      ingredients: prev.ingredients.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleDietaryTagChange = (tag) => {
+    setFormData(prev => ({
+      ...prev,
+      dietaryTags: prev.dietaryTags.includes(tag)
+        ? prev.dietaryTags.filter(t => t !== tag)
+        : [...prev.dietaryTags, tag]
     }));
   };
 
@@ -238,8 +260,7 @@ const PartnerMenu = () => {
       const partnerId = getPartnerId();
       const payload = {
         ...formData,
-        portionPrice: Number(formData.portionPrice),
-        maxFoodPerOrder: Number(formData.maxFoodPerOrder),
+        price: Number(formData.price),
         tour: selectedTour?._id
       };
       await axios.post(`${baseURL}/partner/menu`, payload, {
@@ -252,15 +273,16 @@ const PartnerMenu = () => {
       setFormData({
         name: '',
         description: '',
-        category: 'basic',
-        portionPrice: '',
-        cookingTime: '',
-        maxFoodPerOrder: 1,
-        includes: []
+        image: '',
+        ingredients: [],
+        price: '',
+        spicyLevel: 'none',
+        dietaryTags: [],
+        category: 'main'
       });
       setActiveTab('view');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to add service');
+      setError(err.response?.data?.message || 'Failed to add menu item');
     }
   };
 
@@ -270,11 +292,12 @@ const PartnerMenu = () => {
     setFormData({
       name: menuItems[idx].name,
       description: menuItems[idx].description,
-      category: menuItems[idx].category,
-      portionPrice: menuItems[idx].portionPrice,
-      cookingTime: menuItems[idx].cookingTime,
-      maxFoodPerOrder: menuItems[idx].maxFoodPerOrder,
-      includes: menuItems[idx].includes || []
+      image: menuItems[idx].image || '',
+      ingredients: menuItems[idx].ingredients || [],
+      price: menuItems[idx].price,
+      spicyLevel: menuItems[idx].spicyLevel || 'none',
+      dietaryTags: menuItems[idx].dietaryTags || [],
+      category: menuItems[idx].category || 'main'
     });
     setActiveTab('add');
   };
@@ -294,22 +317,23 @@ const PartnerMenu = () => {
       setFormData({
         name: '',
         description: '',
-        category: 'basic',
-        portionPrice: '',
-        cookingTime: '',
-        maxFoodPerOrder: 1,
-        includes: []
+        image: '',
+        ingredients: [],
+        price: '',
+        spicyLevel: 'none',
+        dietaryTags: [],
+        category: 'main'
       });
       setEditIndex(null);
       setEditId(null);
       setActiveTab('view');
     } catch (err) {
-      setError('Failed to update service');
+      setError('Failed to update menu item');
     }
   };
 
   const handleDelete = async (idx) => {
-    if (!window.confirm('Are you sure you want to delete this service?')) return;
+    if (!window.confirm('Are you sure you want to delete this menu item?')) return;
     try {
       const token = localStorage.getItem('token');
       await axios.delete(`${baseURL}/partner/menu/${menuItems[idx]._id}`, {
@@ -320,7 +344,7 @@ const PartnerMenu = () => {
         { headers: { Authorization: `Bearer ${token}` } });
       setMenuItems(response.data);
     } catch (err) {
-      setError('Failed to delete service');
+      setError('Failed to delete menu item');
     }
   };
 
@@ -374,8 +398,29 @@ const PartnerMenu = () => {
     }
   };
 
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.post(`${baseURL}/upload`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${token}`
+          }
+        });
+        setFormData(prev => ({ ...prev, image: response.data.imageUrl }));
+      } catch (err) {
+        setError('Failed to upload image');
+      }
+    }
+  };
+
   return (
-    <div className="flex min-h-screen bg-[#fdfcdcff]  relative">
+    <div className="flex min-h-screen bg-[#fdfcdcff] relative">
       <div className="fixed left-0 top-0 h-full z-30">
         <PartnerSideBar />
       </div>
@@ -383,7 +428,7 @@ const PartnerMenu = () => {
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900">
-              Manage <span className="text-[#fea116ff]">Menu</span>
+              Manage <span className="text-[#fea116ff]">Restaurant Menu</span>
             </h1>
             <button
               onClick={() => {
@@ -536,18 +581,18 @@ const PartnerMenu = () => {
           {/* Menu Management */}
           <div className="bg-gray-50 rounded-xl shadow-lg p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-semibold text-gray-900">Cooking Services</h2>
+              <h2 className="text-2xl font-semibold text-gray-900">Menu Items</h2>
               <button
                 onClick={() => setActiveTab(activeTab === 'view' ? 'add' : 'view')}
                 className="bg-[#fea116ff] text-white px-6 py-3 rounded-lg hover:bg-[#fea116cc] flex items-center gap-2 shadow-lg transition-all duration-300 hover:shadow-xl"
               >
                 {activeTab === 'view' ? (
                   <>
-                    <FaPlus /> Add New Service
+                    <FaPlus /> Add New Dish
                   </>
                 ) : (
                   <>
-                    <FaFish /> View Services
+                    <FaUtensils /> View Menu
                   </>
                 )}
               </button>
@@ -567,7 +612,7 @@ const PartnerMenu = () => {
                   >
                     All Services
                   </button>
-                  {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
+                  {Object.entries(SPICY_LEVELS).map(([key, label]) => (
                     <button
                       key={key}
                       onClick={() => setActiveCategory(key)}
@@ -582,66 +627,86 @@ const PartnerMenu = () => {
                   ))}
                 </div>
 
-                {/* Services Grid */}
+                {/* Menu Items Grid */}
                 {loading ? (
                   <div className="flex items-center justify-center h-64">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#fea116ff]"></div>
                   </div>
-                ) : filteredMenuItems.length === 0 ? (
+                ) : menuItems.length === 0 ? (
                   <div className="text-center py-12">
-                    <FaFish className="mx-auto h-12 w-12 text-gray-400" />
-                    <h3 className="mt-2 text-sm font-medium text-gray-900">No cooking services</h3>
-                    <p className="mt-1 text-sm text-gray-500">Get started by adding a new cooking service.</p>
+                    <FaUtensils className="mx-auto h-12 w-12 text-gray-400" />
+                    <h3 className="mt-2 text-sm font-medium text-gray-900">No menu items</h3>
+                    <p className="mt-1 text-sm text-gray-500">Get started by adding a new dish to your menu.</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredMenuItems.map((item, idx) => (
-                      <div key={idx} className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-300">
-                        <div className="flex justify-between items-start mb-4">
-                          <span className="inline-block bg-[#fea116ff] text-white text-xs font-semibold px-3 py-1 rounded-full">
-                            {CATEGORY_LABELS[item.category] || item.category}
-                          </span>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => handleEdit(idx)}
-                              className="text-blue-600 hover:text-blue-800 transition-colors"
-                            >
-                              <FaEdit />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(idx)}
-                              className="text-red-600 hover:text-red-800 transition-colors"
-                            >
-                              <FaTrash />
-                            </button>
-                          </div>
-                        </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.name}</h3>
-                        <p className="text-gray-600 mb-4 line-clamp-2">{item.description}</p>
-                        <div className="space-y-2 mb-4">
-                          <div className="flex items-center text-gray-600">
-                            <FaClock className="mr-2" />
-                            <span>Cooking Time: {item.cookingTime}</span>
-                          </div>
-                          <div className="flex items-center text-gray-600">
-                            <FaUtensils className="mr-2" />
-                            <span>Max Portions per Order: {item.maxFoodPerOrder}</span>
-                          </div>
-                        </div>
-                        {item.includes && item.includes.length > 0 && (
-                          <div className="mb-4">
-                            <h4 className="text-sm font-medium text-gray-700 mb-2">Includes:</h4>
-                            <div className="flex flex-wrap gap-2">
-                              {item.includes.map((include, i) => (
-                                <span key={i} className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
-                                  {include}
-                                </span>
-                              ))}
-                            </div>
+                      <div key={idx} className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300">
+                        {item.image && (
+                          <div className="relative h-48">
+                            <img 
+                              src={item.image} 
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                            />
                           </div>
                         )}
-                        <div className="flex justify-between items-center">
-                          <span className="text-xl font-bold text-[#fea116ff]">${item.portionPrice}</span>
+                        <div className="p-6">
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleEdit(idx)}
+                                className="text-blue-600 hover:text-blue-800 transition-colors"
+                              >
+                                <FaEdit />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(idx)}
+                                className="text-red-600 hover:text-red-800 transition-colors"
+                              >
+                                <FaTrash />
+                              </button>
+                            </div>
+                          </div>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.name}</h3>
+                          <p className="text-gray-600 mb-4 line-clamp-2">{item.description}</p>
+                          
+                          <div className="space-y-2 mb-4">
+                            <div className="flex items-center text-gray-600">
+                              <FaDollarSign className="mr-2" />
+                              <span>${item.price}</span>
+                            </div>
+                            <div className="flex items-center text-gray-600">
+                              <FaPepperHot className="mr-2" />
+                              <span>Spicy Level: {SPICY_LEVELS[item.spicyLevel]}</span>
+                            </div>
+                          </div>
+
+                          {item.ingredients && item.ingredients.length > 0 && (
+                            <div className="mb-4">
+                              <h4 className="text-sm font-medium text-gray-700 mb-2">Ingredients:</h4>
+                              <div className="flex flex-wrap gap-2">
+                                {item.ingredients.map((ingredient, i) => (
+                                  <span key={i} className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
+                                    {ingredient}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {item.dietaryTags && item.dietaryTags.length > 0 && (
+                            <div className="mb-4">
+                              <h4 className="text-sm font-medium text-gray-700 mb-2">Dietary Tags:</h4>
+                              <div className="flex flex-wrap gap-2">
+                                {item.dietaryTags.map((tag, i) => (
+                                  <span key={i} className="bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs">
+                                    {DIETARY_TAGS[tag]}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -652,7 +717,7 @@ const PartnerMenu = () => {
               <form onSubmit={editIndex !== null ? handleSaveEdit : handleSubmit} className="max-w-2xl mx-auto">
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Service Name</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Dish Name</label>
                     <input
                       type="text"
                       name="name"
@@ -674,25 +739,11 @@ const PartnerMenu = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                    <select
-                      name="category"
-                      value={formData.category}
-                      onChange={handleInputChange}
-                      required
-                      className="block w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
-                    >
-                      {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
-                        <option key={key} value={key}>{label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Portion Price</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Price</label>
                     <input
                       type="number"
-                      name="portionPrice"
-                      value={formData.portionPrice}
+                      name="price"
+                      value={formData.price}
                       onChange={handleInputChange}
                       step="0.01"
                       className="block w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
@@ -700,57 +751,46 @@ const PartnerMenu = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Cooking Time</label>
-                    <input
-                      type="text"
-                      name="cookingTime"
-                      value={formData.cookingTime}
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Spicy Level</label>
+                    <select
+                      name="spicyLevel"
+                      value={formData.spicyLevel}
                       onChange={handleInputChange}
-                      placeholder="e.g., 30 minutes"
                       className="block w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
-                      required
-                    />
+                    >
+                      {Object.entries(SPICY_LEVELS).map(([key, label]) => (
+                        <option key={key} value={key}>{label}</option>
+                      ))}
+                    </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Maximum Food per Order</label>
-                    <input
-                      type="number"
-                      name="maxFoodPerOrder"
-                      value={formData.maxFoodPerOrder}
-                      onChange={handleInputChange}
-                      min="1"
-                      className="block w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">What's Included</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Ingredients</label>
                     <div className="flex gap-2 mb-2">
                       <input
                         type="text"
-                        value={newInclude}
-                        onChange={(e) => setNewInclude(e.target.value)}
-                        placeholder="e.g., Seasoning, Side Dishes"
+                        value={newIngredient}
+                        onChange={(e) => setNewIngredient(e.target.value)}
+                        placeholder="Add an ingredient"
                         className="block w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
                       />
                       <button
                         type="button"
-                        onClick={handleAddInclude}
+                        onClick={handleAddIngredient}
                         className="bg-[#fea116ff] text-white px-4 py-2 rounded-lg hover:bg-[#fea116cc]"
                       >
                         Add
                       </button>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {formData.includes.map((include, index) => (
+                      {formData.ingredients.map((ingredient, index) => (
                         <span
                           key={index}
                           className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm flex items-center gap-2"
                         >
-                          {include}
+                          {ingredient}
                           <button
                             type="button"
-                            onClick={() => handleRemoveInclude(index)}
+                            onClick={() => handleRemoveIngredient(index)}
                             className="text-gray-400 hover:text-gray-600"
                           >
                             ×
@@ -759,11 +799,60 @@ const PartnerMenu = () => {
                       ))}
                     </div>
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Dietary Tags</label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {Object.entries(DIETARY_TAGS).map(([key, label]) => (
+                        <label key={key} className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={formData.dietaryTags.includes(key)}
+                            onChange={() => handleDietaryTagChange(key)}
+                            className="rounded border-gray-300 text-[#fea116ff] focus:ring-[#fea116ff]"
+                          />
+                          <span className="text-sm text-gray-700">{label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Dish Image</label>
+                    <div className="mt-1 flex items-center">
+                      <div className="flex-shrink-0">
+                        {formData.image ? (
+                          <img
+                            src={formData.image}
+                            alt="Dish preview"
+                            className="h-32 w-32 object-cover rounded-lg"
+                          />
+                        ) : (
+                          <div className="h-32 w-32 bg-gray-100 rounded-lg flex items-center justify-center">
+                            <FaImage className="h-8 w-8 text-gray-400" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="ml-4">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          className="hidden"
+                          id="image-upload"
+                        />
+                        <label
+                          htmlFor="image-upload"
+                          className="bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#fea116ff] cursor-pointer"
+                        >
+                          Change Image
+                        </label>
+                      </div>
+                    </div>
+                  </div>
                   <button
                     type="submit"
                     className="w-full bg-[#fea116ff] text-white py-3 px-4 rounded-lg hover:bg-[#fea116cc] focus:outline-none focus:ring-2 focus:ring-[#fea116ff] focus:ring-offset-2 font-semibold transition-all duration-300"
                   >
-                    {editIndex !== null ? 'Save Changes' : 'Add Service'}
+                    {editIndex !== null ? 'Save Changes' : 'Add Dish'}
                   </button>
                 </div>
               </form>
