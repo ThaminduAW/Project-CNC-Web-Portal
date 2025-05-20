@@ -132,11 +132,11 @@ const PartnerDashboard = () => {
             <h3 className="text-lg font-semibold text-gray-700">Total Reservations</h3>
             <p className="text-3xl font-bold text-[#0098c9ff]">{dashboardData.totalReservations}</p>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center">
+          {/* <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center">
             <FaStore className="text-4xl text-green-600 mb-2" />
             <h3 className="text-lg font-semibold text-gray-700">Total Tours</h3>
             <p className="text-3xl font-bold text-green-600">{dashboardData.totalTours}</p>
-          </div>
+          </div> */}
           <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center">
             <FaUsers className="text-4xl text-purple-600 mb-2" />
             <h3 className="text-lg font-semibold text-gray-700">Total Customers</h3>
