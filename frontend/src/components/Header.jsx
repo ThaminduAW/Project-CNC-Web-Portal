@@ -33,7 +33,7 @@ const Header = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex space-x-8">
-          {['Home', 'Tours', 'Reservation', 'About', 'Contact'].map((item) => (
+          {['Home', 'Restaurants', 'Tours', 'Reservation', 'About', 'Contact'].map((item) => (
             <Link
               key={item}
               to={item === 'Home' ? '/' : `/${item.toLowerCase()}`}
@@ -73,7 +73,7 @@ const Header = () => {
       {/* Mobile Dropdown Menu */}
       {isOpen && (
         <nav className="md:hidden bg-gradient-to-b from-[#0098c9ff]/95 to-[#001524ff]/95 backdrop-blur-md text-white flex flex-col items-center space-y-4 py-4 animate-fadeIn">
-          {['Home', 'Tours', 'Reservation', 'About', 'Contact'].map((item) => (
+          {['Home', 'Restaurants', 'Tours', 'Reservation', 'About', 'Contact'].map((item) => (
             <Link
               key={item}
               to={item === 'Home' ? '/' : `/${item.toLowerCase()}`}

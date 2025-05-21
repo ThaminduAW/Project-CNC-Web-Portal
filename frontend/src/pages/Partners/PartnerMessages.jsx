@@ -182,6 +182,7 @@ const PartnerMessages = () => {
           return;
         }
 
+        console.log("Fetching messages for conversation with admin:", selectedAdmin);
         const response = await fetch(`${baseURL}/messages/conversation/${selectedAdmin}`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -193,6 +194,7 @@ const PartnerMessages = () => {
         }
 
         const data = await response.json();
+        console.log("Fetched messages:", data);
         
         // Check for new messages and show notification
         if (messages.length > 0 && data.length > messages.length) {
@@ -208,6 +210,7 @@ const PartnerMessages = () => {
         setLoading(false);
         scrollToBottom();
       } catch (err) {
+        console.error("Error fetching messages:", err);
         setError("Failed to load messages. Please try again later.");
         setLoading(false);
       }
@@ -217,15 +220,27 @@ const PartnerMessages = () => {
     // Set up polling for new messages
     const interval = setInterval(fetchMessages, 5000);
     return () => clearInterval(interval);
-  }, [selectedAdmin, navigate, messages.length, currentUser?.id]);
+  }, [selectedAdmin, navigate, currentUser?.id]);
 
   const handleSend = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || !selectedAdmin) return;
 
     setSending(true);
+    setError(""); // Clear any previous errors
     try {
       const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/signin");
+        return;
+      }
+
+      // Log the data being sent
+      console.log("Sending message:", {
+        receiverId: selectedAdmin,
+        content: newMessage.trim()
+      });
+
       const response = await fetch(`${baseURL}/messages`, {
         method: "POST",
         headers: {
@@ -234,20 +249,30 @@ const PartnerMessages = () => {
         },
         body: JSON.stringify({
           receiverId: selectedAdmin,
-          content: newMessage,
+          content: newMessage.trim()
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to send message");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to send message");
       }
 
       const data = await response.json();
-      setMessages([...messages, data]);
+      console.log("Message sent successfully:", data);
+      
+      // Update messages immediately with the new message
+      setMessages(prevMessages => [...prevMessages, data]);
       setNewMessage("");
       scrollToBottom();
+
+      // Trigger a refresh of messages after a short delay
+      setTimeout(() => {
+        fetchMessages();
+      }, 1000);
     } catch (err) {
-      setError("Failed to send message. Please try again.");
+      setError(err.message || "Failed to send message. Please try again.");
+      console.error("Message send error:", err);
     } finally {
       setSending(false);
     }
@@ -287,197 +312,199 @@ const PartnerMessages = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#fdfcdcff] relative">
+    <div className="min-h-screen bg-[#fdfcdcff]">
       <div className="fixed left-0 top-0 h-full z-30">
         <PartnerSideBar />
       </div>
-      <div className="flex-1 ml-[240px]">
-        <div className="flex h-screen">
-          {/* Contacts Sidebar */}
-          <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
-            <div className="p-4 border-b border-gray-200">
-              <div className="flex items-center mb-4">
-                <FaComments className="text-xl text-[#fea116ff] mr-2" />
-                <h2 className="text-xl font-bold">Messages</h2>
+      <div className="ml-[240px] p-8">
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="flex h-[calc(100vh-8rem)]">
+            {/* Contacts Sidebar */}
+            <div className="w-80 border-r border-gray-200 flex flex-col">
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex items-center mb-6">
+                  <FaComments className="text-2xl text-[#fea116ff] mr-3" />
+                  <h2 className="text-2xl font-bold text-gray-800">Messages</h2>
+                </div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search admins..."
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
+                  />
+                  <FaSearch className="absolute left-3 top-3.5 text-gray-400" />
+                </div>
               </div>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search admins..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
-                />
-                <FaSearch className="absolute left-3 top-3 text-gray-400" />
+              <div className="flex-1 overflow-y-auto">
+                {admins.map((admin) => (
+                  <button
+                    key={admin._id}
+                    onClick={() => setSelectedAdmin(admin._id)}
+                    className={`w-full p-4 flex items-center space-x-4 hover:bg-gray-50 transition-colors ${
+                      selectedAdmin === admin._id ? "bg-[#fdfcdcff] border-l-4 border-[#fea116ff]" : ""
+                    }`}
+                  >
+                    <div className="w-12 h-12 bg-[#fea116ff] rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                      {admin.fullName?.charAt(0) || 'A'}
+                    </div>
+                    <div className="flex-1 text-left">
+                      <h3 className="font-medium text-gray-900 text-lg">{admin.fullName}</h3>
+                      <p className="text-sm text-gray-500">
+                        {isTyping && selectedAdmin === admin._id ? 
+                          'Typing...' : 
+                          formatLastSeen(adminLastSeen[admin._id])}
+                      </p>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto">
-              {admins.map((admin) => (
-                <button
-                  key={admin._id}
-                  onClick={() => setSelectedAdmin(admin._id)}
-                  className={`w-full p-3 flex items-center space-x-3 hover:bg-gray-50 transition-colors ${
-                    selectedAdmin === admin._id ? "bg-[#fdfcdcff] border-l-4 border-[#fea116ff]" : ""
-                  }`}
-                >
-                  <div className="w-10 h-10 bg-[#fea116ff] rounded-full flex items-center justify-center text-white font-semibold">
-                    {admin.fullName.charAt(0)}
-                  </div>
-                  <div className="flex-1 text-left">
-                    <h3 className="font-medium text-gray-900">{admin.fullName}</h3>
-                    <p className="text-sm text-gray-500">
-                      {isTyping && selectedAdmin === admin._id ? 
-                        'Typing...' : 
-                        formatLastSeen(adminLastSeen[admin._id])}
-                    </p>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
 
-          {/* Chat Area */}
-          <div className="flex-1 flex flex-col bg-white">
-            {/* Chat Header */}
-            {selectedAdmin && (
-              <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="relative">
-                    <div className="w-10 h-10 bg-[#fea116ff] rounded-full flex items-center justify-center text-white font-semibold">
-                      {admins.find(a => a._id === selectedAdmin)?.fullName.charAt(0)}
+            {/* Chat Area */}
+            <div className="flex-1 flex flex-col">
+              {/* Chat Header */}
+              {selectedAdmin && (
+                <div className="p-6 border-b border-gray-200 flex items-center justify-between bg-white">
+                  <div className="flex items-center space-x-4">
+                    <div className="relative">
+                      <div className="w-12 h-12 bg-[#fea116ff] rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                        {admins.find(a => a._id === selectedAdmin)?.fullName?.charAt(0) || 'A'}
+                      </div>
+                      {adminLastSeen[selectedAdmin] === 'Active Now' && (
+                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                      )}
                     </div>
-                    {adminLastSeen[selectedAdmin] === 'Active Now' && (
-                      <div className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border-2 border-white"></div>
-                    )}
+                    <div>
+                      <h3 className="font-medium text-gray-900 text-lg">
+                        {admins.find(a => a._id === selectedAdmin)?.fullName || 'Admin'}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        {isTyping ? 'Typing...' : formatLastSeen(adminLastSeen[selectedAdmin])}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-medium text-gray-900">
-                      {admins.find(a => a._id === selectedAdmin)?.fullName}
-                    </h3>
-                    <p className="text-sm text-gray-500">
-                      {isTyping ? 'Typing...' : formatLastSeen(adminLastSeen[selectedAdmin])}
-                    </p>
-                  </div>
+                  <button className="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100">
+                    <FaEllipsisH />
+                  </button>
                 </div>
-                <button className="text-gray-500 hover:text-gray-700">
-                  <FaEllipsisH />
-                </button>
-              </div>
-            )}
+              )}
 
-            {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#fdfcdcff]">
-              {loading ? (
-                <div className="flex justify-center items-center h-full">
-                  <FaSpinner className="animate-spin text-3xl text-[#fea116ff]" />
-                </div>
-              ) : messages.length === 0 ? (
-                <div className="text-center text-gray-500 mt-8">
-                  <div className="text-6xl mb-4">💬</div>
-                  <p className="text-lg">No messages yet. Start a conversation!</p>
-                </div>
-              ) : (
-                Object.entries(groupMessagesByDate(messages)).map(([date, dateMessages]) => (
-                  <div key={date} className="space-y-4">
-                    <div className="text-center">
-                      <span className="px-3 py-1 bg-gray-200 rounded-full text-sm text-gray-600">
-                        {date}
-                      </span>
-                    </div>
-                    {dateMessages.map((message) => (
-                      <div
-                        key={message._id}
-                        className={`flex ${
-                          message.sender._id === currentUser?.id
-                            ? "justify-end"
-                            : "justify-start"
-                        }`}
-                      >
+              {/* Messages Area */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[#fdfcdcff]">
+                {loading ? (
+                  <div className="flex justify-center items-center h-full">
+                    <FaSpinner className="animate-spin text-4xl text-[#fea116ff]" />
+                  </div>
+                ) : messages.length === 0 ? (
+                  <div className="text-center text-gray-500 mt-8">
+                    <div className="text-7xl mb-4">💬</div>
+                    <p className="text-xl">No messages yet. Start a conversation!</p>
+                  </div>
+                ) : (
+                  Object.entries(groupMessagesByDate(messages)).map(([date, dateMessages]) => (
+                    <div key={date} className="space-y-4">
+                      <div className="text-center">
+                        <span className="px-4 py-2 bg-gray-200 rounded-full text-sm text-gray-600">
+                          {date}
+                        </span>
+                      </div>
+                      {dateMessages.map((message) => (
                         <div
-                          className={`max-w-[70%] rounded-2xl px-4 py-2 ${
+                          key={message._id}
+                          className={`flex ${
                             message.sender._id === currentUser?.id
-                              ? "bg-[#fea116ff] text-white rounded-br-none"
-                              : "bg-gray-200 text-gray-900 rounded-bl-none"
+                              ? "justify-end"
+                              : "justify-start"
                           }`}
                         >
-                          <p className="text-sm mb-1">{message.content}</p>
-                          <div className="flex items-center justify-end space-x-1">
-                            <p className="text-xs opacity-75">
-                              {formatTime(message.createdAt)}
-                            </p>
-                            {message.sender._id === currentUser?.id && (
-                              <span className="text-xs">
-                                {messageStatus[message._id] === 'read' ? (
-                                  <FaCheckDouble className="text-blue-400" />
-                                ) : messageStatus[message._id] === 'delivered' ? (
-                                  <FaCheckDouble className="opacity-75" />
-                                ) : (
-                                  <FaCheck className="opacity-75" />
-                                )}
-                              </span>
-                            )}
+                          <div
+                            className={`max-w-[70%] rounded-2xl px-6 py-3 ${
+                              message.sender._id === currentUser?.id
+                                ? "bg-[#fea116ff] text-white rounded-br-none"
+                                : "bg-white text-gray-900 rounded-bl-none shadow-sm"
+                            }`}
+                          >
+                            <p className="text-base mb-2">{message.content}</p>
+                            <div className="flex items-center justify-end space-x-2">
+                              <p className="text-xs opacity-75">
+                                {formatTime(message.createdAt)}
+                              </p>
+                              {message.sender._id === currentUser?.id && (
+                                <span className="text-xs">
+                                  {messageStatus[message._id] === 'read' ? (
+                                    <FaCheckDouble className="text-blue-400" />
+                                  ) : messageStatus[message._id] === 'delivered' ? (
+                                    <FaCheckDouble className="opacity-75" />
+                                  ) : (
+                                    <FaCheck className="opacity-75" />
+                                  )}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                  ))
+                )}
+                <div ref={messagesEndRef} />
+                {isTyping && (
+                  <div className="flex items-center space-x-2 text-gray-500">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100"></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200"></div>
+                    </div>
+                    <span className="text-sm">Typing...</span>
                   </div>
-                ))
-              )}
-              <div ref={messagesEndRef} />
-              {isTyping && (
-                <div className="flex items-center space-x-2 text-gray-500">
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100"></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200"></div>
-                  </div>
-                  <span className="text-sm">Typing...</span>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
 
-            {/* Message Input */}
-            <div className="p-4 border-t border-gray-200 bg-white">
-              <form onSubmit={handleSend} className="flex items-center space-x-2">
-                <button
-                  type="button"
-                  className="text-gray-500 hover:text-gray-700 p-2"
-                >
-                  <FaPaperclip />
-                </button>
-                <input
-                  type="text"
-                  value={newMessage}
-                  onChange={(e) => {
-                    setNewMessage(e.target.value);
-                    handleTyping();
-                  }}
-                  placeholder="Type a message..."
-                  className="flex-1 p-2 border-none focus:outline-none focus:ring-0 bg-gray-50 rounded-full"
-                />
-                <button
-                  type="button"
-                  className="text-gray-500 hover:text-gray-700 p-2"
-                >
-                  <FaSmile />
-                </button>
-                <button
-                  type="submit"
-                  disabled={sending || !newMessage.trim()}
-                  className="p-2 text-[#fea116ff] hover:text-[#e69510ff] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {sending ? (
-                    <FaSpinner className="animate-spin" />
-                  ) : (
-                    <FaPaperPlane />
-                  )}
-                </button>
-              </form>
+              {/* Message Input */}
+              <div className="p-6 border-t border-gray-200 bg-white">
+                <form onSubmit={handleSend} className="flex items-center space-x-3">
+                  {/* <button
+                    type="button"
+                    className="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100"
+                  >
+                    <FaPaperclip className="text-xl" />
+                  </button> */}
+                  <input
+                    type="text"
+                    value={newMessage}
+                    onChange={(e) => {
+                      setNewMessage(e.target.value);
+                      handleTyping();
+                    }}
+                    placeholder="Type a message..."
+                    className="flex-1 p-3 border-none focus:outline-none focus:ring-0 bg-gray-50 rounded-full text-base"
+                  />
+                  {/* <button
+                    type="button"
+                    className="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100"
+                  >
+                    <FaSmile className="text-xl" />
+                  </button> */}
+                  <button
+                    type="submit"
+                    disabled={sending || !newMessage.trim()}
+                    className="p-3 text-[#fea116ff] hover:text-[#e69510ff] disabled:opacity-50 disabled:cursor-not-allowed rounded-full hover:bg-gray-100"
+                  >
+                    {sending ? (
+                      <FaSpinner className="animate-spin text-xl" />
+                    ) : (
+                      <FaPaperPlane className="text-xl" />
+                    )}
+                  </button>
+                </form>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Error Toast */}
         {error && (
-          <div className="fixed bottom-4 right-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-lg z-50">
+          <div className="fixed bottom-4 right-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg shadow-lg z-50">
             {error}
           </div>
         )}

@@ -82,7 +82,10 @@ router.get("/available", verifyToken, verifyPartner, async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const tour = await Tour.findById(req.params.id)
-      .populate('restaurants.restaurant', 'restaurantName address phone email');
+      .populate({
+        path: 'restaurants.restaurant',
+        select: 'restaurantName address phone email'
+      });
     
     if (!tour) {
       return res.status(404).json({ message: 'Tour not found' });

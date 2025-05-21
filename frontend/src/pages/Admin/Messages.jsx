@@ -219,179 +219,175 @@ const Messages = () => {
   };
 
   return (
-    <div className="flex h-screen bg-[#fdfcdcff] text-[#001524ff]">
-      <AdminSideBar />
-      <div className="flex-1 flex overflow-hidden">
-        {/* Contacts Sidebar */}
-        <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center mb-4">
-              <FaComments className="text-xl text-[#fea116ff] mr-2" />
-              <h2 className="text-xl font-bold">Messages</h2>
-            </div>
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search partners..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
-              />
-              <FaSearch className="absolute left-3 top-3 text-gray-400" />
-            </div>
-          </div>
-          <div className="flex-1 overflow-y-auto">
-            {partners.map((partner) => (
-              <button
-                key={partner._id}
-                onClick={() => setSelectedPartner(partner._id)}
-                className={`w-full p-3 flex items-center space-x-3 hover:bg-gray-50 transition-colors relative ${
-                  selectedPartner === partner._id ? "bg-[#fdfcdcff] border-l-4 border-[#fea116ff]" : ""
-                }`}
-              >
+    <div className="min-h-screen bg-[#fdfcdcff]">
+      <div className="fixed left-0 top-0 h-full z-30">
+        <AdminSideBar />
+      </div>
+      <div className="ml-[240px] p-8">
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="flex h-[calc(100vh-8rem)]">
+            {/* Contacts Sidebar */}
+            <div className="w-80 border-r border-gray-200 flex flex-col">
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex items-center mb-6">
+                  <FaComments className="text-2xl text-[#fea116ff] mr-3" />
+                  <h2 className="text-2xl font-bold text-gray-800">Messages</h2>
+                </div>
                 <div className="relative">
-                  <div className="w-10 h-10 bg-[#fea116ff] rounded-full flex items-center justify-center text-white font-semibold">
-                    {partner.fullName.charAt(0)}
-                  </div>
-                  {partner.unreadCount > 0 && (
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-xs">{partner.unreadCount}</span>
+                  <input
+                    type="text"
+                    placeholder="Search partners..."
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
+                  />
+                  <FaSearch className="absolute left-3 top-3.5 text-gray-400" />
+                </div>
+              </div>
+              <div className="flex-1 overflow-y-auto">
+                {partners.map((partner) => (
+                  <button
+                    key={partner._id}
+                    onClick={() => setSelectedPartner(partner._id)}
+                    className={`w-full p-4 flex items-center space-x-4 hover:bg-gray-50 transition-colors relative ${
+                      selectedPartner === partner._id ? "bg-[#fdfcdcff] border-l-4 border-[#fea116ff]" : ""
+                    }`}
+                  >
+                    <div className="relative">
+                      <div className="w-12 h-12 bg-[#fea116ff] rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                        {partner.fullName.charAt(0)}
+                      </div>
+                      {partner.unreadCount > 0 && (
+                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs">{partner.unreadCount}</span>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-                <div className="flex-1 text-left">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-medium text-gray-900">{partner.fullName}</h3>
-                    {partner.unreadCount > 0 && (
-                      <FaCircle className="text-[#fea116ff] text-xs" />
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-500">{partner.restaurantName}</p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    {formatLastMessageDate(partner.lastMessageDate)}
-                  </p>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Chat Area */}
-        <div className="flex-1 flex flex-col bg-white">
-          {/* Chat Header */}
-          {selectedPartner && (
-            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-[#fea116ff] rounded-full flex items-center justify-center text-white font-semibold">
-                  {partners.find(p => p._id === selectedPartner)?.fullName.charAt(0)}
-                </div>
-                <div>
-                  <h3 className="font-medium text-gray-900">
-                    {partners.find(p => p._id === selectedPartner)?.fullName}
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    {partners.find(p => p._id === selectedPartner)?.restaurantName}
-                  </p>
-                </div>
-              </div>
-              <button className="text-gray-500 hover:text-gray-700">
-                <FaEllipsisH />
-              </button>
-            </div>
-          )}
-
-          {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#fdfcdcff]">
-            {loading ? (
-              <div className="flex justify-center items-center h-full">
-                <FaSpinner className="animate-spin text-3xl text-[#fea116ff]" />
-              </div>
-            ) : messages.length === 0 ? (
-              <div className="text-center text-gray-500 mt-8">
-                <div className="text-6xl mb-4">💬</div>
-                <p className="text-lg">No messages yet. Start a conversation!</p>
-              </div>
-            ) : (
-              Object.entries(groupMessagesByDate(messages)).map(([date, dateMessages]) => (
-                <div key={date} className="space-y-4">
-                  <div className="text-center">
-                    <span className="px-3 py-1 bg-gray-200 rounded-full text-sm text-gray-600">
-                      {date}
-                    </span>
-                  </div>
-                  {dateMessages.map((message) => (
-                    <div
-                      key={message._id}
-                      className={`flex ${
-                        message.sender._id === currentUser?.id
-                          ? "justify-end"
-                          : "justify-start"
-                      }`}
-                    >
-                      <div
-                        className={`max-w-[70%] rounded-2xl px-4 py-2 relative ${
-                          message.sender._id === currentUser?.id
-                            ? "bg-[#fea116ff] text-white rounded-br-none"
-                            : "bg-gray-200 text-gray-900 rounded-bl-none"
-                        }`}
-                      >
-                        {!message.read && message.sender._id !== currentUser?.id && (
-                          <div className="absolute -top-1 -right-1 w-2 h-2 bg-[#fea116ff] rounded-full" />
+                    <div className="flex-1 text-left">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-medium text-gray-900 text-lg">{partner.fullName}</h3>
+                        {partner.unreadCount > 0 && (
+                          <FaCircle className="text-[#fea116ff] text-xs" />
                         )}
-                        <p className="text-sm mb-1">{message.content}</p>
-                        <p className="text-xs opacity-75 text-right">
-                          {formatTime(message.createdAt)}
-                        </p>
+                      </div>
+                      <p className="text-sm text-gray-500">{partner.restaurantName}</p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {formatLastMessageDate(partner.lastMessageDate)}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Chat Area */}
+            <div className="flex-1 flex flex-col">
+              {/* Chat Header */}
+              {selectedPartner && (
+                <div className="p-6 border-b border-gray-200 flex items-center justify-between bg-white">
+                  <div className="flex items-center space-x-4">
+                    <div className="relative">
+                      <div className="w-12 h-12 bg-[#fea116ff] rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                        {partners.find(p => p._id === selectedPartner)?.fullName.charAt(0)}
                       </div>
                     </div>
-                  ))}
+                    <div>
+                      <h3 className="font-medium text-gray-900 text-lg">
+                        {partners.find(p => p._id === selectedPartner)?.fullName}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        {partners.find(p => p._id === selectedPartner)?.restaurantName}
+                      </p>
+                    </div>
+                  </div>
+                  <button className="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100">
+                    <FaEllipsisH className="text-xl" />
+                  </button>
                 </div>
-              ))
-            )}
-            <div ref={messagesEndRef} />
-          </div>
+              )}
 
-          {/* Message Input */}
-          <div className="p-4 border-t border-gray-200 bg-white">
-            <form onSubmit={handleSend} className="flex items-center space-x-2">
-              <button
-                type="button"
-                className="text-gray-500 hover:text-gray-700 p-2"
-              >
-                <FaPaperclip />
-              </button>
-              <input
-                type="text"
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Type a message..."
-                className="flex-1 p-2 border-none focus:outline-none focus:ring-0 bg-gray-50 rounded-full"
-              />
-              <button
-                type="button"
-                className="text-gray-500 hover:text-gray-700 p-2"
-              >
-                <FaSmile />
-              </button>
-              <button
-                type="submit"
-                disabled={sending || !newMessage.trim()}
-                className="p-2 text-[#fea116ff] hover:text-[#e69510ff] disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {sending ? (
-                  <FaSpinner className="animate-spin" />
+              {/* Messages Area */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[#fdfcdcff]">
+                {loading ? (
+                  <div className="flex justify-center items-center h-full">
+                    <FaSpinner className="animate-spin text-4xl text-[#fea116ff]" />
+                  </div>
+                ) : messages.length === 0 ? (
+                  <div className="text-center text-gray-500 mt-8">
+                    <div className="text-7xl mb-4">💬</div>
+                    <p className="text-xl">No messages yet. Start a conversation!</p>
+                  </div>
                 ) : (
-                  <FaPaperPlane />
+                  Object.entries(groupMessagesByDate(messages)).map(([date, dateMessages]) => (
+                    <div key={date} className="space-y-4">
+                      <div className="text-center">
+                        <span className="px-4 py-2 bg-gray-200 rounded-full text-sm text-gray-600">
+                          {date}
+                        </span>
+                      </div>
+                      {dateMessages.map((message) => (
+                        <div
+                          key={message._id}
+                          className={`flex ${
+                            message.sender._id === currentUser?.id
+                              ? "justify-end"
+                              : "justify-start"
+                          }`}
+                        >
+                          <div
+                            className={`max-w-[70%] rounded-2xl px-6 py-3 relative ${
+                              message.sender._id === currentUser?.id
+                                ? "bg-[#fea116ff] text-white rounded-br-none"
+                                : "bg-white text-gray-900 rounded-bl-none shadow-sm"
+                            }`}
+                          >
+                            {!message.read && message.sender._id !== currentUser?.id && (
+                              <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#fea116ff] rounded-full" />
+                            )}
+                            <p className="text-base mb-2">{message.content}</p>
+                            <p className="text-xs opacity-75 text-right">
+                              {formatTime(message.createdAt)}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ))
                 )}
-              </button>
-            </form>
-          </div>
+                <div ref={messagesEndRef} />
+              </div>
 
-          {/* Error Toast */}
-          {error && (
-            <div className="fixed bottom-4 right-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-lg">
-              {error}
+              {/* Message Input */}
+              <div className="p-6 border-t border-gray-200 bg-white">
+                <form onSubmit={handleSend} className="flex items-center space-x-3">
+                  <input
+                    type="text"
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    placeholder="Type a message..."
+                    className="flex-1 p-3 border-none focus:outline-none focus:ring-0 bg-gray-50 rounded-full text-base"
+                  />
+                  <button
+                    type="submit"
+                    disabled={sending || !newMessage.trim()}
+                    className="p-3 text-[#fea116ff] hover:text-[#e69510ff] disabled:opacity-50 disabled:cursor-not-allowed rounded-full hover:bg-gray-100"
+                  >
+                    {sending ? (
+                      <FaSpinner className="animate-spin text-xl" />
+                    ) : (
+                      <FaPaperPlane className="text-xl" />
+                    )}
+                  </button>
+                </form>
+              </div>
             </div>
-          )}
+          </div>
         </div>
+
+        {/* Error Toast */}
+        {error && (
+          <div className="fixed bottom-4 right-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg shadow-lg z-50">
+            {error}
+          </div>
+        )}
       </div>
     </div>
   );

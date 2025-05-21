@@ -28,6 +28,13 @@ router.get("/profile", authMiddleware, async (req, res) => {
       };
       res.json(adminData);
     } else {
+      // Build full photo URL if restaurantPhoto exists
+      let restaurantPhotoUrl = '';
+      if (user.restaurantPhoto) {
+        const protocol = req.protocol;
+        const host = req.get('host');
+        restaurantPhotoUrl = `${protocol}://${host}${user.restaurantPhoto}`;
+      }
       const partnerData = {
         user: {
           fullName: user.fullName,
@@ -38,6 +45,10 @@ router.get("/profile", authMiddleware, async (req, res) => {
           url: user.url,
           cuisine: user.cuisine,
           operatingHours: user.operatingHours,
+          about: user.about,
+          features: user.features,
+          cookingServices: user.cookingServices,
+          restaurantPhoto: restaurantPhotoUrl
         },
       };
       console.log("Sending partner data:", partnerData);
@@ -50,109 +61,45 @@ router.get("/profile", authMiddleware, async (req, res) => {
 });
 
 // Update user profile
-router.put("/:id", authMiddleware, async (req, res) => {
+router.put("/profile", authMiddleware, async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Check if the user is updating their own profile
-    if (req.user.id.toString() !== req.params.id) {
-      return res
-        .status(403)
-        .json({ message: "Not authorized to update this profile" });
-    }
-
-    // If email is being updated, check if it's already in use
-    if (req.body.email && req.body.email !== user.email) {
-      const emailExists = await User.findOne({ email: req.body.email });
-      if (emailExists) {
-        return res.status(400).json({ message: "Email already in use" });
-      }
-    }
-
     // Update fields based on user role
     if (user.role === "Admin") {
-      const { firstName, lastName, phone, email } = req.body;
-
-      if (firstName) user.firstName = firstName;
-      if (lastName) user.lastName = lastName;
-      if (phone) user.phone = phone;
-      if (email) user.email = email;
+      const { firstName, lastName, phone } = req.body;
+      user.firstName = firstName;
+      user.lastName = lastName;
+      user.phone = phone;
     } else {
       const {
         fullName,
         restaurantName,
         address,
         phone,
-        url,
         cuisine,
         operatingHours,
+        about,
+        features,
+        cookingServices
       } = req.body;
 
-      if (fullName) user.fullName = fullName;
-      if (restaurantName) user.restaurantName = restaurantName;
-      if (address) user.address = address;
-      if (phone) user.phone = phone;
-      if (url) user.url = url;
-      if (cuisine) user.cuisine = cuisine;
-      if (operatingHours) {
-        user.operatingHours = {
-          ...user.operatingHours,
-          ...operatingHours,
-        };
-      }
+      user.fullName = fullName;
+      user.restaurantName = restaurantName;
+      user.address = address;
+      user.phone = phone;
+      user.cuisine = cuisine;
+      user.operatingHours = operatingHours;
+      user.about = about;
+      user.features = features;
+      user.cookingServices = cookingServices;
     }
 
     await user.save();
-
-    // Generate new token if email was updated
-    let token;
-    if (req.body.email && req.body.email !== user.email) {
-      token = jwt.sign(
-        {
-          id: user._id.toString(),
-          role: user.role,
-          approved: user.approved,
-        },
-        process.env.JWT_SECRET,
-        { expiresIn: "2h" }
-      );
-    }
-
-    // Return updated user data based on role
-    if (user.role === "Admin") {
-      const response = {
-        message: "Profile updated successfully",
-        user: {
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-          phone: user.phone,
-        },
-      };
-
-      if (token) {
-        response.token = token;
-      }
-
-      res.json(response);
-    } else {
-      res.json({
-        message: "Profile updated successfully",
-        user: {
-          fullName: user.fullName,
-          restaurantName: user.restaurantName,
-          address: user.address,
-          phone: user.phone,
-          email: user.email,
-          url: user.url,
-          cuisine: user.cuisine,
-          operatingHours: user.operatingHours,
-        },
-      });
-    }
+    res.json({ message: "Profile updated successfully" });
   } catch (error) {
     console.error("Profile update error:", error);
     res.status(500).json({ message: "Server error. Please try again later." });

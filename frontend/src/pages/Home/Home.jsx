@@ -137,37 +137,126 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Experiences Section */}
-      <section className="relative py-16 bg-gradient-to-b from-white to-[#fdfcdcff]">
+      {/* Featured Restaurants Section */}
+      <section className="relative py-16 overflow-hidden">
         {/* Decorative Elements */}
-        <div className="absolute top-0 left-0 w-64 h-64 bg-[#0098c9ff] opacity-20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-0 w-64 h-64 bg-[#fea116ff] opacity-20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-[#0098c9ff] opacity-10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#fea116ff] opacity-10 rounded-full blur-3xl"></div>
         
         <div className="container mx-auto px-6 md:px-12 max-w-7xl relative">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          <div className="text-center mb-12">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <h2 className="text-4xl font-bold mb-4">Featured Restaurants</h2>
+              <div className="w-24 h-1 bg-[#fea116ff] mx-auto mb-4"></div>
+              <p className="text-gray-600 text-lg">Discover our top-rated seafood restaurants.</p>
+            </motion.div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {restaurants.map((restaurant, index) => (
+              <motion.div
+                key={restaurant._id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="bg-white rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300 relative group"
+                whileHover={{ y: -5 }}
+              >
+                <div className="relative w-full h-[300px] bg-gray-200">
+                  {restaurant.restaurantPhoto ? (
+                    <img 
+                      src={getImageUrl(restaurant.restaurantPhoto)}
+                      alt={restaurant.restaurantName}
+                      className="w-full h-full object-cover"
+                      onError={handleImageError}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                      <FaUtensils className="text-6xl text-gray-400" />
+                    </div>
+                  )}
+                  <div className="absolute top-4 right-4 bg-[#fea116ff] text-white px-4 py-2 rounded-full text-sm font-semibold z-10">
+                    {restaurant.rating || 0} <FaStar className="inline-block ml-1" />
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                      <h3 className="text-2xl font-bold mb-3">{restaurant.restaurantName}</h3>
+                      <p className="text-gray-100 mb-4 line-clamp-2 text-lg">{restaurant.about || 'Experience exceptional dining at its finest'}</p>
+                      <div className="flex items-center text-base text-gray-200 mb-6">
+                        <FaMapMarkerAlt className="mr-2 text-[#fea116ff]" />
+                        <span>{restaurant.address}</span>
+                      </div>
+                      {restaurant.cuisine && (
+                        <div className="mb-4">
+                          <span className="inline-block bg-[#fea116ff]/20 text-[#fea116ff] px-3 py-1 rounded-full text-sm">
+                            {restaurant.cuisine}
+                          </span>
+                        </div>
+                      )}
+                      <button
+                        onClick={() => navigate(`/restaurant-details/${restaurant._id}`)}
+                        className="w-full bg-[#fea116ff] text-white py-3 rounded-lg hover:bg-[#e8920eff] transition-colors font-semibold flex items-center justify-center text-lg"
+                      >
+                        View Restaurant <FaUtensils className="ml-2" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div 
+            className="text-center mt-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            <button
+              onClick={() => navigate('/restaurants')}
+              className="bg-[#001524ff] text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-[#00345cff] transition-all duration-300 transform hover:scale-105 inline-flex items-center"
+            >
+              View All Restaurants <FaUtensils className="ml-2" />
+            </button>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Experiences Section */}
+      <section className="relative py-8 sm:py-12 md:py-16 bg-gradient-to-b from-white to-[#fdfcdcff]">
+        {/* Decorative Elements */}
+        <div className="absolute top-0 left-0 w-32 sm:w-48 md:w-64 h-32 sm:h-48 md:h-64 bg-[#0098c9ff] opacity-20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-0 w-32 sm:w-48 md:w-64 h-32 sm:h-48 md:h-64 bg-[#fea116ff] opacity-20 rounded-full blur-3xl animate-pulse"></div>
+        
+        <div className="container mx-auto px-4 sm:px-6 md:px-12 max-w-7xl relative">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 md:gap-12">
             {/* Left Side - Experiences */}
             <div>
-              <div className="text-left mb-12">
+              <div className="text-left mb-8 sm:mb-10 md:mb-12">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6 }}
                 >
-                  <h2 className="text-4xl font-extrabold mb-4 bg-gradient-to-r from-[#0098c9ff] via-[#fea116ff] to-[#001524ff] bg-clip-text text-transparent drop-shadow-lg">
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-3 sm:mb-4 bg-gradient-to-r from-[#0098c9ff] via-[#fea116ff] to-[#001524ff] bg-clip-text text-transparent drop-shadow-lg">
                     Experience the Adventure
                   </h2>
-                  <div className="w-24 h-1 bg-gradient-to-r from-[#fea116ff] to-[#0098c9ff] mb-4 rounded-full animate-pulse"></div>
-                  <p className="text-gray-700 text-lg font-medium">Discover the thrill of fishing and cooking your own seafood.</p>
+                  <div className="w-16 sm:w-20 md:w-24 h-1 bg-gradient-to-r from-[#fea116ff] to-[#0098c9ff] mb-3 sm:mb-4 rounded-full animate-pulse"></div>
+                  <p className="text-gray-700 text-base sm:text-lg font-medium">Discover the thrill of fishing and cooking your own seafood.</p>
                 </motion.div>
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 {/* Experience Cards */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.1 }}
-                  className="relative group overflow-hidden rounded-2xl shadow-xl col-span-2 bg-white/30 backdrop-blur-lg border border-white/30 hover:border-[#fea116ff] transition-all duration-300"
+                  className="relative group overflow-hidden rounded-xl sm:rounded-2xl shadow-xl col-span-1 sm:col-span-2 bg-white/30 backdrop-blur-lg border border-white/30 hover:border-[#fea116ff] transition-all duration-300"
                   whileHover={{ scale: 1.03 }}
                 >
                   <div className="aspect-w-16 aspect-h-9">
@@ -178,27 +267,18 @@ const Home = () => {
                     />
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end">
-                    <div className="p-6 text-white">
-                      <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-[#fea116ff] to-[#0098c9ff] bg-clip-text text-transparent drop-shadow-lg">Deep Sea Fishing</h3>
-                      <p className="text-base mb-4 text-gray-100">Experience the thrill of catching your own fish in the deep blue sea.</p>
-                      <button className="relative px-6 py-2 rounded-full font-semibold bg-gradient-to-r from-[#0098c9ff] to-[#fea116ff] text-white shadow-lg hover:from-[#fea116ff] hover:to-[#0098c9ff] transition-all duration-300 overflow-hidden">
+                    <div className="p-4 sm:p-6 text-white">
+                      <h3 className="text-xl sm:text-2xl font-bold mb-2 bg-gradient-to-r from-[#fea116ff] to-[#0098c9ff] bg-clip-text text-transparent drop-shadow-lg">Deep Sea Fishing</h3>
+                      <p className="text-sm sm:text-base mb-3 sm:mb-4 text-gray-100">Experience the thrill of catching your own fish in the deep blue sea.</p>
+                      <button className="relative px-4 sm:px-6 py-2 rounded-full text-sm sm:text-base font-semibold bg-gradient-to-r from-[#0098c9ff] to-[#fea116ff] text-white shadow-lg hover:from-[#fea116ff] hover:to-[#0098c9ff] transition-all duration-300 overflow-hidden">
                         <span className="relative z-10">Learn More →</span>
                         <span className="absolute inset-0 rounded-full border-2 border-[#fea116ff] opacity-0 group-hover:opacity-100 animate-pulse"></span>
                       </button>
                     </div>
                   </div>
-                  <div className="absolute -inset-1 rounded-2xl pointer-events-none group-hover:animate-glow border-2 border-transparent group-hover:border-[#fea116ff] transition-all duration-300"></div>
+                  <div className="absolute -inset-1 rounded-xl sm:rounded-2xl pointer-events-none group-hover:animate-glow border-2 border-transparent group-hover:border-[#fea116ff] transition-all duration-300"></div>
                 </motion.div>
               </div>
-
-              <motion.div 
-                className="text-center mt-12"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.6 }}
-              >
-                {/* Optionally add a floating Web3-style button here */}
-              </motion.div>
             </div>
 
             {/* Right Side - About Us */}
@@ -206,34 +286,34 @@ const Home = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="lg:pl-12"
+              className="lg:pl-6 xl:pl-12 mt-8 lg:mt-0"
             >
-              <div className="text-[#fea116ff] text-lg font-semibold mb-2">About Us</div>
-              <h2 className="text-4xl font-extrabold mb-6 flex items-center gap-3 bg-gradient-to-r from-[#0098c9ff] via-[#fea116ff] to-[#001524ff] bg-clip-text text-transparent drop-shadow-lg">
-                Welcome to <span className="text-[#fea116ff] flex items-center">Catch & Cook <FaUtensils className="ml-2" /></span>
+              <div className="text-[#fea116ff] text-base sm:text-lg font-semibold mb-2">About Us</div>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3 bg-gradient-to-r from-[#0098c9ff] via-[#fea116ff] to-[#001524ff] bg-clip-text text-transparent drop-shadow-lg">
+                Welcome to <span className="text-[#fea116ff] flex items-center">Catch & Cook <FaUtensils className="ml-1 sm:ml-2" /></span>
               </h2>
-              <p className="text-gray-700 mb-8 leading-relaxed font-medium">
+              <p className="text-gray-700 mb-6 sm:mb-8 leading-relaxed text-sm sm:text-base font-medium">
                 At Catch and Cook World Tour, we are driven by a passion for authentic culinary experiences and a profound love for the sea. Our journey is spearheaded by our visionary founder, Kim, whose deep-rooted connection to seafood spans two decades. With unparalleled expertise in catching and cooking seafood, Kim has embarked on a mission to share the unparalleled joy of harvesting and savoring the ocean's bounty.
               </p>
 
-              <div className="grid grid-cols-2 gap-8 mb-8">
-                <div className="flex items-center gap-4">
-                  <div className="text-4xl text-[#fea116ff] font-extrabold drop-shadow-lg">15</div>
+              <div className="grid grid-cols-2 gap-4 sm:gap-8 mb-6 sm:mb-8">
+                <div className="flex items-center gap-2 sm:gap-4">
+                  <div className="text-2xl sm:text-3xl md:text-4xl text-[#fea116ff] font-extrabold drop-shadow-lg">15</div>
                   <div>
-                    <div className="font-semibold">Years of</div>
-                    <div className="text-gray-600">EXPERIENCE</div>
+                    <div className="font-semibold text-sm sm:text-base">Years of</div>
+                    <div className="text-gray-600 text-xs sm:text-sm">EXPERIENCE</div>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-4xl text-[#fea116ff] font-extrabold drop-shadow-lg">50</div>
+                <div className="flex items-center gap-2 sm:gap-4">
+                  <div className="text-2xl sm:text-3xl md:text-4xl text-[#fea116ff] font-extrabold drop-shadow-lg">50</div>
                   <div>
-                    <div className="font-semibold">Popular</div>
-                    <div className="text-gray-600">RESTAURANTS</div>
+                    <div className="font-semibold text-sm sm:text-base">Popular</div>
+                    <div className="text-gray-600 text-xs sm:text-sm">RESTAURANTS</div>
                   </div>
                 </div>
               </div>
 
-              <button className="relative px-8 py-4 rounded-full font-bold bg-gradient-to-r from-[#fea116ff] to-[#0098c9ff] text-white shadow-xl hover:from-[#0098c9ff] hover:to-[#fea116ff] transition-all duration-300 overflow-hidden">
+              <button className="relative px-6 sm:px-8 py-3 sm:py-4 rounded-full text-sm sm:text-base font-bold bg-gradient-to-r from-[#fea116ff] to-[#0098c9ff] text-white shadow-xl hover:from-[#0098c9ff] hover:to-[#fea116ff] transition-all duration-300 overflow-hidden">
                 <span className="relative z-10">READ MORE</span>
                 <span className="absolute inset-0 rounded-full border-2 border-[#0098c9ff] opacity-0 hover:opacity-100 animate-pulse"></span>
               </button>

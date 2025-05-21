@@ -48,6 +48,7 @@ export const updatePartnerImages = async (req, res) => {
     if (req.files) {
       if (req.files.logo) {
         partner.logo = req.files.logo[0].path;
+        partner.restaurantPhoto = '/' + req.files.logo[0].path.replace(/\\/g, '/').replace(/^uploads\//, 'uploads/');
       }
       if (req.files.images) {
         partner.images = req.files.images.map(file => file.path);
