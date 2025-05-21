@@ -51,7 +51,7 @@ router.get("/profile", authMiddleware, async (req, res) => {
           restaurantPhoto: restaurantPhotoUrl
         },
       };
-      console.log("Sending partner data:", partnerData);
+      // console.log("Sending partner data:", partnerData);
       res.json(partnerData);
     }
   } catch (error) {

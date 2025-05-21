@@ -60,82 +60,6 @@ const Home = () => {
       <Hero />
 
       {/* Featured Menu Section */}
-      <section className="relative py-16 overflow-hidden">
-        {/* Decorative Elements */}
-        <div className="absolute top-0 left-0 w-64 h-64 bg-[#0098c9ff] opacity-10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-64 h-64 bg-[#fea116ff] opacity-10 rounded-full blur-3xl"></div>
-        
-        <div className="container mx-auto px-6 md:px-12 max-w-7xl relative">
-          <div className="text-center mb-12">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <h2 className="text-4xl font-bold mb-4">Featured Tours</h2>
-              <div className="w-24 h-1 bg-[#fea116ff] mx-auto mb-4"></div>
-              <p className="text-gray-600 text-lg">Discover our most popular fishing and cooking tours.</p>
-            </motion.div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {tours.slice(0, 3).map((tour, index) => (
-              <motion.div
-                key={tour._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="bg-white rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300 relative group"
-                whileHover={{ y: -5 }}
-              >
-                <div className="relative w-full h-[300px] bg-gray-200">
-                  {tour.image && (
-                    <img 
-                      src={getImageUrl(tour.image)}
-                      alt={tour.title}
-                      className="w-full h-full object-cover"
-                      onError={handleImageError}
-                    />
-                  )}
-                  <div className="absolute top-4 right-4 bg-[#fea116ff] text-white px-4 py-2 rounded-full text-sm font-semibold z-10">
-                    ${tour.price}
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                      <h3 className="text-2xl font-bold mb-3">{tour.title}</h3>
-                      <p className="text-gray-100 mb-4 line-clamp-2 text-lg">{tour.description}</p>
-                      <div className="flex items-center text-base text-gray-200 mb-6">
-                        <FaMapMarkerAlt className="mr-2 text-[#fea116ff]" />
-                        <span>{tour.location}</span>
-                      </div>
-                      <button
-                        onClick={() => navigate(`/tours/${tour._id}`)}
-                        className="w-full bg-[#fea116ff] text-white py-3 rounded-lg hover:bg-[#e8920eff] transition-colors font-semibold flex items-center justify-center text-lg"
-                      >
-                        View Tour <FaFish className="ml-2" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          <motion.div 
-            className="text-center mt-12"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <button
-              onClick={() => navigate('/tours')}
-              className="bg-[#001524ff] text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-[#00345cff] transition-all duration-300 transform hover:scale-105 inline-flex items-center"
-            >
-              View All Tours <FaFish className="ml-2" />
-            </button>
-          </motion.div>
-        </div>
-      </section>
 
       {/* Featured Restaurants Section */}
       <section className="relative py-16 overflow-hidden">
@@ -313,7 +237,10 @@ const Home = () => {
                 </div>
               </div>
 
-              <button className="relative px-6 sm:px-8 py-3 sm:py-4 rounded-full text-sm sm:text-base font-bold bg-gradient-to-r from-[#fea116ff] to-[#0098c9ff] text-white shadow-xl hover:from-[#0098c9ff] hover:to-[#fea116ff] transition-all duration-300 overflow-hidden">
+              <button 
+                onClick={() => navigate('/about')}
+                className="relative px-6 sm:px-8 py-3 sm:py-4 rounded-full text-sm sm:text-base font-bold bg-gradient-to-r from-[#fea116ff] to-[#0098c9ff] text-white shadow-xl hover:from-[#0098c9ff] hover:to-[#fea116ff] transition-all duration-300 overflow-hidden"
+              >
                 <span className="relative z-10">READ MORE</span>
                 <span className="absolute inset-0 rounded-full border-2 border-[#0098c9ff] opacity-0 hover:opacity-100 animate-pulse"></span>
               </button>

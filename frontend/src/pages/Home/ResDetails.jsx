@@ -33,6 +33,7 @@ const ResDetails = () => {
     keto: 'Keto'
   };
 
+  // remove this
   const CATEGORIES = {
     appetizer: 'Appetizers',
     main: 'Main Course',

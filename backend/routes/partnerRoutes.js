@@ -41,18 +41,18 @@ router.get("/:id/dashboard", authMiddleware, async (req, res) => {
     
     // Get total reservations for this partner using the partner's ID
     const totalReservations = await Reservation.countDocuments({ restaurant: partner._id });
-    console.log("Total reservations:", totalReservations);
+    // console.log("Total reservations:", totalReservations);
 
     // Get total tours for this partner
     const totalTours = await Tour.countDocuments({ partner: partner._id });
-    console.log("Total tours:", totalTours);
+    // console.log("Total tours:", totalTours);
 
     // Get unique customers (based on email) who made reservations
     const uniqueCustomers = await Reservation.distinct('email', { 
       restaurant: partner._id 
     });
     const totalCustomers = uniqueCustomers.length;
-    console.log("Total customers:", totalCustomers);
+    // console.log("Total customers:", totalCustomers);
 
     // Get recent activities (last 10 reservations)
     const recentReservations = await Reservation.find({ 
