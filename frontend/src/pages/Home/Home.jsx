@@ -21,7 +21,7 @@ const Home = () => {
       try {
         const response = await fetch(`${baseURL}/partners`);
         const data = await response.json();
-        setRestaurants(data.slice(0, 3)); // Display top 3 restaurants ok
+        setRestaurants(data.slice(0, 4)); // Display top 4 restaurants
       } catch (error) {
         console.error("Error fetching restaurants:", error);
       } finally {
@@ -55,11 +55,9 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="bg-[#fdfcdcff] text-[#001524ff]">
+    <div className="bg-gradient-to-r from-[#0098c9ff] to-[#001524ff] text-[#ffffff]">
       <Header />
       <Hero />
-
-      {/* Featured Menu Section */}
 
       {/* Featured Restaurants Section */}
       <section className="relative py-16 overflow-hidden">
@@ -74,13 +72,13 @@ const Home = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <h2 className="text-4xl font-bold mb-4">Featured Restaurants</h2>
+              <h2 className="text-4xl font-bold mb-4">Restaurants</h2>
               <div className="w-24 h-1 bg-[#fea116ff] mx-auto mb-4"></div>
-              <p className="text-gray-600 text-lg">Discover our top-rated seafood restaurants.</p>
+              <p className="text-gray-100 text-lg">Explore our seafood restaurants.</p>
             </motion.div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {restaurants.map((restaurant, index) => (
               <motion.div
                 key={restaurant._id}
@@ -103,9 +101,6 @@ const Home = () => {
                       <FaUtensils className="text-6xl text-gray-400" />
                     </div>
                   )}
-                  <div className="absolute top-4 right-4 bg-[#fea116ff] text-white px-4 py-2 rounded-full text-sm font-semibold z-10">
-                    {restaurant.rating || 0} <FaStar className="inline-block ml-1" />
-                  </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
                       <h3 className="text-2xl font-bold mb-3">{restaurant.restaurantName}</h3>
@@ -151,11 +146,7 @@ const Home = () => {
       </section>
 
       {/* Experiences Section */}
-      <section className="relative py-8 sm:py-12 md:py-16 bg-gradient-to-b from-white to-[#fdfcdcff]">
-        {/* Decorative Elements */}
-        <div className="absolute top-0 left-0 w-32 sm:w-48 md:w-64 h-32 sm:h-48 md:h-64 bg-[#0098c9ff] opacity-20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-0 w-32 sm:w-48 md:w-64 h-32 sm:h-48 md:h-64 bg-[#fea116ff] opacity-20 rounded-full blur-3xl animate-pulse"></div>
-        
+      <section className="relative py-8 sm:py-12 md:py-16 bg-[#fdfcdcff]">
         <div className="container mx-auto px-4 sm:px-6 md:px-12 max-w-7xl relative">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 md:gap-12">
             {/* Left Side - Experiences */}
@@ -166,41 +157,30 @@ const Home = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6 }}
                 >
-                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-3 sm:mb-4 bg-gradient-to-r from-[#0098c9ff] via-[#fea116ff] to-[#001524ff] bg-clip-text text-transparent drop-shadow-lg">
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 text-[#001524ff]">
                     Experience the Adventure
                   </h2>
-                  <div className="w-16 sm:w-20 md:w-24 h-1 bg-gradient-to-r from-[#fea116ff] to-[#0098c9ff] mb-3 sm:mb-4 rounded-full animate-pulse"></div>
-                  <p className="text-gray-700 text-base sm:text-lg font-medium">Discover the thrill of fishing and cooking your own seafood.</p>
+                  <div className="w-16 sm:w-20 md:w-24 h-1 bg-[#fea116ff] mb-3 sm:mb-4"></div>
+                  <p className="text-gray-700 text-base sm:text-lg">Discover the thrill of fishing and cooking your own seafood.</p>
                 </motion.div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <div className="grid grid-cols-1 gap-4 sm:gap-6">
                 {/* Experience Cards */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.1 }}
-                  className="relative group overflow-hidden rounded-xl sm:rounded-2xl shadow-xl col-span-1 sm:col-span-2 bg-white/30 backdrop-blur-lg border border-white/30 hover:border-[#fea116ff] transition-all duration-300"
-                  whileHover={{ scale: 1.03 }}
+                  className="relative group overflow-hidden rounded-xl sm:rounded-2xl shadow-lg bg-white hover:shadow-xl transition-all duration-300"
+                  whileHover={{ scale: 1.02 }}
                 >
-                  <div className="aspect-w-16 aspect-h-9">
+                  <div className="aspect-w-4 aspect-h-3">
                     <img 
                       src="https://images.unsplash.com/photo-1606850780554-b55ea4dd0b70?w=700&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8c2VhZm9vZHxlbnwwfDB8MHx8fDA%3D"
                       alt="Deep Sea Fishing"
-                      className="object-cover w-full h-full transform group-hover:scale-110 transition-transform duration-700"
+                      className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end">
-                    <div className="p-4 sm:p-6 text-white">
-                      <h3 className="text-xl sm:text-2xl font-bold mb-2 bg-gradient-to-r from-[#fea116ff] to-[#0098c9ff] bg-clip-text text-transparent drop-shadow-lg">Deep Sea Fishing</h3>
-                      <p className="text-sm sm:text-base mb-3 sm:mb-4 text-gray-100">Experience the thrill of catching your own fish in the deep blue sea.</p>
-                      <button className="relative px-4 sm:px-6 py-2 rounded-full text-sm sm:text-base font-semibold bg-gradient-to-r from-[#0098c9ff] to-[#fea116ff] text-white shadow-lg hover:from-[#fea116ff] hover:to-[#0098c9ff] transition-all duration-300 overflow-hidden">
-                        <span className="relative z-10">Learn More →</span>
-                        <span className="absolute inset-0 rounded-full border-2 border-[#fea116ff] opacity-0 group-hover:opacity-100 animate-pulse"></span>
-                      </button>
-                    </div>
-                  </div>
-                  <div className="absolute -inset-1 rounded-xl sm:rounded-2xl pointer-events-none group-hover:animate-glow border-2 border-transparent group-hover:border-[#fea116ff] transition-all duration-300"></div>
                 </motion.div>
               </div>
             </div>
@@ -213,23 +193,23 @@ const Home = () => {
               className="lg:pl-6 xl:pl-12 mt-8 lg:mt-0"
             >
               <div className="text-[#fea116ff] text-base sm:text-lg font-semibold mb-2">About Us</div>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3 bg-gradient-to-r from-[#0098c9ff] via-[#fea116ff] to-[#001524ff] bg-clip-text text-transparent drop-shadow-lg">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3 text-[#001524ff]">
                 Welcome to <span className="text-[#fea116ff] flex items-center">Catch & Cook <FaUtensils className="ml-1 sm:ml-2" /></span>
               </h2>
-              <p className="text-gray-700 mb-6 sm:mb-8 leading-relaxed text-sm sm:text-base font-medium">
+              <p className="text-gray-700 mb-6 sm:mb-8 leading-relaxed text-sm sm:text-base">
                 At Catch and Cook World Tour, we are driven by a passion for authentic culinary experiences and a profound love for the sea. Our journey is spearheaded by our visionary founder, Kim, whose deep-rooted connection to seafood spans two decades. With unparalleled expertise in catching and cooking seafood, Kim has embarked on a mission to share the unparalleled joy of harvesting and savoring the ocean's bounty.
               </p>
 
               <div className="grid grid-cols-2 gap-4 sm:gap-8 mb-6 sm:mb-8">
                 <div className="flex items-center gap-2 sm:gap-4">
-                  <div className="text-2xl sm:text-3xl md:text-4xl text-[#fea116ff] font-extrabold drop-shadow-lg">15</div>
+                  <div className="text-2xl sm:text-3xl md:text-4xl text-[#fea116ff] font-bold">15</div>
                   <div>
                     <div className="font-semibold text-sm sm:text-base">Years of</div>
                     <div className="text-gray-600 text-xs sm:text-sm">EXPERIENCE</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 sm:gap-4">
-                  <div className="text-2xl sm:text-3xl md:text-4xl text-[#fea116ff] font-extrabold drop-shadow-lg">50</div>
+                  <div className="text-2xl sm:text-3xl md:text-4xl text-[#fea116ff] font-bold">50</div>
                   <div>
                     <div className="font-semibold text-sm sm:text-base">Popular</div>
                     <div className="text-gray-600 text-xs sm:text-sm">RESTAURANTS</div>
@@ -239,10 +219,9 @@ const Home = () => {
 
               <button 
                 onClick={() => navigate('/about')}
-                className="relative px-6 sm:px-8 py-3 sm:py-4 rounded-full text-sm sm:text-base font-bold bg-gradient-to-r from-[#fea116ff] to-[#0098c9ff] text-white shadow-xl hover:from-[#0098c9ff] hover:to-[#fea116ff] transition-all duration-300 overflow-hidden"
+                className="px-6 sm:px-8 py-3 sm:py-4 rounded-lg text-sm sm:text-base font-semibold bg-[#fea116ff] text-white hover:bg-[#e8920eff] transition-colors duration-300"
               >
-                <span className="relative z-10">READ MORE</span>
-                <span className="absolute inset-0 rounded-full border-2 border-[#0098c9ff] opacity-0 hover:opacity-100 animate-pulse"></span>
+                READ MORE
               </button>
             </motion.div>
           </div>
@@ -304,7 +283,7 @@ const Home = () => {
       </section>
 
       {/* Customer Reviews Section */}
-      <section className="py-16 px-6 md:px-12 relative overflow-hidden">
+      <section className="py-16 px-6 md:px-12 relative overflow-hidden bg-[#fdfcdcff]">
         {/* Decorative Elements */}
         <div className="absolute top-0 left-0 w-64 h-64 bg-[#fea116ff] opacity-10 rounded-full blur-3xl"></div>
         
@@ -315,7 +294,7 @@ const Home = () => {
             transition={{ duration: 0.6 }}
             className="text-center mb-12"
           >
-            <h2 className="text-4xl font-bold mb-4">What Our Customers Say</h2>
+            <h2 className="text-4xl font-bold mb-4 text-[#001524ff]">What Our Customers Say</h2>
             <div className="w-24 h-1 bg-[#fea116ff] mx-auto mb-4"></div>
             <p className="text-gray-600 text-lg">Real experiences from seafood lovers worldwide.</p>
           </motion.div>
