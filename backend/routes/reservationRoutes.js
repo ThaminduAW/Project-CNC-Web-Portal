@@ -9,7 +9,7 @@ const router = express.Router();
 
 // POST - Create a reservation
 router.post("/", async (req, res) => {
-  const { name, email, contact, restaurant, date, timeSlot, instructions, guestCount } = req.body;
+  const { name, email, contact, restaurant, date, timeSlot, instructions, guestCount, subscribeToPromotions } = req.body;
   console.log("New Reservation Received:", req.body);
 
   try {
@@ -51,7 +51,8 @@ router.post("/", async (req, res) => {
       timeSlot,
       instructions,
       numberOfGuests: parseInt(guestCount) || 1,
-      status: 'pending'
+      status: 'pending',
+      subscribeToPromotions: subscribeToPromotions || false
     });
     await newReservation.save();
 
