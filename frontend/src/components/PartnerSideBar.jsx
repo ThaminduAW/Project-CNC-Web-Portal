@@ -114,7 +114,12 @@ const PartnerSideBar = () => {
 
       {/* Profile Section */}
       <div className="flex flex-col items-center p-4 border-b border-gray-700">
-        <img src={partner.profilePhoto} alt="Partner" className="w-16 h-16 border border-gray-400 rounded-full" />
+        {/* Avatar with initials */}
+        <div className="w-16 h-16 flex items-center justify-center rounded-full bg-[#fea116ff] text-[#001524ff] text-2xl font-bold">
+          {partner.fullName
+            ? partner.fullName.split(' ').map(n => n[0]).join('').toUpperCase()
+            : 'P'}
+        </div>
         <h2 className="mt-2 font-semibold">{partner.fullName}</h2>
         <p className="text-sm text-gray-300">{partner.restaurantName}</p>
       </div>

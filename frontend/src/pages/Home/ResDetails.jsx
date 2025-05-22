@@ -296,10 +296,10 @@ const ResDetails = () => {
             {/* Action Buttons */}
             <div className="flex flex-col md:flex-row gap-4 mt-8">
               <button
-                onClick={() => window.location.href = `mailto:${restaurant.email}`}
+                onClick={() => navigate(`/reservation/`)}
                 className="flex-1 bg-[#fea116ff] text-white py-3 rounded-md hover:bg-[#e8920eff] transition-colors"
               >
-                Contact Restaurant
+                Book a Table
               </button>
               <button
                 onClick={() => navigate('/restaurants')}

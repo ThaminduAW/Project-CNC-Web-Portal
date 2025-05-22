@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { FaUser, FaUsers, FaCalendarAlt, FaEnvelope, FaCog, FaSignOutAlt, FaHome, FaComments, FaBuilding, FaCalendarCheck, FaClipboardList, FaBell } from "react-icons/fa";
+import { FaUser, FaUsers, FaCalendarAlt, FaEnvelope, FaCog, FaSignOutAlt, FaHome, FaComments, FaBuilding, FaCalendarCheck, FaClipboardList, FaBell, FaStar } from "react-icons/fa";
 import logo from "../assets/logo.png"; // Ensure path is correct
 import defaultProfile from "../assets/default-profile.png"; // Default profile image
 import { baseURL } from '../utils/baseURL';
@@ -136,6 +136,7 @@ const AdminSideBar = () => {
     { path: "/admin/tours", icon: FaCalendarAlt, label: "Tours" },
     { path: "/admin/reservations", icon: FaCalendarCheck, label: "Reservations" },
     { path: "/admin/messages", icon: FaComments, label: "Messages", badge: showBadge && unreadCount },
+    { path: "/admin/feedback", icon: FaStar, label: "Feedback" },
     { path: "/admin/settings", icon: FaCog, label: "Settings" },
   ];
 
@@ -149,11 +150,12 @@ const AdminSideBar = () => {
 
       {/* Profile Section */}
       <div className="flex flex-col items-center p-4 border-b border-gray-700">
-        <img 
-          src={admin.profilePhoto} 
-          alt={`${admin.firstName} ${admin.lastName}`} 
-          className="w-16 h-16 border border-gray-400 rounded-full object-cover"
-        />
+        {/* Avatar with initials */}
+        <div className="w-16 h-16 flex items-center justify-center rounded-full bg-[#fea116ff] text-[#001524ff] text-2xl font-bold">
+          {admin.firstName && admin.lastName
+            ? `${admin.firstName[0]}${admin.lastName[0]}`.toUpperCase()
+            : 'A'}
+        </div>
         <h2 className="mt-2 font-semibold">
           {admin.firstName && admin.lastName 
             ? `${admin.firstName} ${admin.lastName}`

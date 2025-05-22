@@ -11,6 +11,7 @@ const Contact = () => {
   });
 
   const [status, setStatus] = useState({ success: false, error: "" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -19,6 +20,7 @@ const Contact = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus({ success: false, error: "" });
+    setIsSubmitting(true);
 
     try {
       const response = await fetch(`${baseURL}/contact`, {
@@ -28,17 +30,24 @@ const Contact = () => {
       });
 
       const data = await response.json();
-      console.log("Response:", data);
 
-      if (!response.ok) throw new Error(data.message || "Something went wrong.");
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to send message. Please try again.");
+      }
 
       setStatus({ success: true, error: "" });
       setFormData({ name: "", email: "", message: "" });
 
-      setTimeout(() => setStatus({ success: false, error: "" }), 3000);
+      // Clear success message after 5 seconds
+      setTimeout(() => setStatus({ success: false, error: "" }), 5000);
     } catch (err) {
       console.error("Error submitting contact form:", err);
-      setStatus({ success: false, error: err.message });
+      setStatus({ 
+        success: false, 
+        error: err.message || "Failed to send message. Please try again later." 
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -76,10 +85,14 @@ const Contact = () => {
             <h2 className="text-2xl font-semibold">Send Us a Message</h2>
 
             {status.success && (
-              <p className="text-green-500 text-center mt-4">✅ Message sent successfully!</p>
+              <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mt-4" role="alert">
+                <span className="block sm:inline">✅ Message sent successfully! We'll get back to you soon.</span>
+              </div>
             )}
             {status.error && (
-              <p className="text-red-500 text-center mt-4">❌ {status.error}</p>
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4" role="alert">
+                <span className="block sm:inline">❌ {status.error}</span>
+              </div>
             )}
 
             <form onSubmit={handleSubmit} className="mt-4 space-y-4">
@@ -87,37 +100,45 @@ const Contact = () => {
                 type="text" 
                 name="name" 
                 placeholder="Your Name" 
-                className="w-full px-4 py-2 border rounded-md" 
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#fea116ff]" 
                 value={formData.name} 
                 onChange={handleChange} 
                 required 
+                disabled={isSubmitting}
               />
 
               <input 
                 type="email" 
                 name="email" 
                 placeholder="Your Email" 
-                className="w-full px-4 py-2 border rounded-md" 
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#fea116ff]" 
                 value={formData.email} 
                 onChange={handleChange} 
                 required 
+                disabled={isSubmitting}
               />
 
               <textarea 
                 name="message" 
                 placeholder="Your Message" 
                 rows="4" 
-                className="w-full px-4 py-2 border rounded-md" 
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#fea116ff]" 
                 value={formData.message} 
                 onChange={handleChange} 
                 required 
+                disabled={isSubmitting}
               />
 
               <button 
                 type="submit" 
-                className="w-full bg-[#fea116ff] text-white py-2 rounded-md hover:bg-[#e69510ff] transition"
+                className={`w-full bg-[#fea116ff] text-white py-2 rounded-md transition ${
+                  isSubmitting 
+                    ? 'opacity-50 cursor-not-allowed' 
+                    : 'hover:bg-[#e69510ff]'
+                }`}
+                disabled={isSubmitting}
               >
-                Send Message
+                {isSubmitting ? 'Sending...' : 'Send Message'}
               </button>
             </form>
           </div>
