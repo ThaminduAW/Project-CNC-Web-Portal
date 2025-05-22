@@ -13,6 +13,7 @@ const PartnerMessages = () => {
   const [error, setError] = useState("");
   const [admins, setAdmins] = useState([]);
   const [selectedAdmin, setSelectedAdmin] = useState(null);
+  const [selectedAdminInfo, setSelectedAdminInfo] = useState(null);
   const [isTyping, setIsTyping] = useState(false);
   const [lastTypingTime, setLastTypingTime] = useState(null);
   const messagesEndRef = useRef(null);
@@ -161,6 +162,7 @@ const PartnerMessages = () => {
         setAdmins(data);
         if (data.length > 0) {
           setSelectedAdmin(data[0]._id);
+          setSelectedAdminInfo(data[0]);
         }
       } catch (err) {
         setError("Failed to load admins. Please try again later.");
@@ -171,51 +173,51 @@ const PartnerMessages = () => {
   }, [navigate]);
 
   // Fetch messages
-  useEffect(() => {
-    const fetchMessages = async () => {
-      if (!selectedAdmin) return;
+  const fetchMessages = async () => {
+    if (!selectedAdmin) return;
 
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          navigate("/signin");
-          return;
-        }
-
-        console.log("Fetching messages for conversation with admin:", selectedAdmin);
-        const response = await fetch(`${baseURL}/messages/conversation/${selectedAdmin}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch messages");
-        }
-
-        const data = await response.json();
-        console.log("Fetched messages:", data);
-        
-        // Check for new messages and show notification
-        if (messages.length > 0 && data.length > messages.length) {
-          const newMessages = data.slice(messages.length);
-          newMessages.forEach(msg => {
-            if (msg.sender._id !== currentUser?.id) {
-              showNotification(msg);
-            }
-          });
-        }
-        
-        setMessages(data);
-        setLoading(false);
-        scrollToBottom();
-      } catch (err) {
-        console.error("Error fetching messages:", err);
-        setError("Failed to load messages. Please try again later.");
-        setLoading(false);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/signin");
+        return;
       }
-    };
 
+      console.log("Fetching messages for conversation with admin:", selectedAdmin);
+      const response = await fetch(`${baseURL}/messages/conversation/${selectedAdmin}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch messages");
+      }
+
+      const data = await response.json();
+      console.log("Fetched messages:", data);
+      
+      // Check for new messages and show notification
+      if (messages.length > 0 && data.length > messages.length) {
+        const newMessages = data.slice(messages.length);
+        newMessages.forEach(msg => {
+          if (msg.sender._id !== currentUser?.id) {
+            showNotification(msg);
+          }
+        });
+      }
+      
+      setMessages(data);
+      setLoading(false);
+      scrollToBottom();
+    } catch (err) {
+      console.error("Error fetching messages:", err);
+      setError("Failed to load messages. Please try again later.");
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchMessages();
     // Set up polling for new messages
     const interval = setInterval(fetchMessages, 5000);
@@ -319,47 +321,6 @@ const PartnerMessages = () => {
       <div className="ml-[240px] p-8">
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           <div className="flex h-[calc(100vh-8rem)]">
-            {/* Contacts Sidebar */}
-            <div className="w-80 border-r border-gray-200 flex flex-col">
-              <div className="p-6 border-b border-gray-200">
-                <div className="flex items-center mb-6">
-                  <FaComments className="text-2xl text-[#fea116ff] mr-3" />
-                  <h2 className="text-2xl font-bold text-gray-800">Messages</h2>
-                </div>
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Search admins..."
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
-                  />
-                  <FaSearch className="absolute left-3 top-3.5 text-gray-400" />
-                </div>
-              </div>
-              <div className="flex-1 overflow-y-auto">
-                {admins.map((admin) => (
-                  <button
-                    key={admin._id}
-                    onClick={() => setSelectedAdmin(admin._id)}
-                    className={`w-full p-4 flex items-center space-x-4 hover:bg-gray-50 transition-colors ${
-                      selectedAdmin === admin._id ? "bg-[#fdfcdcff] border-l-4 border-[#fea116ff]" : ""
-                    }`}
-                  >
-                    <div className="w-12 h-12 bg-[#fea116ff] rounded-full flex items-center justify-center text-white font-semibold text-lg">
-                      {admin.fullName?.charAt(0) || 'A'}
-                    </div>
-                    <div className="flex-1 text-left">
-                      <h3 className="font-medium text-gray-900 text-lg">{admin.fullName}</h3>
-                      <p className="text-sm text-gray-500">
-                        {isTyping && selectedAdmin === admin._id ? 
-                          'Typing...' : 
-                          formatLastSeen(adminLastSeen[admin._id])}
-                      </p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Chat Area */}
             <div className="flex-1 flex flex-col">
               {/* Chat Header */}
@@ -368,7 +329,7 @@ const PartnerMessages = () => {
                   <div className="flex items-center space-x-4">
                     <div className="relative">
                       <div className="w-12 h-12 bg-[#fea116ff] rounded-full flex items-center justify-center text-white font-semibold text-lg">
-                        {admins.find(a => a._id === selectedAdmin)?.fullName?.charAt(0) || 'A'}
+                        {selectedAdminInfo?.fullName?.charAt(0) || 'A'}
                       </div>
                       {adminLastSeen[selectedAdmin] === 'Active Now' && (
                         <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
@@ -376,10 +337,10 @@ const PartnerMessages = () => {
                     </div>
                     <div>
                       <h3 className="font-medium text-gray-900 text-lg">
-                        {admins.find(a => a._id === selectedAdmin)?.fullName || 'Admin'}
+                        {selectedAdminInfo?.fullName || 'Admin'}
                       </h3>
                       <p className="text-sm text-gray-500">
-                        {isTyping ? 'Typing...' : formatLastSeen(adminLastSeen[selectedAdmin])}
+                        {selectedAdminInfo?.role || selectedAdminInfo?.email || 'Admin'}
                       </p>
                     </div>
                   </div>
