@@ -374,16 +374,6 @@ const Home = () => {
                     transition={{ duration: 0.5, delay: idx * 0.1 }}
                     className="p-6 bg-white rounded-xl shadow-lg flex flex-col items-center hover:shadow-xl transition-shadow duration-300"
                   >
-                    <img
-                      src={defaultProfile}
-                      alt={review.name}
-                      className="w-14 h-14 rounded-full mb-3 border-2 border-[#fea116ff] object-cover"
-                    />
-                    <div className="flex items-center mb-2">
-                      {[1,2,3,4,5].map(star => (
-                        <FaStar key={star} className={`text-xl ${star <= review.rating ? 'text-[#fea116ff]' : 'text-gray-300'}`} />
-                      ))}
-                    </div>
                     <p className="text-gray-700 italic mb-2 text-center">"{review.message}"</p>
                     <p className="font-bold text-[#001524ff]">{review.name}</p>
                     <span className="text-xs text-gray-400 mt-1">{new Date(review.createdAt).toLocaleDateString()}</span>

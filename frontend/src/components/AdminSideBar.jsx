@@ -150,11 +150,12 @@ const AdminSideBar = () => {
 
       {/* Profile Section */}
       <div className="flex flex-col items-center p-4 border-b border-gray-700">
-        <img 
-          src={admin.profilePhoto} 
-          alt={`${admin.firstName} ${admin.lastName}`} 
-          className="w-16 h-16 border border-gray-400 rounded-full object-cover"
-        />
+        {/* Avatar with initials */}
+        <div className="w-16 h-16 flex items-center justify-center rounded-full bg-[#fea116ff] text-[#001524ff] text-2xl font-bold">
+          {admin.firstName && admin.lastName
+            ? `${admin.firstName[0]}${admin.lastName[0]}`.toUpperCase()
+            : 'A'}
+        </div>
         <h2 className="mt-2 font-semibold">
           {admin.firstName && admin.lastName 
             ? `${admin.firstName} ${admin.lastName}`
