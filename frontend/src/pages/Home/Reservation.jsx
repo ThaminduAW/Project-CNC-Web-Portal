@@ -14,6 +14,7 @@ const Reservation = () => {
     date: "",
     instructions: "",
     guestCount: "1", // Add default guest count
+    subscribeToPromotions: false // Add subscription field
   });
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
   const [status, setStatus] = useState({ success: false, error: "" });
@@ -112,7 +113,8 @@ const Reservation = () => {
         endTime: selectedTimeSlot.endTime
       },
       instructions: formData.instructions || '',
-      guestCount: parseInt(formData.guestCount)
+      guestCount: parseInt(formData.guestCount),
+      subscribeToPromotions: formData.subscribeToPromotions
     };
 
     console.log("Sending reservation data:", reservationData);
@@ -141,6 +143,7 @@ const Reservation = () => {
         date: "",
         instructions: "",
         guestCount: "1",
+        subscribeToPromotions: false
       });
       setSelectedTimeSlot(null);
 
@@ -268,6 +271,20 @@ const Reservation = () => {
               value={formData.instructions}
               onChange={handleChange}
             />
+
+            <div className="flex items-center space-x-2 mt-4">
+              <input
+                type="checkbox"
+                id="subscribeToPromotions"
+                name="subscribeToPromotions"
+                checked={formData.subscribeToPromotions}
+                onChange={(e) => setFormData(prev => ({ ...prev, subscribeToPromotions: e.target.checked }))}
+                className="w-4 h-4 text-[#fea116ff] border-gray-300 rounded focus:ring-[#fea116ff]"
+              />
+              <label htmlFor="subscribeToPromotions" className="text-sm text-gray-600">
+                Subscribe to receive promotional messages and updates from this restaurant
+              </label>
+            </div>
 
             <button
               type="submit"

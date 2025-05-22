@@ -10,6 +10,7 @@ import About from "./pages/Home/About";
 import Contact from "./pages/Home/Contact";
 import Tours from "./pages/Home/Tours";
 import TourDetail from "./components/TourDetail";
+import Feedback from "./pages/Customer/Feedback";
 
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import Partners from "./pages/Admin/Partners";
@@ -18,6 +19,7 @@ import AdminPartnerTours from "./pages/Admin/AdminPartnerTours";
 import Messages from "./pages/Admin/Messages";
 import AdminSettings from "./pages/Admin/AdminSettings";
 import Requests from "./pages/Admin/Requests";
+import FeedbackManagement from './pages/Admin/FeedbackManagement';
 
 import PartnerDashboard from "./pages/Partners/PartnerDashboard";
 import PartnerMenu from "./pages/Partners/PartnerMenu";
@@ -58,6 +60,7 @@ const App = () => {
                 <Route path="/reservation" element={<Reservation />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
+                <Route path="/feedback" element={<Feedback />} />
 
                 {/* Admin Routes */}
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -67,6 +70,7 @@ const App = () => {
                 <Route path="/admin/tours" element={<AdminPartnerTours />} />
                 <Route path="/admin/messages" element={<Messages />} />
                 <Route path="/admin/settings" element={<AdminSettings />} />
+                <Route path="/admin/feedback" element={<FeedbackManagement />} />
                 
 
                 {/* Partner Routes */}

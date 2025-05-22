@@ -13,7 +13,6 @@ const ResDetails = () => {
   const [menuItems, setMenuItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activeCategory, setActiveCategory] = useState('all');
 
   const SPICY_LEVELS = {
     none: 'Not Spicy',
@@ -33,6 +32,7 @@ const ResDetails = () => {
     keto: 'Keto'
   };
 
+  // remove this
   const CATEGORIES = {
     appetizer: 'Appetizers',
     main: 'Main Course',
@@ -63,10 +63,6 @@ const ResDetails = () => {
     };
     Promise.all([fetchRestaurant(), fetchMenu()]).finally(() => setLoading(false));
   }, [id]);
-
-  const filteredMenuItems = activeCategory === 'all' 
-    ? menuItems 
-    : menuItems.filter(item => item.category === activeCategory);
 
   if (loading) {
     return (
@@ -239,36 +235,9 @@ const ResDetails = () => {
             {menuItems && menuItems.length > 0 && (
               <div className="border-t border-gray-200 pt-8 mb-8">
                 <h2 className="text-2xl font-bold mb-6">Menu</h2>
-                
-                {/* Category Filter */}
-                <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-                  <button
-                    onClick={() => setActiveCategory('all')}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                      activeCategory === 'all'
-                        ? 'bg-[#fea116ff] text-white'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
-                  >
-                    All Items
-                  </button>
-                  {Object.entries(CATEGORIES).map(([key, label]) => (
-                    <button
-                      key={key}
-                      onClick={() => setActiveCategory(key)}
-                      className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                        activeCategory === key
-                          ? 'bg-[#fea116ff] text-white'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredMenuItems.map((item, index) => (
+                  {menuItems.map((item, index) => (
                     <div key={index} className="bg-gray-50 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300">
                       {item.image && (
                         <div className="relative h-48">
@@ -327,10 +296,10 @@ const ResDetails = () => {
             {/* Action Buttons */}
             <div className="flex flex-col md:flex-row gap-4 mt-8">
               <button
-                onClick={() => window.location.href = `mailto:${restaurant.email}`}
+                onClick={() => navigate(`/reservation/`)}
                 className="flex-1 bg-[#fea116ff] text-white py-3 rounded-md hover:bg-[#e8920eff] transition-colors"
               >
-                Contact Restaurant
+                Book a Table
               </button>
               <button
                 onClick={() => navigate('/restaurants')}

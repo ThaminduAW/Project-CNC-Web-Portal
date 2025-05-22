@@ -402,7 +402,10 @@ const PartnerSettings = () => {
         <div className="max-w-7xl mx-auto">
           {/* Header Section */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-[#001524ff]">Settings</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Partner <span className="text-[#fea116ff]">Settings</span>
+            </h1>
+
             <p className="text-gray-600 mt-2">Manage your restaurant profile and settings</p>
             {pendingChanges && (
               <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">

@@ -16,6 +16,8 @@ import userRoutes from "./routes/userRoutes.js";
 import requestRoutes from './routes/requestRoutes.js';
 import menuRoutes from "./routes/menuRoutes.js";
 import uploadRoutes from './routes/uploadRoutes.js';
+import contactRoutes from './routes/contactRoutes.js';
+import feedbackRoutes from './routes/feedbackRoutes.js';
 import multer from 'multer';
 
 // Load environment variables from .env file
@@ -62,6 +64,8 @@ app.use("/api/users", userRoutes);
 app.use('/api/requests', requestRoutes);
 app.use("/api/partner/menu", menuRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/contact', contactRoutes);
+app.use('/api/feedback', feedbackRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

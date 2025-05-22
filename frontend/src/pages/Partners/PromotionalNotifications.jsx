@@ -140,9 +140,11 @@ const PromotionalNotifications = () => {
       </div>
       <div className="flex-1 ml-[240px] p-6 md:p-8 overflow-x-hidden min-h-screen">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold mb-6">
-            <span className="text-[#fea116ff]">Promotional Notifications</span>
-          </h1>
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">
+              Manage <span className="text-[#fea116ff]">Promotional Notifications</span>
+            </h1>
+          </div>
 
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">

@@ -143,16 +143,6 @@ const AdminSettings = () => {
         return;
       }
 
-      const currentUser = JSON.parse(localStorage.getItem('user'));
-      if (!currentUser) {
-        throw new Error('No user data found. Please login again.');
-      }
-
-      const userId = currentUser._id || currentUser.id;
-      if (!userId) {
-        throw new Error('Invalid user data. Please login again.');
-      }
-
       const dataToSend = {
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -160,7 +150,7 @@ const AdminSettings = () => {
         email: formData.email
       };
 
-      const response = await axios.put(`${baseURL}/users/${userId}`, dataToSend, {
+      const response = await axios.put(`${baseURL}/users/profile`, dataToSend, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -169,6 +159,7 @@ const AdminSettings = () => {
       
       if (response.data) {
         setMessage({ type: 'success', text: 'Profile updated successfully' });
+        const currentUser = JSON.parse(localStorage.getItem('user'));
         const updatedUser = { ...currentUser, ...dataToSend };
         localStorage.setItem('user', JSON.stringify(updatedUser));
         
