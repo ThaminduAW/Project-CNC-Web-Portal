@@ -19,6 +19,7 @@ import AdminPartnerTours from "./pages/Admin/AdminPartnerTours";
 import Messages from "./pages/Admin/Messages";
 import AdminSettings from "./pages/Admin/AdminSettings";
 import Requests from "./pages/Admin/Requests";
+import FeedbackManagement from './pages/Admin/FeedbackManagement';
 
 import PartnerDashboard from "./pages/Partners/PartnerDashboard";
 import PartnerMenu from "./pages/Partners/PartnerMenu";
@@ -69,6 +70,7 @@ const App = () => {
                 <Route path="/admin/tours" element={<AdminPartnerTours />} />
                 <Route path="/admin/messages" element={<Messages />} />
                 <Route path="/admin/settings" element={<AdminSettings />} />
+                <Route path="/admin/feedback" element={<FeedbackManagement />} />
                 
 
                 {/* Partner Routes */}

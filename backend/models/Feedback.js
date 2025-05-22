@@ -28,6 +28,11 @@ const feedbackSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    status: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'],
+        default: 'pending'
+    },
     createdAt: {
         type: Date,
         default: Date.now

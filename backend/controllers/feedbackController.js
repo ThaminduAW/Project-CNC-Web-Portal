@@ -10,14 +10,15 @@ export const submitFeedback = async (req, res) => {
             email,
             rating,
             category,
-            message
+            message,
+            status: 'pending' // New feedback starts as pending
         });
 
         await feedback.save();
 
         res.status(201).json({
             success: true,
-            message: 'Feedback submitted successfully',
+            message: 'Feedback submitted successfully and pending approval',
             data: feedback
         });
     } catch (error) {
@@ -53,7 +54,7 @@ export const getAllFeedback = async (req, res) => {
 export const getFeedbackByCategory = async (req, res) => {
     try {
         const { category } = req.params;
-        const feedback = await Feedback.find({ category })
+        const feedback = await Feedback.find({ category, status: 'approved' })
             .sort({ createdAt: -1 });
 
         res.status(200).json({
@@ -73,7 +74,7 @@ export const getFeedbackByCategory = async (req, res) => {
 // Get latest feedbacks for public display
 export const getLatestFeedbacks = async (req, res) => {
     try {
-        const feedbacks = await Feedback.find({})
+        const feedbacks = await Feedback.find({ status: 'approved' })
             .sort({ createdAt: -1 })
             .limit(6);
         res.status(200).json({
@@ -84,6 +85,68 @@ export const getLatestFeedbacks = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error retrieving feedback',
+            error: error.message
+        });
+    }
+};
+
+// Approve feedback
+export const approveFeedback = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const feedback = await Feedback.findByIdAndUpdate(
+            id,
+            { status: 'approved' },
+            { new: true }
+        );
+
+        if (!feedback) {
+            return res.status(404).json({
+                success: false,
+                message: 'Feedback not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Feedback approved successfully',
+            data: feedback
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error approving feedback',
+            error: error.message
+        });
+    }
+};
+
+// Reject feedback
+export const rejectFeedback = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const feedback = await Feedback.findByIdAndUpdate(
+            id,
+            { status: 'rejected' },
+            { new: true }
+        );
+
+        if (!feedback) {
+            return res.status(404).json({
+                success: false,
+                message: 'Feedback not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Feedback rejected successfully',
+            data: feedback
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error rejecting feedback',
             error: error.message
         });
     }
