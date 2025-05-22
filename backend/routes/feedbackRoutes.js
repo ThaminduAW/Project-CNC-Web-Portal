@@ -1,14 +1,15 @@
-const express = require('express');
+import express from 'express';
+import { submitFeedback, getLatestFeedbacks, getAllFeedback, getFeedbackByCategory } from '../controllers/feedbackController.js';
+import { protect, authorize } from '../middleware/auth.js';
+
 const router = express.Router();
-const feedbackController = require('../controllers/feedbackController');
-const { protect, authorize } = require('../middleware/auth');
 
 // Public routes
-router.post('/', feedbackController.submitFeedback);
-router.get('/latest', feedbackController.getLatestFeedbacks);
+router.post('/', submitFeedback);
+router.get('/latest', getLatestFeedbacks);
 
 // Protected routes (admin only)
-router.get('/', protect, authorize('admin'), feedbackController.getAllFeedback);
-router.get('/category/:category', protect, authorize('admin'), feedbackController.getFeedbackByCategory);
+router.get('/', protect, authorize('admin'), getAllFeedback);
+router.get('/category/:category', protect, authorize('admin'), getFeedbackByCategory);
 
-module.exports = router; 
+export default router; 

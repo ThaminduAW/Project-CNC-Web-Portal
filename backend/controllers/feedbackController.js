@@ -1,7 +1,7 @@
-const Feedback = require('../models/Feedback');
+import Feedback from '../models/Feedback.js';
 
 // Submit new feedback
-exports.submitFeedback = async (req, res) => {
+export const submitFeedback = async (req, res) => {
     try {
         const { name, email, rating, category, message } = req.body;
 
@@ -30,7 +30,7 @@ exports.submitFeedback = async (req, res) => {
 };
 
 // Get all feedback (for admin purposes)
-exports.getAllFeedback = async (req, res) => {
+export const getAllFeedback = async (req, res) => {
     try {
         const feedback = await Feedback.find()
             .sort({ createdAt: -1 });
@@ -50,7 +50,7 @@ exports.getAllFeedback = async (req, res) => {
 };
 
 // Get feedback by category
-exports.getFeedbackByCategory = async (req, res) => {
+export const getFeedbackByCategory = async (req, res) => {
     try {
         const { category } = req.params;
         const feedback = await Feedback.find({ category })
@@ -71,7 +71,7 @@ exports.getFeedbackByCategory = async (req, res) => {
 };
 
 // Get latest feedbacks for public display
-exports.getLatestFeedbacks = async (req, res) => {
+export const getLatestFeedbacks = async (req, res) => {
     try {
         const feedbacks = await Feedback.find({})
             .sort({ createdAt: -1 })

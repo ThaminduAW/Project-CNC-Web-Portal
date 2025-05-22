@@ -50,6 +50,26 @@ export const verifyToken = async (req, res, next) => {
   }
 };
 
+// Alias for verifyToken
+export const protect = verifyToken;
+
+// Role-based authorization middleware
+export const authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ 
+        message: `Access denied. ${roles.join(' or ')} role required.`
+      });
+    }
+
+    next();
+  };
+};
+
 export const verifyPartner = (req, res, next) => {
   try {
     if (!req.user) {

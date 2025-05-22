@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const feedbackSchema = new mongoose.Schema({
     name: {
@@ -34,4 +34,4 @@ const feedbackSchema = new mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model('Feedback', feedbackSchema); 
+export default mongoose.model('Feedback', feedbackSchema); 
