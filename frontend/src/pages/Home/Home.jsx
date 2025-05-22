@@ -66,13 +66,14 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    // Fetch latest reviews
+    // Fetch approved reviews
     const fetchReviews = async () => {
       try {
-        const res = await axios.get('/api/feedback/latest');
+        const res = await axios.get(`${baseURL}/feedback/approved`);
         if (res.data.success) setReviews(res.data.data);
       } catch (err) {
-        // Optionally handle error
+        console.error('Error fetching approved reviews:', err);
+        toast.error('Failed to load reviews');
       }
     };
     fetchReviews();
@@ -363,10 +364,16 @@ const Home = () => {
             {/* Customer Reviews */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {reviews.length === 0 ? (
-                <div className="col-span-2 text-center text-gray-400 italic">No reviews yet. Be the first to share your experience!</div>
+                <div className="col-span-2 text-center text-gray-400 italic">No approved reviews yet. Be the first to share your experience!</div>
               ) : (
                 reviews.map((review, idx) => (
-                  <div key={review._id || idx} className="p-6 bg-white rounded-xl shadow-lg flex flex-col items-center">
+                  <motion.div
+                    key={review._id || idx}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: idx * 0.1 }}
+                    className="p-6 bg-white rounded-xl shadow-lg flex flex-col items-center hover:shadow-xl transition-shadow duration-300"
+                  >
                     <img
                       src={defaultProfile}
                       alt={review.name}
@@ -380,7 +387,7 @@ const Home = () => {
                     <p className="text-gray-700 italic mb-2 text-center">"{review.message}"</p>
                     <p className="font-bold text-[#001524ff]">{review.name}</p>
                     <span className="text-xs text-gray-400 mt-1">{new Date(review.createdAt).toLocaleDateString()}</span>
-                  </div>
+                  </motion.div>
                 ))
               )}
             </div>

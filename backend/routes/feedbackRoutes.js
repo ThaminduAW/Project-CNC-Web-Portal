@@ -14,6 +14,7 @@ const router = express.Router();
 // Public routes
 router.post('/', submitFeedback);
 router.get('/latest', getLatestFeedbacks);
+router.get('/approved', getLatestFeedbacks);
 
 // Protected routes (admin only)
 router.get('/', protect, authorize('admin'), getAllFeedback);
