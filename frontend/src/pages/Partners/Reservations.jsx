@@ -335,19 +335,52 @@ const Reservations = () => {
         return;
       }
 
+      // Get user data from localStorage
       const userData = JSON.parse(localStorage.getItem('user'));
-      if (!userData || !userData._id) {
-        throw new Error('User data not found');
+      console.log('User Data for edit:', userData); // Debug log
+
+      // Check for either id or _id
+      const userId = userData?.id || userData?._id;
+      if (!userId) {
+        console.error('User data missing:', userData); // Debug log
+        throw new Error('User data not found. Please sign in again.');
       }
 
-      const response = await fetch(`${baseURL}/availability/${selectedTimeSlot._id}`, {
+      // Find the availability document that contains this time slot
+      const availability = await fetch(`${baseURL}/availability/${userId}/${format(selectedDate, 'yyyy-MM-dd')}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }).then(res => res.json());
+
+      if (!availability || !availability.timeSlots) {
+        throw new Error('Availability not found');
+      }
+
+      // Find the time slot in the availability document
+      const timeSlot = availability.timeSlots.find(slot => 
+        slot.startTime === selectedTimeSlot.startTime && 
+        slot.endTime === selectedTimeSlot.endTime
+      );
+
+      if (!timeSlot) {
+        throw new Error('Time slot not found');
+      }
+
+      const response = await fetch(`${baseURL}/availability/${timeSlot._id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          timeSlot: selectedTimeSlot
+          timeSlot: {
+            ...selectedTimeSlot,
+            maxCapacity: parseInt(selectedTimeSlot.maxCapacity) || 1,
+            price: parseFloat(selectedTimeSlot.price) || 0,
+            currentBookings: timeSlot.currentBookings || 0
+          }
         })
       });
 
@@ -365,6 +398,7 @@ const Reservations = () => {
       setSelectedTimeSlot(null);
       fetchAvailability();
     } catch (err) {
+      console.error('Edit time slot error:', err);
       setError(err.message);
     }
   };
@@ -637,18 +671,12 @@ const Reservations = () => {
                         className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#fea116ff]"
                       />
                     </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setShowAvailabilityModal(true)}
-                        className="bg-[#fea116ff] text-white px-4 py-2 rounded-lg hover:bg-[#fea116cc] transition-colors flex items-center gap-2"
-                      >
-                        <FaCalendarPlus /> Add Time Slot
-                      </button>
+                    <div className="flex gap-2 mb-4">
                       <button
                         onClick={() => setShowCustomTimeSlotModal(true)}
                         className="bg-[#fea116ff] text-white px-4 py-2 rounded-lg hover:bg-[#fea116cc] transition-colors flex items-center gap-2"
                       >
-                        <FaCalendarPlus /> Add Custom Time Slot
+                        <FaCalendarPlus /> Add Extra Time Slot
                       </button>
                     </div>
                   </div>
