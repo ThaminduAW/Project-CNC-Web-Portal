@@ -7,6 +7,9 @@ import Footer from "../../components/Footer";
 import { FaUtensils, FaFish, FaStar, FaMapMarkerAlt } from 'react-icons/fa';
 import { baseURL } from "../../utils/baseURL";
 import { getImageUrl, handleImageError } from '../../utils/imageUtils';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import defaultProfile from '../../assets/default-profile.png';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -15,6 +18,14 @@ const Home = () => {
   const [menuItems, setMenuItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tours, setTours] = useState([]);
+  const [feedback, setFeedback] = useState({
+    name: '',
+    email: '',
+    rating: 0,
+    message: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
     const fetchRestaurants = async () => {
@@ -53,6 +64,55 @@ const Home = () => {
     const storedExperiences = JSON.parse(localStorage.getItem('experiences') || '[]');
     setExperiences(storedExperiences);
   }, []);
+
+  useEffect(() => {
+    // Fetch latest reviews
+    const fetchReviews = async () => {
+      try {
+        const res = await axios.get('/api/feedback/latest');
+        if (res.data.success) setReviews(res.data.data);
+      } catch (err) {
+        // Optionally handle error
+      }
+    };
+    fetchReviews();
+  }, []);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFeedback(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    try {
+      const response = await axios.post('/api/feedback', {
+        ...feedback,
+        category: 'experience' // Since this is in the reviews section, we'll set it to experience
+      });
+      
+      if (response.data.success) {
+        toast.success('Thank you for your review!');
+        setFeedback({
+          name: '',
+          email: '',
+          rating: 5,
+          message: ''
+        });
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to submit review. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Star rating input for form
+  const handleStarClick = (star) => {
+    setFeedback(prev => ({ ...prev, rating: star }));
+  };
 
   return (
     <div className="bg-gradient-to-r from-[#0098c9ff] to-[#001524ff] text-[#ffffff]">
@@ -299,38 +359,102 @@ const Home = () => {
             <p className="text-gray-600 text-lg">Real experiences from seafood lovers worldwide.</p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              <div className="text-4xl mb-4">⭐⭐⭐⭐⭐</div>
-              <p className="text-gray-700 italic mb-4">"A truly once-in-a-lifetime experience! The seafood was fresh, and the fishing tour was exhilarating!"</p>
-              <p className="font-bold text-[#001524ff]">John Doe</p>
-            </motion.div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Customer Reviews */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {reviews.length === 0 ? (
+                <div className="col-span-2 text-center text-gray-400 italic">No reviews yet. Be the first to share your experience!</div>
+              ) : (
+                reviews.map((review, idx) => (
+                  <div key={review._id || idx} className="p-6 bg-white rounded-xl shadow-lg flex flex-col items-center">
+                    <img
+                      src={defaultProfile}
+                      alt={review.name}
+                      className="w-14 h-14 rounded-full mb-3 border-2 border-[#fea116ff] object-cover"
+                    />
+                    <div className="flex items-center mb-2">
+                      {[1,2,3,4,5].map(star => (
+                        <FaStar key={star} className={`text-xl ${star <= review.rating ? 'text-[#fea116ff]' : 'text-gray-300'}`} />
+                      ))}
+                    </div>
+                    <p className="text-gray-700 italic mb-2 text-center">"{review.message}"</p>
+                    <p className="font-bold text-[#001524ff]">{review.name}</p>
+                    <span className="text-xs text-gray-400 mt-1">{new Date(review.createdAt).toLocaleDateString()}</span>
+                  </div>
+                ))
+              )}
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              <div className="text-4xl mb-4">⭐⭐⭐⭐⭐</div>
-              <p className="text-gray-700 italic mb-4">"Highly recommend for seafood lovers! Catching my own fish and cooking it was amazing."</p>
-              <p className="font-bold text-[#001524ff]">Sarah Lee</p>
-            </motion.div>
-
+            {/* Feedback Form */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
-              className="p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+              className="bg-white p-8 rounded-xl shadow-lg"
             >
-              <div className="text-4xl mb-4">⭐⭐⭐⭐⭐</div>
-              <p className="text-gray-700 italic mb-4">"Incredible food, stunning locations, and amazing guides. I will be back for another tour!"</p>
-              <p className="font-bold text-[#001524ff]">Mark Evans</p>
+              <h3 className="text-2xl font-bold mb-2 text-[#001524ff]">Share Your Experience</h3>
+              <p className="text-gray-500 mb-4 text-sm">Your review helps others discover great experiences!</p>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    id="name"
+                    required
+                    value={feedback.name}
+                    onChange={handleChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#fea116ff] focus:ring-[#fea116ff]"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    id="email"
+                    required
+                    value={feedback.email}
+                    onChange={handleChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#fea116ff] focus:ring-[#fea116ff]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
+                  <div className="flex items-center mb-1">
+                    {[1,2,3,4,5].map(star => (
+                      <button
+                        type="button"
+                        key={star}
+                        onClick={() => handleStarClick(star)}
+                        className="focus:outline-none"
+                      >
+                        <FaStar className={`text-2xl ${star <= feedback.rating ? 'text-[#fea116ff]' : 'text-gray-300'}`} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="message" className="block text-sm font-medium text-gray-700">Your Review</label>
+                  <textarea
+                    name="message"
+                    id="message"
+                    rows={4}
+                    required
+                    value={feedback.message}
+                    onChange={handleChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#fea116ff] focus:ring-[#fea116ff] text-gray-700"
+                    placeholder="Share your experience with us..."
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#fea116ff] hover:bg-[#e8920eff] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#fea116ff] ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  {isSubmitting ? 'Submitting...' : 'Submit Review'}
+                </button>
+              </form>
             </motion.div>
           </div>
         </div>

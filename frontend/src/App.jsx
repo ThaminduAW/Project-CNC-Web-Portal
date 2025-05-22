@@ -10,6 +10,7 @@ import About from "./pages/Home/About";
 import Contact from "./pages/Home/Contact";
 import Tours from "./pages/Home/Tours";
 import TourDetail from "./components/TourDetail";
+import Feedback from "./pages/Customer/Feedback";
 
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import Partners from "./pages/Admin/Partners";
@@ -58,6 +59,7 @@ const App = () => {
                 <Route path="/reservation" element={<Reservation />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
+                <Route path="/feedback" element={<Feedback />} />
 
                 {/* Admin Routes */}
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
