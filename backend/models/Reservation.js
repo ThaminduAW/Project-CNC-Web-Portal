@@ -20,7 +20,8 @@ const reservationSchema = new mongoose.Schema({
     enum: ['pending', 'confirmed', 'declined', 'completed'],
     default: 'pending'
   },
-  numberOfGuests: { type: Number, default: 1 }
+  numberOfGuests: { type: Number, default: 1 },
+  subscribeToPromotions: { type: Boolean, default: false }
 }, { timestamps: true });
 
 // Index for faster queries

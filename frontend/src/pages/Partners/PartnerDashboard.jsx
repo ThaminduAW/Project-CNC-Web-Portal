@@ -125,74 +125,81 @@ const PartnerDashboard = () => {
         <h1 className="text-3xl font-bold mb-8 text-[#001524ff]">
           Welcome to <span className="text-[#fea116ff]">Partner Dashboard</span>
         </h1>
+        
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center">
-            <FaCalendarAlt className="text-4xl text-[#0098c9ff] mb-2" />
-            <h3 className="text-lg font-semibold text-gray-700">Total Reservations</h3>
-            <p className="text-3xl font-bold text-[#0098c9ff]">{dashboardData.totalReservations}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          {/* Reservations Card */}
+          <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-500 text-sm">Total Reservations</p>
+                <h3 className="text-2xl font-bold text-[#001524ff]">{dashboardData.totalReservations}</h3>
+              </div>
+              <div className="bg-[#0098c9ff] p-3 rounded-full">
+                <FaCalendarAlt className="text-white text-xl" />
+              </div>
+            </div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center">
-            <FaStore className="text-4xl text-green-600 mb-2" />
-            <h3 className="text-lg font-semibold text-gray-700">Total Tours</h3>
-            <p className="text-3xl font-bold text-green-600">{dashboardData.totalTours}</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center">
-            <FaUsers className="text-4xl text-purple-600 mb-2" />
-            <h3 className="text-lg font-semibold text-gray-700">Total Customers</h3>
-            <p className="text-3xl font-bold text-purple-600">{dashboardData.totalCustomers}</p>
+
+          {/* Customers Card */}
+          <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-500 text-sm">Total Customers</p>
+                <h3 className="text-2xl font-bold text-[#001524ff]">{dashboardData.totalCustomers}</h3>
+              </div>
+              <div className="bg-purple-500 p-3 rounded-full">
+                <FaUsers className="text-white text-xl" />
+              </div>
+            </div>
           </div>
         </div>
+
         {/* Restaurant Profile */}
         <div className="bg-white p-6 rounded-lg shadow-lg mb-8">
-          <h2 className="text-xl font-bold mb-6 flex items-center">
+          <h2 className="text-2xl font-bold mb-6 flex items-center border-b pb-4">
             <FaStore className="text-2xl text-[#fea116ff] mr-2" />
             Restaurant Profile
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div className="flex items-center">
-                <FaStore className="text-gray-500 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-500">Name</p>
-                  <p className="font-semibold">{dashboardData.profile.name}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Basic Information */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold mb-4 text-gray-700">Basic Information</h3>
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <FaStore className="text-[#fea116ff] mt-1 mr-3" />
+                  <div>
+                    <p className="text-sm text-gray-500">Restaurant Name</p>
+                    <p className="font-semibold text-gray-800">{dashboardData.profile.name}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center">
-                <FaMapMarkerAlt className="text-gray-500 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-500">Address</p>
-                  <p className="font-semibold">{dashboardData.profile.address}</p>
-                </div>
-              </div>
-              <div className="flex items-center">
-                <FaPhone className="text-gray-500 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-500">Phone</p>
-                  <p className="font-semibold">{dashboardData.profile.phone}</p>
+                <div className="flex items-start">
+                  <FaMapMarkerAlt className="text-[#fea116ff] mt-1 mr-3" />
+                  <div>
+                    <p className="text-sm text-gray-500">Address</p>
+                    <p className="font-semibold text-gray-800">{dashboardData.profile.address}</p>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="space-y-4">
-              <div className="flex items-center">
-                <FaEnvelope className="text-gray-500 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-500">Email</p>
-                  <p className="font-semibold">{dashboardData.profile.email}</p>
+
+            {/* Contact Information */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold mb-4 text-gray-700">Contact Information</h3>
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <FaPhone className="text-[#fea116ff] mt-1 mr-3" />
+                  <div>
+                    <p className="text-sm text-gray-500">Phone Number</p>
+                    <p className="font-semibold text-gray-800">{dashboardData.profile.phone}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center">
-                <FaStore className="text-gray-500 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-500">Cuisine</p>
-                  <p className="font-semibold">{dashboardData.profile.cuisine}</p>
-                </div>
-              </div>
-              <div className="flex items-center">
-                <FaStar className="text-gray-500 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-500">Rating</p>
-                  <p className="font-semibold">{dashboardData.profile.rating} / 5</p>
+                <div className="flex items-start">
+                  <FaEnvelope className="text-[#fea116ff] mt-1 mr-3" />
+                  <div>
+                    <p className="text-sm text-gray-500">Email Address</p>
+                    <p className="font-semibold text-gray-800">{dashboardData.profile.email}</p>
+                  </div>
                 </div>
               </div>
             </div>

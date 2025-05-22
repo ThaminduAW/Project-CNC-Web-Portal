@@ -335,19 +335,52 @@ const Reservations = () => {
         return;
       }
 
+      // Get user data from localStorage
       const userData = JSON.parse(localStorage.getItem('user'));
-      if (!userData || !userData._id) {
-        throw new Error('User data not found');
+      console.log('User Data for edit:', userData); // Debug log
+
+      // Check for either id or _id
+      const userId = userData?.id || userData?._id;
+      if (!userId) {
+        console.error('User data missing:', userData); // Debug log
+        throw new Error('User data not found. Please sign in again.');
       }
 
-      const response = await fetch(`${baseURL}/availability/${selectedTimeSlot._id}`, {
+      // Find the availability document that contains this time slot
+      const availability = await fetch(`${baseURL}/availability/${userId}/${format(selectedDate, 'yyyy-MM-dd')}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }).then(res => res.json());
+
+      if (!availability || !availability.timeSlots) {
+        throw new Error('Availability not found');
+      }
+
+      // Find the time slot in the availability document
+      const timeSlot = availability.timeSlots.find(slot => 
+        slot.startTime === selectedTimeSlot.startTime && 
+        slot.endTime === selectedTimeSlot.endTime
+      );
+
+      if (!timeSlot) {
+        throw new Error('Time slot not found');
+      }
+
+      const response = await fetch(`${baseURL}/availability/${timeSlot._id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          timeSlot: selectedTimeSlot
+          timeSlot: {
+            ...selectedTimeSlot,
+            maxCapacity: parseInt(selectedTimeSlot.maxCapacity) || 1,
+            price: parseFloat(selectedTimeSlot.price) || 0,
+            currentBookings: timeSlot.currentBookings || 0
+          }
         })
       });
 
@@ -365,6 +398,7 @@ const Reservations = () => {
       setSelectedTimeSlot(null);
       fetchAvailability();
     } catch (err) {
+      console.error('Edit time slot error:', err);
       setError(err.message);
     }
   };
@@ -464,218 +498,254 @@ const Reservations = () => {
         <PartnerSideBar />
       </div>
       <div className="flex-1 ml-[240px] p-6 md:p-8 overflow-x-hidden min-h-screen">
-        <h1 className="text-3xl font-bold mb-8">
-          Manage <span className="text-[#fea116ff]">Reservations</span>
-        </h1>
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">
+              Manage <span className="text-[#fea116ff]">Reservations</span>
+            </h1>
+          </div>
 
-        {/* Tabs */}
-        <div className="flex border-b border-gray-200 mb-6">
-          <button
-            className={`px-4 py-2 font-medium ${
-              activeTab === 'reservations'
-                ? 'border-b-2 border-[#fea116ff] text-[#fea116ff]'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-            onClick={() => setActiveTab('reservations')}
-          >
-            Reservations
-          </button>
-          <button
-            className={`px-4 py-2 font-medium ${
-              activeTab === 'availability'
-                ? 'border-b-2 border-[#fea116ff] text-[#fea116ff]'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-            onClick={() => setActiveTab('availability')}
-          >
-            Availability
-          </button>
-        </div>
-
-        {activeTab === 'reservations' ? (
-          <>
-            {/* Search and Filter Section */}
-            <div className="bg-white p-6 rounded-lg shadow-lg mb-8">
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1 relative">
-                  <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Search by customer name, date, or time..."
-                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#fea116ff]"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
+          {error && (
+            <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-lg">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
                 </div>
-                <div className="flex items-center gap-2">
-                  <FaFilter className="text-gray-400" />
-                  <select
-                    className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#fea116ff]"
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                  >
-                    <option value="all">All Status</option>
-                    <option value="pending">Pending</option>
-                    <option value="confirmed">Confirmed</option>
-                    <option value="declined">Declined</option>
-                    <option value="completed">Completed</option>
-                  </select>
+                <div className="ml-3">
+                  <p className="text-sm text-red-700">{error}</p>
                 </div>
               </div>
             </div>
+          )}
 
-            {/* Reservations Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredReservations.map((reservation) => (
-                <div
-                  key={reservation._id}
-                  className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow duration-300 cursor-pointer"
-                  onClick={() => {
-                    setSelectedReservation(reservation);
-                    setShowDetailsModal(true);
-                  }}
-                >
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">{reservation.customerName}</h3>
-                      <p className="text-sm text-gray-500">{reservation.customerEmail}</p>
-                    </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(reservation.status)}`}>
-                      {reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1)}
-                    </span>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <div className="flex items-center text-gray-600">
-                      <FaCalendarAlt className="mr-3 text-[#fea116ff]" />
-                      <span>{new Date(reservation.date).toLocaleDateString()}</span>
-                    </div>
-                    <div className="flex items-center text-gray-600">
-                      <FaClock className="mr-3 text-[#fea116ff]" />
-                      <span>{reservation.time}</span>
-                    </div>
-                    <div className="flex items-center text-gray-600">
-                      <FaUsers className="mr-3 text-[#fea116ff]" />
-                      <span>{reservation.numberOfGuests} guests</span>
-                    </div>
-                  </div>
-
-                  {reservation.status === 'pending' && (
-                    <div className="mt-6 flex gap-3">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleStatusUpdate(reservation._id, 'confirmed');
-                        }}
-                        className="flex-1 bg-green-500 text-white py-2 rounded-md hover:bg-green-600 transition-colors flex items-center justify-center"
-                      >
-                        <FaCheck className="mr-2" /> Confirm
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleStatusUpdate(reservation._id, 'declined');
-                        }}
-                        className="flex-1 bg-red-500 text-white py-2 rounded-md hover:bg-red-600 transition-colors flex items-center justify-center"
-                      >
-                        <FaTimes className="mr-2" /> Decline
-                      </button>
-                    </div>
-                  )}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(reservation._id);
-                    }}
-                    className="mt-4 w-full bg-gray-100 text-red-600 py-2 rounded-md hover:bg-red-50 transition-colors flex items-center justify-center"
-                  >
-                    <FaTrash className="mr-2" /> Delete Reservation
-                  </button>
-                </div>
-              ))}
-            </div>
-          </>
-        ) : (
-          <>
-            {/* Availability Section */}
-            <div className="bg-white p-6 rounded-lg shadow-lg mb-8">
-              <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Select Date</label>
-                  <input
-                    type="date"
-                    value={format(selectedDate, 'yyyy-MM-dd')}
-                    onChange={(e) => setSelectedDate(new Date(e.target.value))}
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#fea116ff]"
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setShowAvailabilityModal(true)}
-                    className="bg-[#fea116ff] text-white px-4 py-2 rounded-lg hover:bg-[#fea116cc] transition-colors flex items-center gap-2"
-                  >
-                    <FaCalendarPlus /> Add Time Slot
-                  </button>
-                  <button
-                    onClick={() => setShowCustomTimeSlotModal(true)}
-                    className="bg-[#fea116ff] text-white px-4 py-2 rounded-lg hover:bg-[#fea116cc] transition-colors flex items-center gap-2"
-                  >
-                    <FaCalendarPlus /> Add Custom Time Slot
-                  </button>
-                </div>
-              </div>
+          {/* Reservations Management */}
+          <div className="bg-gray-50 rounded-xl shadow-lg p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-semibold text-gray-900">Reservations</h2>
+              <button
+                onClick={() => setActiveTab(activeTab === 'reservations' ? 'availability' : 'reservations')}
+                className="bg-[#fea116ff] text-white px-6 py-3 rounded-lg hover:bg-[#fea116cc] flex items-center gap-2 shadow-lg transition-all duration-300 hover:shadow-xl"
+              >
+                {activeTab === 'reservations' ? (
+                  <>
+                    <FaCalendarPlus /> Manage Availability
+                  </>
+                ) : (
+                  <>
+                    <FaCalendarAlt /> View Reservations
+                  </>
+                )}
+              </button>
             </div>
 
-            {/* Availability Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {availability.map((slot, index) => (
-                <div
-                  key={index}
-                  className={`bg-white rounded-lg shadow-lg p-6 border-l-4 ${
-                    slot.isAvailable ? 'border-green-500' : 'border-red-500'
-                  }`}
-                >
-                  <div className="flex justify-between items-center mb-4">
-                    <div className="flex items-center gap-2">
-                      <FaClock className={`text-${slot.isAvailable ? 'green' : 'red'}-500`} />
-                      <span className="font-semibold text-lg">{slot.startTime} - {slot.endTime}</span>
+            {activeTab === 'reservations' ? (
+              <>
+                {/* Search and Filter Section */}
+                <div className="bg-white p-6 rounded-lg shadow-lg mb-8">
+                  <div className="flex flex-col md:flex-row gap-4">
+                    <div className="flex-1 relative">
+                      <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="Search by customer name, date, or time..."
+                        className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#fea116ff]"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        slot.isAvailable ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        {slot.isAvailable ? 'Available' : 'Booked'}
-                      </span>
-                      <button
+                      <FaFilter className="text-gray-400" />
+                      <select
+                        className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#fea116ff]"
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                      >
+                        <option value="all">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="declined">Declined</option>
+                        <option value="completed">Completed</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Reservations Grid */}
+                {loading ? (
+                  <div className="flex items-center justify-center h-64">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#fea116ff]"></div>
+                  </div>
+                ) : filteredReservations.length === 0 ? (
+                  <div className="text-center py-12">
+                    <FaCalendarAlt className="mx-auto h-12 w-12 text-gray-400" />
+                    <h3 className="mt-2 text-sm font-medium text-gray-900">No reservations</h3>
+                    <p className="mt-1 text-sm text-gray-500">No reservations match your current filters.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredReservations.map((reservation) => (
+                      <div
+                        key={reservation._id}
+                        className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300"
                         onClick={() => {
-                          setSelectedTimeSlot(slot);
-                          setShowEditTimeSlotModal(true);
+                          setSelectedReservation(reservation);
+                          setShowDetailsModal(true);
                         }}
-                        className="p-2 text-gray-600 hover:text-[#fea116ff] transition-colors"
                       >
-                        <FaEdit className="w-4 h-4" />
-                      </button>
+                        <div className="p-6">
+                          <div className="flex justify-between items-start mb-4">
+                            <div>
+                              <h3 className="text-lg font-semibold text-gray-900">{reservation.customerName}</h3>
+                              <p className="text-sm text-gray-500">{reservation.customerEmail}</p>
+                            </div>
+                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(reservation.status)}`}>
+                              {reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1)}
+                            </span>
+                          </div>
+                          
+                          <div className="space-y-3">
+                            <div className="flex items-center text-gray-600">
+                              <FaCalendarAlt className="mr-3 text-[#fea116ff]" />
+                              <span>{new Date(reservation.date).toLocaleDateString()}</span>
+                            </div>
+                            <div className="flex items-center text-gray-600">
+                              <FaClock className="mr-3 text-[#fea116ff]" />
+                              <span>{reservation.time}</span>
+                            </div>
+                            <div className="flex items-center text-gray-600">
+                              <FaUsers className="mr-3 text-[#fea116ff]" />
+                              <span>{reservation.numberOfGuests} guests</span>
+                            </div>
+                          </div>
+
+                          {reservation.status === 'pending' && (
+                            <div className="mt-6 flex gap-3">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleStatusUpdate(reservation._id, 'confirmed');
+                                }}
+                                className="flex-1 bg-green-500 text-white py-2 rounded-md hover:bg-green-600 transition-colors flex items-center justify-center"
+                              >
+                                <FaCheck className="mr-2" /> Confirm
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleStatusUpdate(reservation._id, 'declined');
+                                }}
+                                className="flex-1 bg-red-500 text-white py-2 rounded-md hover:bg-red-600 transition-colors flex items-center justify-center"
+                              >
+                                <FaTimes className="mr-2" /> Decline
+                              </button>
+                            </div>
+                          )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(reservation._id);
+                            }}
+                            className="mt-4 w-full bg-gray-100 text-red-600 py-2 rounded-md hover:bg-red-50 transition-colors flex items-center justify-center"
+                          >
+                            <FaTrash className="mr-2" /> Delete Reservation
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                {/* Availability Section */}
+                <div className="bg-white p-6 rounded-lg shadow-lg mb-8">
+                  <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Select Date</label>
+                      <input
+                        type="date"
+                        value={format(selectedDate, 'yyyy-MM-dd')}
+                        onChange={(e) => setSelectedDate(new Date(e.target.value))}
+                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#fea116ff]"
+                      />
+                    </div>
+                    <div className="flex gap-2 mb-4">
                       <button
-                        onClick={() => handleDeleteTimeSlot(slot._id)}
-                        className="p-2 text-gray-600 hover:text-red-500 transition-colors"
+                        onClick={() => setShowCustomTimeSlotModal(true)}
+                        className="bg-[#fea116ff] text-white px-4 py-2 rounded-lg hover:bg-[#fea116cc] transition-colors flex items-center gap-2"
                       >
-                        <FaTrash className="w-4 h-4" />
+                        <FaCalendarPlus /> Add Extra Time Slot
                       </button>
                     </div>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <p className="text-sm text-gray-600">Capacity: {slot.maxCapacity}</p>
-                    <p className="text-sm text-gray-600">Price: ${slot.price}</p>
-                    {slot.description && (
-                      <p className="text-sm text-gray-600">Description: {slot.description}</p>
-                    )}
-                  </div>
                 </div>
-              ))}
-            </div>
-          </>
-        )}
+
+                {/* Availability Grid */}
+                {loading ? (
+                  <div className="flex items-center justify-center h-64">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#fea116ff]"></div>
+                  </div>
+                ) : availability.length === 0 ? (
+                  <div className="text-center py-12">
+                    <FaClock className="mx-auto h-12 w-12 text-gray-400" />
+                    <h3 className="mt-2 text-sm font-medium text-gray-900">No time slots</h3>
+                    <p className="mt-1 text-sm text-gray-500">Add time slots to manage your availability.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {availability.map((slot, index) => (
+                      <div
+                        key={index}
+                        className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300"
+                      >
+                        <div className="p-6">
+                          <div className="flex justify-between items-center mb-4">
+                            <div className="flex items-center gap-2">
+                              <FaClock className={`text-${slot.isAvailable ? 'green' : 'red'}-500`} />
+                              <span className="font-semibold text-lg">{slot.startTime} - {slot.endTime}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                slot.isAvailable ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                              }`}>
+                                {slot.isAvailable ? 'Available' : 'Booked'}
+                              </span>
+                              <button
+                                onClick={() => {
+                                  setSelectedTimeSlot(slot);
+                                  setShowEditTimeSlotModal(true);
+                                }}
+                                className="p-2 text-gray-600 hover:text-[#fea116ff] transition-colors"
+                              >
+                                <FaEdit className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteTimeSlot(slot._id)}
+                                className="p-2 text-gray-600 hover:text-red-500 transition-colors"
+                              >
+                                <FaTrash className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <p className="text-sm text-gray-600">Capacity: {slot.maxCapacity}</p>
+                            <p className="text-sm text-gray-600">Price: ${slot.price}</p>
+                            {slot.description && (
+                              <p className="text-sm text-gray-600">Description: {slot.description}</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
 
         {/* Reservation Details Modal */}
         {showDetailsModal && selectedReservation && (

@@ -11,13 +11,14 @@ import {
   updatePartnerImages
 } from '../controllers/partnerController.js';
 import upload from "../middleware/upload.js";
+import Menu from "../models/Menu.js";
 
 const router = express.Router();
 
 // GET all restaurant partners
 router.get("/", async (req, res) => {
   try {
-    const partners = await User.find({ role: "Partner" }).select("restaurantName _id url");
+    const partners = await User.find({ role: "Partner" }).select("restaurantName _id url restaurantPhoto fullName address phone email operatingHours");
     res.status(200).json(partners);
   } catch (error) {
     console.error("Error fetching partners:", error);
@@ -40,18 +41,18 @@ router.get("/:id/dashboard", authMiddleware, async (req, res) => {
     
     // Get total reservations for this partner using the partner's ID
     const totalReservations = await Reservation.countDocuments({ restaurant: partner._id });
-    console.log("Total reservations:", totalReservations);
+    // console.log("Total reservations:", totalReservations);
 
     // Get total tours for this partner
     const totalTours = await Tour.countDocuments({ partner: partner._id });
-    console.log("Total tours:", totalTours);
+    // console.log("Total tours:", totalTours);
 
     // Get unique customers (based on email) who made reservations
     const uniqueCustomers = await Reservation.distinct('email', { 
       restaurant: partner._id 
     });
     const totalCustomers = uniqueCustomers.length;
-    console.log("Total customers:", totalCustomers);
+    // console.log("Total customers:", totalCustomers);
 
     // Get recent activities (last 10 reservations)
     const recentReservations = await Reservation.find({ 
@@ -117,5 +118,32 @@ router.put('/images',
 // Add new routes
 router.get('/:partnerId/customers', authMiddleware, getPreviousCustomers);
 router.post('/:partnerId/notifications', authMiddleware, sendPromotionalNotifications);
+
+// GET single restaurant partner by ID (public)
+router.get("/:id", async (req, res) => {
+  try {
+    const partner = await User.findById(req.params.id).select("restaurantName _id url restaurantPhoto fullName address phone email operatingHours cuisine about features cookingServices");
+    if (!partner) {
+      return res.status(404).json({ message: "Restaurant not found" });
+    }
+    // Ensure cookingServices is always an array
+    const partnerObj = partner.toObject();
+    if (!partnerObj.cookingServices) partnerObj.cookingServices = [];
+    res.status(200).json(partnerObj);
+  } catch (error) {
+    console.error("Error fetching partner by ID:", error);
+    res.status(500).json({ message: "Server error, try again later." });
+  }
+});
+
+// Get all menu items (cooking services) for a restaurant
+router.get("/:id/menu", async (req, res) => {
+  try {
+    const menuItems = await Menu.find({ partner: req.params.id });
+    res.status(200).json(menuItems);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch menu items" });
+  }
+});
 
 export default router;

@@ -48,6 +48,7 @@ export const updatePartnerImages = async (req, res) => {
     if (req.files) {
       if (req.files.logo) {
         partner.logo = req.files.logo[0].path;
+        partner.restaurantPhoto = '/' + req.files.logo[0].path.replace(/\\/g, '/').replace(/^uploads\//, 'uploads/');
       }
       if (req.files.images) {
         partner.images = req.files.images.map(file => file.path);
@@ -66,8 +67,11 @@ export const getPreviousCustomers = async (req, res) => {
   try {
     const partnerId = req.params.partnerId;
 
-    // Find all reservations for this partner (restaurant)
-    const reservations = await Reservation.find({ restaurant: partnerId }).lean();
+    // Find all reservations for this partner (restaurant) where subscribeToPromotions is true
+    const reservations = await Reservation.find({ 
+      restaurant: partnerId,
+      subscribeToPromotions: true 
+    }).lean();
 
     // Extract unique customers by email
     const uniqueCustomers = {};
@@ -99,8 +103,24 @@ export const sendPromotionalNotifications = async (req, res) => {
       return res.status(404).json({ message: 'Partner not found' });
     }
 
+    // Verify that all selected customers are actually subscribed
+    const subscribedCustomers = await Reservation.find({
+      restaurant: partnerId,
+      email: { $in: selectedCustomers },
+      subscribeToPromotions: true
+    }).distinct('email');
+
+    // Filter out any unsubscribed customers
+    const validCustomers = selectedCustomers.filter(email => 
+      subscribedCustomers.includes(email)
+    );
+
+    if (validCustomers.length === 0) {
+      return res.status(400).json({ message: 'No valid subscribed customers found' });
+    }
+
     // Use emails directly
-    const customers = selectedCustomers.map(email => ({
+    const customers = validCustomers.map(email => ({
       email,
       name: email 
     }));
@@ -119,7 +139,7 @@ export const sendPromotionalNotifications = async (req, res) => {
       partnerId,
       subject,
       message,
-      recipients: selectedCustomers,
+      recipients: validCustomers,
       sentAt: new Date()
     });
     await notification.save();

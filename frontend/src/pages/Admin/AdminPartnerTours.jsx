@@ -4,6 +4,7 @@ import AdminSideBar from "../../components/AdminSideBar";
 import AdminCalendar from '../../components/AdminCalendar';
 import { useNavigate } from 'react-router-dom';
 import { baseURL } from '../../utils/baseURL';
+import { getImageUrl, handleImageError } from '../../utils/imageUtils';
 
 const AdminPartnerTours = () => {
   const [tours, setTours] = useState([]);
@@ -695,9 +696,10 @@ const AdminPartnerTours = () => {
                 {selectedTour.image && (
                   <div className="md:col-span-2 flex flex-col items-center mt-2">
                     <img
-                      src={selectedTour.image.startsWith('/uploads') ? `http://localhost:3000${selectedTour.image}` : selectedTour.image}
+                      src={getImageUrl(selectedTour.image)}
                       alt="Tour"
                       className="h-40 w-40 object-cover rounded-lg border"
+                      onError={handleImageError}
                     />
                   </div>
                 )}
@@ -865,9 +867,10 @@ const AdminPartnerTours = () => {
                   {editTour.image && !editTour.imageFile && (
                     <div className="mt-4 flex justify-center">
                       <img
-                        src={editTour.image.startsWith('/uploads') ? `http://localhost:3000${editTour.image}` : editTour.image}
+                        src={getImageUrl(editTour.image)}
                         alt="Tour"
                         className="h-32 w-32 object-cover rounded-lg border"
+                        onError={handleImageError}
                       />
                     </div>
                   )}

@@ -21,20 +21,20 @@ router.get('/:restaurantId/:date', async (req, res) => {
     });
     
     if (!availability) {
-      // Create default time slots with maxCapacity of 1
+      // Create default time slots with configurable hours
       const defaultTimeSlots = [
-        { startTime: '09:00', endTime: '10:00', maxCapacity: 1, currentBookings: 0, isAvailable: true },
-        { startTime: '10:00', endTime: '11:00', maxCapacity: 1, currentBookings: 0, isAvailable: true },
-        { startTime: '11:00', endTime: '12:00', maxCapacity: 1, currentBookings: 0, isAvailable: true },
-        { startTime: '12:00', endTime: '13:00', maxCapacity: 1, currentBookings: 0, isAvailable: true },
-        { startTime: '13:00', endTime: '14:00', maxCapacity: 1, currentBookings: 0, isAvailable: true },
-        { startTime: '14:00', endTime: '15:00', maxCapacity: 1, currentBookings: 0, isAvailable: true },
-        { startTime: '15:00', endTime: '16:00', maxCapacity: 1, currentBookings: 0, isAvailable: true },
-        { startTime: '16:00', endTime: '17:00', maxCapacity: 1, currentBookings: 0, isAvailable: true },
-        { startTime: '17:00', endTime: '18:00', maxCapacity: 1, currentBookings: 0, isAvailable: true },
-        { startTime: '18:00', endTime: '19:00', maxCapacity: 1, currentBookings: 0, isAvailable: true },
-        { startTime: '19:00', endTime: '20:00', maxCapacity: 1, currentBookings: 0, isAvailable: true },
-        { startTime: '20:00', endTime: '21:00', maxCapacity: 1, currentBookings: 0, isAvailable: true }
+        { startTime: '09:00', endTime: '10:00', maxCapacity: 1, currentBookings: 0, isAvailable: true, price: 0, description: 'Morning' },
+        { startTime: '10:00', endTime: '11:00', maxCapacity: 1, currentBookings: 0, isAvailable: true, price: 0, description: 'Morning' },
+        { startTime: '11:00', endTime: '12:00', maxCapacity: 1, currentBookings: 0, isAvailable: true, price: 0, description: 'Lunch' },
+        { startTime: '12:00', endTime: '13:00', maxCapacity: 1, currentBookings: 0, isAvailable: true, price: 0, description: 'Lunch' },
+        { startTime: '13:00', endTime: '14:00', maxCapacity: 1, currentBookings: 0, isAvailable: true, price: 0, description: 'Lunch' },
+        { startTime: '14:00', endTime: '15:00', maxCapacity: 1, currentBookings: 0, isAvailable: true, price: 0, description: 'Afternoon' },
+        { startTime: '15:00', endTime: '16:00', maxCapacity: 1, currentBookings: 0, isAvailable: true, price: 0, description: 'Afternoon' },
+        { startTime: '16:00', endTime: '17:00', maxCapacity: 1, currentBookings: 0, isAvailable: true, price: 0, description: 'Afternoon' },
+        { startTime: '17:00', endTime: '18:00', maxCapacity: 1, currentBookings: 0, isAvailable: true, price: 0, description: 'Dinner' },
+        { startTime: '18:00', endTime: '19:00', maxCapacity: 1, currentBookings: 0, isAvailable: true, price: 0, description: 'Dinner' },
+        { startTime: '19:00', endTime: '20:00', maxCapacity: 1, currentBookings: 0, isAvailable: true, price: 0, description: 'Dinner' },
+        { startTime: '20:00', endTime: '21:00', maxCapacity: 1, currentBookings: 0, isAvailable: true, price: 0, description: 'Dinner' }
       ];
 
       availability = new Availability({
@@ -61,7 +61,7 @@ router.get('/:restaurantId/:date', async (req, res) => {
       );
       
       slot.currentBookings = reservationsForSlot.length;
-      slot.isAvailable = slot.currentBookings < 1;
+      slot.isAvailable = slot.currentBookings < slot.maxCapacity;
     });
 
     // Save the updated availability
@@ -80,25 +80,19 @@ router.post('/', verifyToken, verifyPartner, async (req, res) => {
     const { date, timeSlots } = req.body;
     const partnerId = req.user._id;
     
-    // Ensure all time slots have maxCapacity of 1
-    const updatedTimeSlots = timeSlots.map(slot => ({
-      ...slot,
-      maxCapacity: 1
-    }));
-    
     let availability = await Availability.findOne({
       restaurantId: partnerId,
       date: new Date(date)
     });
     
     if (availability) {
-      availability.timeSlots = updatedTimeSlots;
+      availability.timeSlots = timeSlots;
       await availability.save();
     } else {
       availability = new Availability({
         restaurantId: partnerId,
         date: new Date(date),
-        timeSlots: updatedTimeSlots
+        timeSlots: timeSlots
       });
       await availability.save();
     }
@@ -113,7 +107,7 @@ router.post('/', verifyToken, verifyPartner, async (req, res) => {
 router.patch('/:id/slot/:slotId', verifyToken, verifyPartner, async (req, res) => {
   try {
     const { id, slotId } = req.params;
-    const { isAvailable } = req.body;
+    const { isAvailable, maxCapacity, price, description } = req.body;
     const partnerId = req.user._id;
     
     const availability = await Availability.findOne({
@@ -130,8 +124,11 @@ router.patch('/:id/slot/:slotId', verifyToken, verifyPartner, async (req, res) =
       return res.status(404).json({ message: 'Time slot not found' });
     }
     
-    // Only allow updating isAvailable, maxCapacity is always 1
+    // Update slot properties
     if (isAvailable !== undefined) slot.isAvailable = isAvailable;
+    if (maxCapacity !== undefined) slot.maxCapacity = maxCapacity;
+    if (price !== undefined) slot.price = price;
+    if (description !== undefined) slot.description = description;
     
     await availability.save();
     res.json(availability);

@@ -42,7 +42,7 @@ router.get("/unread", authMiddleware, async (req, res) => {
 // Send a new message
 router.post("/", authMiddleware, async (req, res) => {
   try {
-    console.log("🔹 Attempting to send message. User:", req.user);
+    console.log("Attempting to send message. User:", req.user);
     const { receiverId, content } = req.body;
 
     if (!content || !content.trim()) {
@@ -62,11 +62,11 @@ router.post("/", authMiddleware, async (req, res) => {
       return res.status(404).json({ message: "Receiver not found" });
     }
 
-    console.log("✅ Receiver found:", receiver.fullName);
+    // console.log("✅ Receiver found:", receiver.fullName);
 
-    // Create new message
+    // Create new message with explicit sender ID
     const message = new Message({
-      sender: req.user._id,
+      sender: req.user.id,
       receiver: receiverId,
       content: content.trim(),
       read: false,
@@ -74,14 +74,16 @@ router.post("/", authMiddleware, async (req, res) => {
     });
 
     await message.save();
-    console.log("✅ Message saved to database");
+    // console.log("✅ Message saved to database");
 
     // Populate sender and receiver details
-    await message.populate('sender', 'fullName role');
-    await message.populate('receiver', 'fullName role');
-    console.log("✅ Message details populated");
+    const populatedMessage = await Message.findById(message._id)
+      .populate('sender', 'fullName role')
+      .populate('receiver', 'fullName role');
+    
+    // console.log("✅ Message details populated:", populatedMessage);
 
-    res.status(201).json(message);
+    res.status(201).json(populatedMessage);
   } catch (error) {
     console.error("❌ Error sending message:", error);
     if (error.name === "CastError") {
@@ -97,7 +99,7 @@ router.post("/", authMiddleware, async (req, res) => {
 // Mark messages as read
 router.patch("/read/:senderId", authMiddleware, async (req, res) => {
   try {
-    console.log("Marking messages as read from sender:", req.params.senderId);
+    // console.log("Marking messages as read from sender:", req.params.senderId);
     const result = await Message.updateMany(
       {
         sender: req.params.senderId,
@@ -106,10 +108,10 @@ router.patch("/read/:senderId", authMiddleware, async (req, res) => {
       },
       { read: true }
     );
-    console.log("Updated messages:", result.modifiedCount);
+    // console.log("Updated messages:", result.modifiedCount);
     res.json({ message: "Messages marked as read" });
   } catch (error) {
-    console.error("Error marking messages as read:", error);
+    // console.error("Error marking messages as read:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -122,8 +124,8 @@ router.get("/conversation/:userId", authMiddleware, async (req, res) => {
 
     const messages = await Message.find({
       $or: [
-        { sender: req.user._id, receiver: req.params.userId },
-        { sender: req.params.userId, receiver: req.user._id }
+        { sender: req.user.id, receiver: req.params.userId },
+        { sender: req.params.userId, receiver: req.user.id }
       ]
     })
     .populate('sender', 'fullName role')
@@ -136,7 +138,7 @@ router.get("/conversation/:userId", authMiddleware, async (req, res) => {
     await Message.updateMany(
       {
         sender: req.params.userId,
-        receiver: req.user._id,
+        receiver: req.user.id,
         read: false
       },
       { read: true }

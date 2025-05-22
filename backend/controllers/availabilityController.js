@@ -1,5 +1,6 @@
 import Availability from '../models/Availability.js';
 import { validateTimeSlot } from '../utils/validators.js';
+import Reservation from '../models/Reservation.js';
 
 // Get availability for a specific date
 export const getAvailability = async (req, res) => {
@@ -14,7 +15,7 @@ export const getAvailability = async (req, res) => {
     const endDate = new Date(date);
     endDate.setHours(23, 59, 59, 999);
 
-    const availability = await Availability.findOne({
+    let availability = await Availability.findOne({
       restaurantId,
       date: {
         $gte: startDate,
@@ -23,29 +24,71 @@ export const getAvailability = async (req, res) => {
     });
 
     if (!availability) {
-      console.log('No availability found, returning empty array');
-      return res.status(200).json({ timeSlots: [] });
+      console.log('No availability found, creating default time slots');
+      // Create default time slots with configurable hours
+      const defaultTimeSlots = [
+        { startTime: '09:00', endTime: '10:00', maxCapacity: 1, currentBookings: 0, isAvailable: true, price: 0, description: 'Morning' },
+        { startTime: '10:00', endTime: '11:00', maxCapacity: 1, currentBookings: 0, isAvailable: true, price: 0, description: 'Morning' },
+        { startTime: '11:00', endTime: '12:00', maxCapacity: 1, currentBookings: 0, isAvailable: true, price: 0, description: 'Lunch' },
+        { startTime: '12:00', endTime: '13:00', maxCapacity: 1, currentBookings: 0, isAvailable: true, price: 0, description: 'Lunch' },
+        { startTime: '13:00', endTime: '14:00', maxCapacity: 1, currentBookings: 0, isAvailable: true, price: 0, description: 'Lunch' },
+        { startTime: '14:00', endTime: '15:00', maxCapacity: 1, currentBookings: 0, isAvailable: true, price: 0, description: 'Afternoon' },
+        { startTime: '15:00', endTime: '16:00', maxCapacity: 1, currentBookings: 0, isAvailable: true, price: 0, description: 'Afternoon' },
+        { startTime: '16:00', endTime: '17:00', maxCapacity: 1, currentBookings: 0, isAvailable: true, price: 0, description: 'Afternoon' },
+        { startTime: '17:00', endTime: '18:00', maxCapacity: 1, currentBookings: 0, isAvailable: true, price: 0, description: 'Dinner' },
+        { startTime: '18:00', endTime: '19:00', maxCapacity: 1, currentBookings: 0, isAvailable: true, price: 0, description: 'Dinner' },
+        { startTime: '19:00', endTime: '20:00', maxCapacity: 1, currentBookings: 0, isAvailable: true, price: 0, description: 'Dinner' },
+        { startTime: '20:00', endTime: '21:00', maxCapacity: 1, currentBookings: 0, isAvailable: true, price: 0, description: 'Dinner' }
+      ];
+
+      availability = new Availability({
+        restaurantId,
+        date: startDate,
+        timeSlots: defaultTimeSlots
+      });
+      
+      await availability.save();
+      console.log('Created default time slots:', availability);
     }
 
-    // Filter out unavailable and fully booked slots
-    const availableTimeSlots = availability.timeSlots.filter(slot => 
-      slot.isAvailable && slot.currentBookings < slot.maxCapacity
-    );
+    // Get all confirmed reservations for this date
+    const confirmedReservations = await Reservation.find({
+      restaurant: restaurantId,
+      date: {
+        $gte: startDate,
+        $lte: endDate
+      },
+      status: 'confirmed'
+    });
+
+    // Update availability based on confirmed reservations
+    availability.timeSlots.forEach(slot => {
+      const reservationsForSlot = confirmedReservations.filter(
+        res => res.timeSlot.startTime === slot.startTime && 
+               res.timeSlot.endTime === slot.endTime
+      );
+      
+      slot.currentBookings = reservationsForSlot.length;
+      slot.isAvailable = slot.currentBookings < slot.maxCapacity;
+    });
+
+    // Save the updated availability
+    await availability.save();
 
     // Sort time slots by start time
-    availableTimeSlots.sort((a, b) => {
+    availability.timeSlots.sort((a, b) => {
       const timeA = new Date(`2000/01/01 ${a.startTime}`).getTime();
       const timeB = new Date(`2000/01/01 ${b.startTime}`).getTime();
       return timeA - timeB;
     });
 
-    console.log('Found availability:', { 
+    console.log('Returning availability:', { 
       totalSlots: availability.timeSlots.length,
-      availableSlots: availableTimeSlots.length 
+      date: availability.date
     });
 
     res.status(200).json({ 
-      timeSlots: availableTimeSlots,
+      timeSlots: availability.timeSlots,
       date: availability.date
     });
   } catch (error) {
