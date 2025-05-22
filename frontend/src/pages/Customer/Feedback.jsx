@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import axios from 'axios';
+import { baseURL } from '../../utils/baseURL';
 
 const Feedback = () => {
     const [feedback, setFeedback] = useState({
@@ -26,7 +27,7 @@ const Feedback = () => {
         setIsSubmitting(true);
         
         try {
-            const response = await axios.post('/api/feedback', feedback);
+            const response = await axios.post(`${baseURL}/feedback`, feedback);
             
             if (response.data.success) {
                 toast.success('Thank you for your feedback!');

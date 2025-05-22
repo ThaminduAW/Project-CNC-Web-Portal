@@ -88,7 +88,7 @@ const Home = () => {
     setIsSubmitting(true);
     
     try {
-      const response = await axios.post('/api/feedback', {
+      const response = await axios.post(`${baseURL}/feedback`, {
         ...feedback,
         category: 'experience' // Since this is in the reviews section, we'll set it to experience
       });
