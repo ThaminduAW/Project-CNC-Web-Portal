@@ -150,4 +150,30 @@ export const rejectFeedback = async (req, res) => {
             error: error.message
         });
     }
+};
+
+// Delete feedback
+export const deleteFeedback = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const feedback = await Feedback.findByIdAndDelete(id);
+
+        if (!feedback) {
+            return res.status(404).json({
+                success: false,
+                message: 'Feedback not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Feedback deleted successfully'
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error deleting feedback',
+            error: error.message
+        });
+    }
 }; 

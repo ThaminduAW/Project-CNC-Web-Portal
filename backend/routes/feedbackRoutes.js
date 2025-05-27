@@ -5,7 +5,8 @@ import {
     getAllFeedback, 
     getFeedbackByCategory,
     approveFeedback,
-    rejectFeedback 
+    rejectFeedback,
+    deleteFeedback
 } from '../controllers/feedbackController.js';
 import { protect, authorize } from '../middleware/auth.js';
 
@@ -21,5 +22,6 @@ router.get('/', protect, authorize('admin'), getAllFeedback);
 router.get('/category/:category', protect, authorize('admin'), getFeedbackByCategory);
 router.put('/:id/approve', protect, authorize('admin'), approveFeedback);
 router.put('/:id/reject', protect, authorize('admin'), rejectFeedback);
+router.delete('/:id', protect, authorize('admin'), deleteFeedback);
 
 export default router; 

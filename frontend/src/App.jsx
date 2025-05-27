@@ -11,6 +11,7 @@ import Contact from "./pages/Home/Contact";
 import Tours from "./pages/Home/Tours";
 import TourDetail from "./components/TourDetail";
 import Feedback from "./pages/Customer/Feedback";
+import Reviews from "./pages/Reviews/Reviews";
 
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import Partners from "./pages/Admin/Partners";
@@ -61,6 +62,7 @@ const App = () => {
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/feedback" element={<Feedback />} />
+                <Route path="/reviews" element={<Reviews />} />
 
                 {/* Admin Routes */}
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
