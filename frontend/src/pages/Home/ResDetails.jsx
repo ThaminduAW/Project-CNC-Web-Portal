@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaPepperHot, FaLeaf, FaDollarSign, FaUser, FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock, FaStore, FaUtensils, FaGlobe } from 'react-icons/fa';
+import { FaPepperHot, FaLeaf, FaDollarSign, FaUser, FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock, FaStore, FaUtensils, FaGlobe, FaExclamationTriangle } from 'react-icons/fa';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { baseURL } from '../../utils/baseURL';
-import { getImageUrl, handleImageError } from '../../utils/imageUtils';
+import { getImageUrl, handleImageError, setupConsoleFilter } from '../../utils/imageUtils';
 
 const ResDetails = () => {
   const { id } = useParams();
@@ -52,6 +52,15 @@ const ResDetails = () => {
   };
 
   useEffect(() => {
+    // Setup console filter to reduce third-party library noise
+    setupConsoleFilter();
+    
+    // Add meta tag to help with mixed content issues
+    const metaTag = document.createElement('meta');
+    metaTag.httpEquiv = 'Content-Security-Policy';
+    metaTag.content = 'upgrade-insecure-requests';
+    document.head.appendChild(metaTag);
+
     const fetchRestaurant = async () => {
       try {
         const response = await fetch(`${baseURL}/partners/${id}`);
@@ -74,6 +83,14 @@ const ResDetails = () => {
       }
     };
     Promise.all([fetchRestaurant(), fetchMenu()]).finally(() => setLoading(false));
+
+    // Cleanup meta tag on unmount
+    return () => {
+      const existingMeta = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
+      if (existingMeta) {
+        document.head.removeChild(existingMeta);
+      }
+    };
   }, [id]);
 
   if (loading) {
@@ -95,21 +112,36 @@ const ResDetails = () => {
     return (
       <div className="bg-[#fdfcdcff] text-[#001524ff] min-h-screen">
         <Header />
-        <main className="container mx-auto px-6 md:px-12 py-12 max-w-5xl">
+        <main className="container mx-auto px-6 md:px-12 py-12 max-w-5xl pt-30">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-red-500">{error || 'Restaurant not found'}</h1>
-            <button
-              onClick={() => {
-                navigate('/restaurants');
-                // Scroll to top after navigation
-                setTimeout(() => {
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }, 100);
-              }}
-              className="mt-4 bg-[#fea116ff] text-white px-6 py-2 rounded-md hover:bg-[#e8920eff] transition-colors"
-            >
-              Back to Restaurants
-            </button>
+            <div className="mb-6">
+              <FaExclamationTriangle className="mx-auto h-16 w-16 text-red-500 mb-4" />
+              <h1 className="text-2xl font-bold text-red-500 mb-2">
+                {error || 'Restaurant not found'}
+              </h1>
+              <p className="text-gray-600">
+                {error ? 'There was an error loading the restaurant details.' : 'The restaurant you\'re looking for doesn\'t exist or has been removed.'}
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => {
+                  navigate('/restaurants');
+                  setTimeout(() => {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }, 100);
+                }}
+                className="bg-[#fea116ff] text-white px-6 py-2 rounded-md hover:bg-[#e8920eff] transition-colors"
+              >
+                Back to Restaurants
+              </button>
+              <button
+                onClick={() => window.location.reload()}
+                className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
           </div>
         </main>
         <Footer />
@@ -135,12 +167,13 @@ const ResDetails = () => {
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           {/* Restaurant Photo */}
           {restaurant.restaurantPhoto && (
-            <div className="w-full h-96 relative">
+            <div className="w-full h-96 relative bg-gray-100">
               <img
                 src={getImageUrl(restaurant.restaurantPhoto)}
-                alt={restaurant.restaurantName}
-                className="w-full h-full object-cover"
+                alt={`${restaurant.restaurantName} restaurant interior`}
+                className="w-full h-full object-cover transition-opacity duration-300"
                 onError={handleImageError}
+                loading="lazy"
               />
             </div>
           )}
@@ -329,12 +362,13 @@ const ResDetails = () => {
                             {categoryItems.map((item, index) => (
                               <div key={index} className="bg-gray-50 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300">
                                 {item.image && (
-                                  <div className="relative h-48">
+                                  <div className="relative h-48 bg-gray-100">
                                     <img 
                                       src={getImageUrl(item.image)} 
-                                      alt={item.name}
-                                      className="w-full h-full object-cover"
+                                      alt={`${item.name} - ${restaurant.restaurantName} menu item`}
+                                      className="w-full h-full object-cover transition-opacity duration-300"
                                       onError={handleImageError}
+                                      loading="lazy"
                                     />
                                   </div>
                                 )}
@@ -409,12 +443,13 @@ const ResDetails = () => {
                             {uncategorizedItems.map((item, index) => (
                               <div key={index} className="bg-gray-50 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300">
                                 {item.image && (
-                                  <div className="relative h-48">
+                                  <div className="relative h-48 bg-gray-100">
                                     <img 
                                       src={getImageUrl(item.image)} 
-                                      alt={item.name}
-                                      className="w-full h-full object-cover"
+                                      alt={`${item.name} - ${restaurant.restaurantName} menu item`}
+                                      className="w-full h-full object-cover transition-opacity duration-300"
                                       onError={handleImageError}
+                                      loading="lazy"
                                     />
                                   </div>
                                 )}
@@ -494,12 +529,13 @@ const ResDetails = () => {
                           {categoryItems.map((item, index) => (
                             <div key={index} className="bg-gray-50 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300">
                               {item.image && (
-                                <div className="relative h-48">
+                                <div className="relative h-48 bg-gray-100">
                                   <img 
                                     src={getImageUrl(item.image)} 
-                                    alt={item.name}
-                                    className="w-full h-full object-cover"
+                                    alt={`${item.name} - ${restaurant.restaurantName} menu item`}
+                                    className="w-full h-full object-cover transition-opacity duration-300"
                                     onError={handleImageError}
+                                    loading="lazy"
                                   />
                                 </div>
                               )}
