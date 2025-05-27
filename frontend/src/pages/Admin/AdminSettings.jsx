@@ -158,15 +158,26 @@ const AdminSettings = () => {
       });
       
       if (response.data) {
-        setMessage({ type: 'success', text: 'Profile updated successfully' });
-        const currentUser = JSON.parse(localStorage.getItem('user'));
-        const updatedUser = { ...currentUser, ...dataToSend };
-        localStorage.setItem('user', JSON.stringify(updatedUser));
+        // setMessage({ type: 'success', text: 'Profile updated successfully' });
+        toast.success('Profile updated successfully');
+        
+        // Update localStorage with the updated user data from backend
+        if (response.data.user) {
+          console.log('Profile updated - storing user data in localStorage');
+          localStorage.setItem('user', JSON.stringify(response.data.user));
+        } else {
+          // Fallback: manually update localStorage if backend doesn't return user data
+          const currentUser = JSON.parse(localStorage.getItem('user'));
+          const updatedUser = { ...currentUser, ...dataToSend };
+          console.log('Profile updated - using fallback method');
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+        }
         
         if (response.data.token) {
           localStorage.setItem('token', response.data.token);
         }
         
+        // Dispatch custom event to notify other components
         window.dispatchEvent(new CustomEvent('profileUpdated'));
       }
     } catch (error) {

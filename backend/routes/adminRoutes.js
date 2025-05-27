@@ -61,16 +61,33 @@ router.post("/signin", async (req, res) => {
       { expiresIn: "2h" }
     );
 
-    res.status(200).json({
-      token,
-      user: {
-        id: user._id,
+    // Return different user data based on role
+    let userData;
+    if (user.role === "Admin") {
+      userData = {
+        id: user._id.toString(),
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
+        approved: user.approved,
+        phone: user.phone
+      };
+    } else {
+      userData = {
+        id: user._id.toString(),
         fullName: user.fullName,
         email: user.email,
         role: user.role,
         approved: user.approved,
-        restaurantName: user.restaurantName
-      },
+        restaurantName: user.restaurantName,
+        phone: user.phone
+      };
+    }
+
+    res.status(200).json({
+      token,
+      user: userData,
     });
   } catch (error) {
     console.error("Sign-in error:", error);
