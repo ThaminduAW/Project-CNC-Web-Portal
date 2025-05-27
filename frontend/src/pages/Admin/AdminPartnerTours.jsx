@@ -743,7 +743,7 @@ const AdminPartnerTours = () => {
                     formData.append('optionalDetails', editTour.optionalDetails || '');
                     formData.append('status', editTour.status);
                     if (editTour.imageFile) formData.append('image', editTour.imageFile);
-                    const response = await fetch(`http://localhost:3000/api/tours/${editTour._id}`, {
+                    const response = await fetch(`https://project-cnc-web-portal.onrender.com/api/tours/${editTour._id}`, {
                       method: 'PUT',
                       headers: {
                         'Authorization': `Bearer ${token}`
