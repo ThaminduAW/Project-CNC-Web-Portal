@@ -29,6 +29,7 @@ import PartnerSettings from "./pages/Partners/PartnerSettings";
 import Reservations from "./pages/Partners/Reservations";
 import ExperienceDetails from "./pages/Partners/ExperienceDetails";
 import PromotionalNotifications from "./pages/Partners/PromotionalNotifications";
+import PartnerCalendar from "./pages/Partners/PartnerCalendar";
 
 import SignIn from "./pages/Authentication/SignIn";
 import SignUp from "./pages/Authentication/SignUp";
@@ -81,6 +82,7 @@ const App = () => {
                 <Route path="/partner/reservations" element={<Reservations />} />
                 <Route path="/partner/messages" element={<PartnerMessages />} />
                 <Route path="/partner/settings" element={<PartnerSettings />} />
+                <Route path="/partner/calendar" element={<PartnerCalendar />} />
                 <Route path="/experience/:id" element={<ExperienceDetails />} />
                 <Route path="/partner/notifications" element={<PromotionalNotifications />} />
 
