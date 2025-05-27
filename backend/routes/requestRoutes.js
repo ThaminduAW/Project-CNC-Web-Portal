@@ -142,4 +142,46 @@ router.put('/:requestId/:action', authMiddleware, async (req, res) => {
   }
 });
 
+// Delete request (Admin only)
+router.delete('/:requestId', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role !== 'Admin') {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
+    const { requestId } = req.params;
+    const request = await Request.findById(requestId);
+
+    if (!request) {
+      return res.status(404).json({ message: 'Request not found' });
+    }
+
+    await Request.findByIdAndDelete(requestId);
+    res.json({ message: 'Request deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting request:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Delete all processed requests (Admin only)
+router.delete('/bulk/processed', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role !== 'Admin') {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
+    // Delete all requests that are not pending (approved or rejected)
+    const result = await Request.deleteMany({ status: { $ne: 'pending' } });
+    
+    res.json({ 
+      message: `${result.deletedCount} processed requests deleted successfully`,
+      deletedCount: result.deletedCount
+    });
+  } catch (error) {
+    console.error('Error deleting processed requests:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 export default router; 

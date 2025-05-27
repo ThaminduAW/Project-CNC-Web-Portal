@@ -7,6 +7,7 @@ import axios from 'axios';
 import PartnerSideBar from '../../components/PartnerSideBar';
 import { FaClock, FaMapMarkerAlt, FaGlobe, FaUtensils, FaUser, FaPhone, FaEnvelope, FaLock, FaCalendarAlt, FaExclamationCircle, FaKey, FaSave, FaPlus, FaTrash, FaInfoCircle, FaList, FaCamera } from 'react-icons/fa';
 import { baseURL } from '../../utils/baseURL';
+import { toast } from 'react-toastify';
 
 const PartnerSettings = () => {
   const [userData, setUserData] = useState({
@@ -35,9 +36,7 @@ const PartnerSettings = () => {
     newPassword: '',
     confirmPassword: ''
   });
-  const [message, setMessage] = useState({ type: '', text: '' });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [passwordError, setPasswordError] = useState('');
   const [pendingChanges, setPendingChanges] = useState(false);
   const [formData, setFormData] = useState(null);
@@ -53,7 +52,7 @@ const PartnerSettings = () => {
       setLoading(true);
       const token = localStorage.getItem('token');
       if (!token) {
-        setMessage({ type: 'error', text: 'Authentication required. Please login again.' });
+        toast.error('Authentication required. Please login again.');
         return;
       }
 
@@ -119,7 +118,7 @@ const PartnerSettings = () => {
 
     } catch (error) {
       console.error('Error fetching profile:', error);
-      setMessage({ type: 'error', text: 'Failed to fetch profile data' });
+      toast.error('Failed to fetch profile data');
       
       if (error.response?.status === 401) {
         localStorage.removeItem('token');
@@ -178,7 +177,7 @@ const PartnerSettings = () => {
       setLoading(true);
       const token = localStorage.getItem('token');
       if (!token) {
-        setMessage({ type: 'error', text: 'Authentication required. Please login again.' });
+        toast.error('Authentication required. Please login again.');
         return;
       }
 
@@ -197,7 +196,7 @@ const PartnerSettings = () => {
         localStorage.setItem('token', response.data.token);
       }
 
-      setMessage({ type: 'success', text: 'Password updated successfully' });
+      toast.success('Password updated successfully');
       setPasswordData({
         currentPassword: '',
         newPassword: '',
@@ -206,7 +205,7 @@ const PartnerSettings = () => {
     } catch (error) {
       console.error('Password change error:', error);
       const errorMessage = error.response?.data?.message || 'Failed to update password';
-      setMessage({ type: 'error', text: errorMessage });
+      toast.error(errorMessage);
       
       if (error.response?.status === 401) {
         // Handle session expiration
@@ -228,7 +227,7 @@ const PartnerSettings = () => {
       setLoading(true);
       const token = localStorage.getItem('token');
       if (!token) {
-        setMessage({ type: 'error', text: 'Authentication required. Please login again.' });
+        toast.error('Authentication required. Please login again.');
         return;
       }
 
@@ -293,17 +292,14 @@ const PartnerSettings = () => {
       
       if (response.data) {
         setPendingChanges(true);
-        setMessage({ 
-          type: 'success', 
-          text: 'Profile update request submitted successfully. Waiting for admin approval.' 
-        });
+        toast.success('Profile update request submitted successfully. Waiting for admin approval.');
       }
 
     } catch (error) {
       console.error('Profile update error:', error);
       console.error('Error response:', error.response?.data);
       const errorMessage = error.response?.data?.message || error.message || 'Failed to submit update request';
-      setMessage({ type: 'error', text: errorMessage });
+      toast.error(errorMessage);
       
       if (error.response?.status === 401) {
         localStorage.removeItem('token');
@@ -338,13 +334,13 @@ const PartnerSettings = () => {
 
     // Check file type
     if (!file.type.startsWith('image/')) {
-      setMessage({ type: 'error', text: 'Please upload an image file' });
+      toast.error('Please upload an image file');
       return;
     }
 
     // Check file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      setMessage({ type: 'error', text: 'Image size should be less than 5MB' });
+      toast.error('Image size should be less than 5MB');
       return;
     }
 
@@ -370,11 +366,11 @@ const PartnerSettings = () => {
           ...prev,
           restaurantPhoto: photoUrl
         }));
-        setMessage({ type: 'success', text: 'Photo uploaded successfully' });
+        toast.success('Photo uploaded successfully');
       }
     } catch (error) {
       console.error('Photo upload error:', error);
-      setMessage({ type: 'error', text: 'Failed to upload photo' });
+      toast.error('Failed to upload photo');
     } finally {
       setLoading(false);
     }
@@ -419,31 +415,7 @@ const PartnerSettings = () => {
             )}
           </div>
 
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-lg flex items-center">
-              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-              {error}
-            </div>
-          )}
 
-          {message.text && (
-            <div className={`mb-6 p-4 rounded-lg flex items-center ${
-              message.type === 'success' 
-                ? 'bg-green-50 border border-green-200 text-green-600'
-                : 'bg-red-50 border border-red-200 text-red-600'
-            }`}>
-              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                {message.type === 'success' ? (
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 10-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                ) : (
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                )}
-              </svg>
-              {message.text}
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Restaurant Photo Section */}
