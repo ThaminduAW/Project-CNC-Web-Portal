@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaPepperHot, FaLeaf, FaDollarSign } from 'react-icons/fa';
+import { FaPepperHot, FaLeaf, FaDollarSign, FaUser, FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock, FaStore } from 'react-icons/fa';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { baseURL } from '../../utils/baseURL';
@@ -32,12 +32,13 @@ const ResDetails = () => {
     keto: 'Keto'
   };
 
-  // remove this
-  const CATEGORIES = {
-    appetizer: 'Appetizers',
-    main: 'Main Course',
-    dessert: 'Desserts',
-    beverage: 'Beverages'
+  // Helper function to convert 24h time to 12h format
+  const formatTime12h = (timeStr) => {
+    if (!timeStr) return '';
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+    return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
   };
 
   useEffect(() => {
@@ -128,98 +129,102 @@ const ResDetails = () => {
           )}
 
           <div className="p-8">
-            {/* Basic Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-              <div>
-                <h2 className="text-2xl font-bold mb-4">Restaurant Information</h2>
-                <div className="space-y-4">
-                  <div className="flex items-center">
-                    <span className="text-[#fea116ff] mr-2">👤</span>
-                    <div>
-                      <p className="font-semibold">Owner</p>
-                      <p className="text-gray-600">{restaurant.fullName}</p>
+            {/* Restaurant Information */}
+            <div className="mb-8">
+              <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center text-[#001524ff]">
+                Restaurant <span className="text-[#fea116ff]">Information</span>
+              </h2>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Contact Information */}
+                <div className="bg-gradient-to-br from-[#fdfcdc] to-white p-6 rounded-xl shadow-lg border border-[#fea116]/20">
+                  <h3 className="text-xl font-bold mb-6 text-[#001524ff] flex items-center">
+                    <span className="w-8 h-8 bg-[#fea116ff] rounded-full flex items-center justify-center text-white text-sm mr-3">
+                      <FaStore />
+                    </span>
+                    Contact Details
+                  </h3>
+                  <div className="space-y-4">
+                                          <div className="flex items-start p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                        <div className="w-10 h-10 bg-[#fea116ff] rounded-full flex items-center justify-center text-white mr-4 flex-shrink-0">
+                          <FaUser />
+                        </div>
+                      <div>
+                        <p className="font-semibold text-[#001524ff]">Restaurant Owner</p>
+                        <p className="text-gray-600 text-lg">{restaurant.fullName}</p>
+                      </div>
                     </div>
+                    
+                    {restaurant.address && (
+                                              <div className="flex items-start p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                          <div className="w-10 h-10 bg-[#fea116ff] rounded-full flex items-center justify-center text-white mr-4 flex-shrink-0">
+                            <FaMapMarkerAlt />
+                          </div>
+                        <div>
+                          <p className="font-semibold text-[#001524ff]">Address</p>
+                          <p className="text-gray-600">{restaurant.address}</p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {restaurant.phone && (
+                                              <div className="flex items-start p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                          <div className="w-10 h-10 bg-[#fea116ff] rounded-full flex items-center justify-center text-white mr-4 flex-shrink-0">
+                            <FaPhone />
+                          </div>
+                        <div>
+                          <p className="font-semibold text-[#001524ff]">Phone Number</p>
+                          <a href={`tel:${restaurant.phone}`} className="text-[#fea116ff] hover:text-[#e69510] font-medium transition-colors">
+                            {restaurant.phone}
+                          </a>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {restaurant.email && (
+                                              <div className="flex items-start p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                          <div className="w-10 h-10 bg-[#fea116ff] rounded-full flex items-center justify-center text-white mr-4 flex-shrink-0">
+                            <FaEnvelope />
+                          </div>
+                        <div>
+                          <p className="font-semibold text-[#001524ff]">Email Address</p>
+                          <a href={`mailto:${restaurant.email}`} className="text-[#fea116ff] hover:text-[#e69510] font-medium transition-colors">
+                            {restaurant.email}
+                          </a>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  {restaurant.address && (
-                    <div className="flex items-center">
-                      <span className="text-[#fea116ff] mr-2">📍</span>
-                      <div>
-                        <p className="font-semibold">Address</p>
-                        <p className="text-gray-600">{restaurant.address}</p>
-                      </div>
-                    </div>
-                  )}
-                  {restaurant.phone && (
-                    <div className="flex items-center">
-                      <span className="text-[#fea116ff] mr-2">📞</span>
-                      <div>
-                        <p className="font-semibold">Phone</p>
-                        <p className="text-gray-600">{restaurant.phone}</p>
-                      </div>
-                    </div>
-                  )}
-                  {restaurant.email && (
-                    <div className="flex items-center">
-                      <span className="text-[#fea116ff] mr-2">✉️</span>
-                      <div>
-                        <p className="font-semibold">Email</p>
-                        <p className="text-gray-600">{restaurant.email}</p>
-                      </div>
-                    </div>
-                  )}
                 </div>
+
                 {/* Operating Hours */}
                 {restaurant.operatingHours && (
-                  <div className="mt-8">
-                    <h3 className="text-xl font-semibold mb-2">Operating Hours</h3>
-                    <table className="min-w-full text-left text-gray-700">
-                      <tbody>
+                  <div className="bg-gradient-to-br from-[#fdfcdc] to-white p-6 rounded-xl shadow-lg border border-[#fea116]/20">
+                    <h3 className="text-xl font-bold mb-6 text-[#001524ff] flex items-center">
+                      <span className="w-8 h-8 bg-[#fea116ff] rounded-full flex items-center justify-center text-white text-sm mr-3">
+                        <FaClock />
+                      </span>
+                      Operating Hours
+                    </h3>
+                    <div className="bg-white rounded-lg shadow-sm p-4">
+                      <div className="space-y-3">
                         {Object.entries(restaurant.operatingHours).map(([day, hours]) => (
-                          <tr key={day}>
-                            <td className="pr-4 font-medium capitalize">{day}:</td>
-                            <td>
+                          <div key={day} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
+                            <span className="font-semibold text-[#001524ff] capitalize">{day}</span>
+                            <span className={`font-medium ${hours && hours.open && hours.close 
+                              ? 'text-green-600' 
+                              : 'text-red-500'
+                            }`}>
                               {hours && hours.open && hours.close
-                                ? `${hours.open} - ${hours.close}`
+                                ? `${formatTime12h(hours.open)} - ${formatTime12h(hours.close)}`
                                 : 'Closed'}
-                            </td>
-                          </tr>
+                            </span>
+                          </div>
                         ))}
-                      </tbody>
-                    </table>
+                      </div>
+                    </div>
                   </div>
                 )}
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold mb-4">Features & Amenities</h2>
-                <div className="grid grid-cols-2 gap-4">
-                  {restaurant.features && restaurant.features.length > 0 ? (
-                    restaurant.features.map((feature, index) => (
-                      <div key={index} className="flex items-center p-3 bg-gray-50 rounded-lg">
-                        <span className="text-[#fea116ff] mr-2">{feature.icon || '⭐'}</span>
-                        <span>{feature.name}</span>
-                      </div>
-                    ))
-                  ) : (
-                    <>
-                      <div className="flex items-center p-3 bg-gray-50 rounded-lg">
-                        <span className="text-[#fea116ff] mr-2">🍽️</span>
-                        <span>Fresh Seafood</span>
-                      </div>
-                      <div className="flex items-center p-3 bg-gray-50 rounded-lg">
-                        <span className="text-[#fea116ff] mr-2">👨‍🍳</span>
-                        <span>Expert Chefs</span>
-                      </div>
-                      <div className="flex items-center p-3 bg-gray-50 rounded-lg">
-                        <span className="text-[#fea116ff] mr-2">⭐</span>
-                        <span>Premium Service</span>
-                      </div>
-                      <div className="flex items-center p-3 bg-gray-50 rounded-lg">
-                        <span className="text-[#fea116ff] mr-2">🌊</span>
-                        <span>Ocean View</span>
-                      </div>
-                    </>
-                  )}
-                </div>
               </div>
             </div>
             {/* About Section */}
