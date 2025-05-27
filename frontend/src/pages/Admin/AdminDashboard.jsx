@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import AdminSideBar from "../../components/AdminSideBar";
-import { FaUsers, FaStore, FaCalendarAlt, FaChartLine } from 'react-icons/fa';
+import { FaUsers, FaStore, FaCalendarAlt, FaChartLine, FaBell, FaEnvelope, FaUserPlus, FaEdit } from 'react-icons/fa';
 import { baseURL } from '../../utils/baseURL';
 
 const AdminDashboard = () => {
@@ -11,6 +11,7 @@ const AdminDashboard = () => {
     activeTours: 0,
     totalReservations: 0
   });
+  const [recentActivities, setRecentActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -42,7 +43,67 @@ const AdminDashboard = () => {
       }
     };
 
+    const fetchRecentActivities = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        // Fetch recent requests
+        const requestsResponse = await fetch(`${baseURL}/requests`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const requestsData = await requestsResponse.json();
+
+        // Fetch recent messages
+        const messagesResponse = await fetch(`${baseURL}/messages`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const messagesData = await messagesResponse.json();
+
+        // Fetch pending partner sign-ups
+        const partnersResponse = await fetch(`${baseURL}/admin/partners`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const partnersData = await partnersResponse.json();
+        const pendingPartners = partnersData.filter(partner => !partner.approved);
+
+        // Combine and format activities
+        const activities = [
+          ...requestsData.map(request => ({
+            type: 'request',
+            description: `${request.type} request from ${request.submittedBy}`,
+            time: new Date(request.createdAt).toLocaleString(),
+            status: request.status,
+            icon: FaEdit
+          })),
+          ...messagesData.slice(0, 5).map(message => ({
+            type: 'message',
+            description: `New message from ${message.sender.fullName}`,
+            time: new Date(message.createdAt).toLocaleString(),
+            status: message.read ? 'read' : 'unread',
+            icon: FaEnvelope
+          })),
+          ...pendingPartners.map(partner => ({
+            type: 'signup',
+            description: `New partner registration: ${partner.restaurantName}`,
+            time: new Date(partner.createdAt).toLocaleString(),
+            status: 'pending',
+            icon: FaUserPlus
+          }))
+        ].sort((a, b) => new Date(b.time) - new Date(a.time))
+         .slice(0, 10); // Get only the 10 most recent activities
+
+        setRecentActivities(activities);
+      } catch (err) {
+        console.error('Error fetching recent activities:', err);
+      }
+    };
+
     fetchStats();
+    fetchRecentActivities();
+    // Refresh activities every minute
+    const interval = setInterval(fetchRecentActivities, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) {
@@ -135,10 +196,40 @@ const AdminDashboard = () => {
 
         {/* Recent Activity Section */}
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold text-[#001524ff] mb-4">Recent Activity</h2>
+          <h2 className="text-xl font-semibold text-[#001524ff] mb-4 flex items-center">
+            <FaBell className="mr-2 text-[#0098c9ff]" />
+            Recent Activity
+          </h2>
           <div className="space-y-4">
-            {/* Add recent activity items here */}
-            <p className="text-gray-500">No recent activity to display</p>
+            {recentActivities.length > 0 ? (
+              recentActivities.map((activity, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between border-b pb-4 last:border-b-0 hover:bg-gray-50 p-2 rounded-lg transition-colors duration-200"
+                >
+                  <div className="flex items-center">
+                    <div className="bg-[#0098c9ff] p-2 rounded-full mr-3">
+                      <activity.icon className="text-white" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-800">{activity.description}</p>
+                      <p className="text-sm text-gray-600">{activity.time}</p>
+                    </div>
+                  </div>
+                  <span className={`text-sm px-3 py-1 rounded-full ${
+                    activity.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                    activity.status === 'unread' ? 'bg-blue-100 text-blue-800' :
+                    activity.status === 'approved' ? 'bg-green-100 text-green-800' :
+                    activity.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {activity.status}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500">No recent activity to display</p>
+            )}
           </div>
         </div>
       </div>
