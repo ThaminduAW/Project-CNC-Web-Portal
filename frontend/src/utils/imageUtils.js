@@ -4,7 +4,7 @@ export const getImageUrl = (imagePath) => {
   if (imagePath.startsWith('http')) return imagePath;
   // Remove any leading slash to avoid double slashes in the URL
   const cleanPath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;
-  return `http://localhost:3000/${cleanPath}`;
+  return `https://project-cnc-web-portal.onrender.com/${cleanPath}`;
 };
 
 // Image error handler that removes the image on error
