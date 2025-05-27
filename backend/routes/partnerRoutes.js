@@ -142,6 +142,7 @@ router.get("/:id/menu", async (req, res) => {
     const menuItems = await Menu.find({ partner: req.params.id });
     res.status(200).json(menuItems);
   } catch (error) {
+    console.error('Error fetching menu items:', error);
     res.status(500).json({ message: "Failed to fetch menu items" });
   }
 });

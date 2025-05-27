@@ -29,6 +29,15 @@ const PartnerMenu = () => {
     keto: 'Keto'
   };
 
+  const MENU_CATEGORIES = {
+    entree: 'Entrée',
+    mainCourse: 'Main Course',
+    desserts: 'Desserts',
+    beverages: 'Beverages',
+    alcoholicDrinks: 'Alcoholic Drinks',
+    coffeeAndTea: 'Coffee & Tea'
+  };
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -37,7 +46,7 @@ const PartnerMenu = () => {
     price: '',
     spicyLevel: 'none',
     dietaryTags: [],
-    category: 'main'
+    category: 'mainCourse'
   });
 
   const [editIndex, setEditIndex] = useState(null);
@@ -127,7 +136,7 @@ const PartnerMenu = () => {
         price: '',
         spicyLevel: 'none',
         dietaryTags: [],
-        category: 'main'
+        category: 'mainCourse'
       });
       setActiveTab('view');
     } catch (err) {
@@ -146,7 +155,7 @@ const PartnerMenu = () => {
       price: menuItems[idx].price,
       spicyLevel: menuItems[idx].spicyLevel || 'none',
       dietaryTags: menuItems[idx].dietaryTags || [],
-      category: menuItems[idx].category || 'main'
+      category: menuItems[idx].category || 'mainCourse'
     });
     setActiveTab('add');
   };
@@ -172,7 +181,7 @@ const PartnerMenu = () => {
         price: '',
         spicyLevel: 'none',
         dietaryTags: [],
-        category: 'main'
+        category: 'mainCourse'
       });
       setEditIndex(null);
       setEditId(null);
@@ -306,9 +315,9 @@ const PartnerMenu = () => {
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                   >
-                    All Services
+                    All Items
                   </button>
-                  {Object.entries(SPICY_LEVELS).map(([key, label]) => (
+                  {Object.entries(MENU_CATEGORIES).map(([key, label]) => (
                     <button
                       key={key}
                       onClick={() => setActiveCategory(key)}
@@ -375,6 +384,10 @@ const PartnerMenu = () => {
                             <div className="flex items-center text-gray-600">
                               <FaDollarSign className="mr-2" />
                               <span>${item.price}</span>
+                            </div>
+                            <div className="flex items-center text-gray-600">
+                              <FaUtensils className="mr-2" />
+                              <span>Category: {MENU_CATEGORIES[item.category] || 'Main Course'}</span>
                             </div>
                             <div className="flex items-center text-gray-600">
                               <FaPepperHot className="mr-2" />
@@ -449,6 +462,20 @@ const PartnerMenu = () => {
                       className="block w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
                       required
                     />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                    <select
+                      name="category"
+                      value={formData.category}
+                      onChange={handleInputChange}
+                      className="block w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#fea116ff] focus:border-transparent"
+                      required
+                    >
+                      {Object.entries(MENU_CATEGORIES).map(([key, label]) => (
+                        <option key={key} value={key}>{label}</option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Spicy Level</label>

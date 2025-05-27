@@ -33,8 +33,8 @@ const tourSchema = new mongoose.Schema({
       }],
       category: { 
         type: String, 
-        enum: ['appetizer', 'main', 'dessert', 'beverage'],
-        default: 'main'
+        enum: ['entree', 'mainCourse', 'desserts', 'beverages', 'alcoholicDrinks', 'coffeeAndTea'],
+        default: 'mainCourse'
       }
     }]
   }],
