@@ -20,9 +20,18 @@ router.post("/", async (req, res) => {
     }
 
     // Check availability for the selected time slot
+    const startDate = new Date(date);
+    startDate.setHours(0, 0, 0, 0);
+    
+    const endDate = new Date(date);
+    endDate.setHours(23, 59, 59, 999);
+
     const availability = await Availability.findOne({
       restaurantId: restaurant,
-      date: new Date(date)
+      date: {
+        $gte: startDate,
+        $lte: endDate
+      }
     });
 
     if (!availability) {

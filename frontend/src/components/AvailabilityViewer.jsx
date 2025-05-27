@@ -15,15 +15,11 @@ const AvailabilityViewer = ({ restaurantId, date, onTimeSlotSelect }) => {
         setLoading(true);
         setError(null);
 
-        // Get the authentication token
-        const token = localStorage.getItem('token');
-
         const response = await fetch(
           `${baseURL}/availability/${restaurantId}/${format(new Date(date), 'yyyy-MM-dd')}`,
           {
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
+              'Content-Type': 'application/json'
             }
           }
         );

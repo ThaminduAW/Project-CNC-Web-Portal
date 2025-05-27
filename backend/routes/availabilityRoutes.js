@@ -10,7 +10,7 @@ import { verifyToken } from '../middleware/auth.js';
 const router = express.Router();
 
 // Get availability for a specific date
-router.get('/:restaurantId/:date', verifyToken, getAvailability);
+router.get('/:restaurantId/:date', getAvailability);
 
 // Add a custom time slot
 router.post('/custom', verifyToken, addCustomTimeSlot);
