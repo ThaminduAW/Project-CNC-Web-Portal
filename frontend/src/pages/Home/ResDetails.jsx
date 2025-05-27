@@ -331,9 +331,10 @@ const ResDetails = () => {
                                 {item.image && (
                                   <div className="relative h-48">
                                     <img 
-                                      src={item.image} 
+                                      src={getImageUrl(item.image)} 
                                       alt={item.name}
                                       className="w-full h-full object-cover"
+                                      onError={handleImageError}
                                     />
                                   </div>
                                 )}
@@ -410,9 +411,10 @@ const ResDetails = () => {
                                 {item.image && (
                                   <div className="relative h-48">
                                     <img 
-                                      src={item.image} 
+                                      src={getImageUrl(item.image)} 
                                       alt={item.name}
                                       className="w-full h-full object-cover"
+                                      onError={handleImageError}
                                     />
                                   </div>
                                 )}
@@ -494,9 +496,10 @@ const ResDetails = () => {
                               {item.image && (
                                 <div className="relative h-48">
                                   <img 
-                                    src={item.image} 
+                                    src={getImageUrl(item.image)} 
                                     alt={item.name}
                                     className="w-full h-full object-cover"
+                                    onError={handleImageError}
                                   />
                                 </div>
                               )}

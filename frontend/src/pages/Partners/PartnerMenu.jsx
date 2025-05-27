@@ -3,6 +3,7 @@ import { FaPlus, FaTrash, FaUtensils, FaEdit, FaCheck, FaCalendarAlt, FaMapMarke
 import axios from 'axios';
 import PartnerSideBar from '../../components/PartnerSideBar';
 import { baseURL } from '../../utils/baseURL';
+import { getImageUrl, handleImageError } from '../../utils/imageUtils';
 
 const PartnerMenu = () => {
   const [activeTab, setActiveTab] = useState('view');
@@ -350,13 +351,10 @@ const PartnerMenu = () => {
                         {item.image && (
                           <div className="relative h-48">
                             <img 
-                              src={item.image}
+                              src={getImageUrl(item.image)}
                               alt={item.name}
                               className="w-full h-full object-cover"
-                              onError={(e) => {
-                                console.error('Image load error:', e);
-                                e.target.src = 'https://via.placeholder.com/400x300?text=No+Image';
-                              }}
+                              onError={handleImageError}
                             />
                           </div>
                         )}
@@ -548,13 +546,10 @@ const PartnerMenu = () => {
                       <div className="flex-shrink-0">
                         {formData.image ? (
                           <img
-                            src={formData.image}
+                            src={getImageUrl(formData.image)}
                             alt="Dish preview"
                             className="h-32 w-32 object-cover rounded-lg"
-                            onError={(e) => {
-                              console.error('Image load error:', e);
-                              e.target.src = 'https://via.placeholder.com/400x300?text=No+Image';
-                            }}
+                            onError={handleImageError}
                           />
                         ) : (
                           <div className="h-32 w-32 bg-gray-100 rounded-lg flex items-center justify-center">
