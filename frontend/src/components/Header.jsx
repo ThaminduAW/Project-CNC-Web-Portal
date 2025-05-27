@@ -47,11 +47,10 @@ const Header = () => {
 
         {/* Sign In Button */}
         <button 
-          className="hidden md:block relative overflow-hidden group bg-gradient-to-r from-[#fea116ff] to-[#ff8c00] text-[#001524ff] px-6 py-2 rounded-full font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-[#fea116ff]/30"
+          className="hidden md:block bg-[#fea116ff] text-white px-6 py-2 rounded-md font-semibold hover:bg-[#e8920eff] transition-colors duration-300"
           onClick={() => navigate("/signin")}
         >
-          <span className="relative z-10">Sign In</span>
-          <div className="absolute inset-0 bg-gradient-to-r from-[#ff8c00] to-[#fea116ff] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          Sign In
         </button>
 
         {/* Mobile Menu Button */}
@@ -88,7 +87,7 @@ const Header = () => {
               setIsOpen(false);
               navigate("/signin");
             }} 
-            className="bg-gradient-to-r from-[#fea116ff] to-[#ff8c00] text-[#001524ff] px-6 py-2 rounded-full font-semibold hover:shadow-lg hover:shadow-[#fea116ff]/30 transition-all duration-300"
+            className="bg-[#fea116ff] text-white px-6 py-2 rounded-md font-semibold hover:bg-[#e8920eff] transition-colors duration-300"
           >
             Sign In
           </button>

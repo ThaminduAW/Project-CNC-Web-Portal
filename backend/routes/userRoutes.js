@@ -70,10 +70,11 @@ router.put("/profile", authMiddleware, async (req, res) => {
 
     // Update fields based on user role
     if (user.role === "Admin") {
-      const { firstName, lastName, phone } = req.body;
+      const { firstName, lastName, phone, email } = req.body;
       user.firstName = firstName;
       user.lastName = lastName;
       user.phone = phone;
+      if (email) user.email = email;
     } else {
       const {
         fullName,
@@ -99,7 +100,35 @@ router.put("/profile", authMiddleware, async (req, res) => {
     }
 
     await user.save();
-    res.json({ message: "Profile updated successfully" });
+
+    // Return updated user data based on role
+    let updatedUserData;
+    if (user.role === "Admin") {
+      updatedUserData = {
+        id: user._id.toString(),
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
+        approved: user.approved,
+        phone: user.phone
+      };
+    } else {
+      updatedUserData = {
+        id: user._id.toString(),
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        approved: user.approved,
+        restaurantName: user.restaurantName,
+        phone: user.phone
+      };
+    }
+
+    res.json({ 
+      message: "Profile updated successfully",
+      user: updatedUserData
+    });
   } catch (error) {
     console.error("Profile update error:", error);
     res.status(500).json({ message: "Server error. Please try again later." });

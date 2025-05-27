@@ -4,6 +4,7 @@ import logo from "../../assets/logo.png";
 import { motion, AnimatePresence } from "framer-motion";
 import { baseURL } from "../../utils/baseURL";
 import { FaUser, FaBuilding, FaMapMarkerAlt, FaPhone, FaEnvelope, FaLink, FaLock, FaArrowRight } from 'react-icons/fa';
+import Autocomplete from "react-google-autocomplete";
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -237,9 +238,18 @@ const SignUp = () => {
               Address <span className="text-red-500">*</span>
             </label>
             <div className="relative group">
-              <input
-                type="text"
-                name="address"
+              <Autocomplete
+                apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
+                onPlaceSelected={(place) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    address: place.formatted_address
+                  }));
+                }}
+                options={{
+                  types: ['address'],
+                  componentRestrictions: { country: 'au' }
+                }}
                 placeholder="Enter restaurant address"
                 onFocus={() => setFocusedField('address')}
                 onBlur={() => setFocusedField(null)}
@@ -247,7 +257,6 @@ const SignUp = () => {
                   ${focusedField === 'address' 
                     ? 'border-[#0098c9ff] ring-2 ring-[#0098c9ff]/20' 
                     : 'border-[#fea116ff] hover:border-[#0098c9ff]/50'}`}
-                onChange={handleChange}
                 required
               />
               <FaMapMarkerAlt className={`absolute left-4 top-2.5 h-5 w-5 transition-colors duration-200
