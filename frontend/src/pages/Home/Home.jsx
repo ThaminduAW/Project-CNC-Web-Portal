@@ -21,11 +21,13 @@ const Home = () => {
   const [feedback, setFeedback] = useState({
     name: '',
     email: '',
-    rating: 0,
+    rating: 5,
     message: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [reviews, setReviews] = useState([]);
+  const [formErrors, setFormErrors] = useState({});
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   useEffect(() => {
     const fetchRestaurants = async () => {
@@ -82,11 +84,52 @@ const Home = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFeedback(prev => ({ ...prev, [name]: value }));
+    // Clear error when user starts typing
+    if (formErrors[name]) {
+      setFormErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const validateForm = () => {
+    const errors = {};
+    
+    if (!feedback.name.trim()) {
+      errors.name = 'Name is required';
+    } else if (feedback.name.trim().length < 2) {
+      errors.name = 'Name must be at least 2 characters';
+    }
+    
+    if (!feedback.email.trim()) {
+      errors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(feedback.email)) {
+      errors.email = 'Please enter a valid email address';
+    }
+    
+    if (feedback.rating < 1 || feedback.rating > 5) {
+      errors.rating = 'Please select a rating';
+    }
+    
+    if (!feedback.message.trim()) {
+      errors.message = 'Review message is required';
+    } else if (feedback.message.trim().length < 10) {
+      errors.message = 'Review must be at least 10 characters';
+    }
+    
+    return errors;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate form
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+    
     setIsSubmitting(true);
+    setFormErrors({});
     
     try {
       const response = await axios.post(`${baseURL}/feedback`, {
@@ -95,13 +138,15 @@ const Home = () => {
       });
       
       if (response.data.success) {
-        toast.success('Thank you for your review!');
+        toast.success('Thank you for your review! It will be reviewed before being published.');
         setFeedback({
           name: '',
           email: '',
           rating: 5,
           message: ''
         });
+        setShowSuccessMessage(true);
+        setTimeout(() => setShowSuccessMessage(false), 5000);
       }
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to submit review. Please try again.');
@@ -419,61 +464,157 @@ const Home = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="mt-16 bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+            className="mt-12 bg-white p-4 sm:p-6 lg:p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 max-w-4xl mx-auto"
           >
-            <div className="flex items-center mb-6">
-              <div className="w-12 h-12 rounded-full bg-[#fea116ff]/10 flex items-center justify-center mr-4">
-                <FaStar className="text-[#fea116ff] text-xl" />
+            {/* Success Message */}
+            {showSuccessMessage && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg"
+              >
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-green-800">
+                      Thank you! Your review has been submitted successfully and will be reviewed before publication.
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Form Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center mb-6">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#fea116ff] to-[#e8920eff] flex items-center justify-center mr-0 sm:mr-4 mb-3 sm:mb-0 shadow-md">
+                <FaStar className="text-white text-lg" />
               </div>
-              <div>
-                <h3 className="text-2xl font-bold text-[#001524ff]">Share Your Experience</h3>
-                <p className="text-gray-500 text-sm">Your review helps others discover great experiences!</p>
+              <div className="text-center sm:text-left">
+                <h3 className="text-xl sm:text-2xl font-bold text-[#001524ff] mb-1">Share Your Experience</h3>
+                <p className="text-gray-600 text-sm">Your review helps others discover amazing seafood adventures!</p>
               </div>
             </div>
+
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                <input
-                  type="text"
-                  name="name"
-                  id="name"
-                  required
-                  value={feedback.name}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-lg border-gray-300 text-black shadow-sm focus:border-[#fea116ff] focus:ring-[#fea116ff] transition-all duration-300"
-                  placeholder="Your name"
-                />
-              </div>
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  id="email"
-                  required
-                  value={feedback.email}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-lg border-gray-300 text-black shadow-sm focus:border-[#fea116ff] focus:ring-[#fea116ff] transition-all duration-300"
-                  placeholder="your@email.com"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
-                <div className="flex items-center space-x-2">
-                  {[1,2,3,4,5].map(star => (
-                    <button
-                      type="button"
-                      key={star}
-                      onClick={() => handleStarClick(star)}
-                      className="focus:outline-none transform hover:scale-110 transition-transform duration-200"
+              {/* Name and Email Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
+                    Full Name <span className="text-red-500">*</span>
+                  </label>
+                                      <input
+                      type="text"
+                      name="name"
+                      id="name"
+                      required
+                      value={feedback.name}
+                      onChange={handleChange}
+                      className={`block w-full px-3 py-2 rounded-lg border-2 text-gray-900 placeholder-gray-400 shadow-sm transition-all duration-300 focus:outline-none focus:ring-0 ${
+                        formErrors.name 
+                          ? 'border-red-300 focus:border-red-500' 
+                          : 'border-gray-200 focus:border-[#fea116ff] hover:border-gray-300'
+                      }`}
+                      placeholder="Enter your full name"
+                    />
+                  {formErrors.name && (
+                    <motion.p 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-2 text-sm text-red-600 flex items-center"
                     >
-                      <FaStar className={`text-2xl ${star <= feedback.rating ? 'text-[#fea116ff]' : 'text-gray-300'}`} />
-                    </button>
-                  ))}
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      {formErrors.name}
+                    </motion.p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+                    Email Address <span className="text-red-500">*</span>
+                  </label>
+                                      <input
+                      type="email"
+                      name="email"
+                      id="email"
+                      required
+                      value={feedback.email}
+                      onChange={handleChange}
+                      className={`block w-full px-3 py-2 rounded-lg border-2 text-gray-900 placeholder-gray-400 shadow-sm transition-all duration-300 focus:outline-none focus:ring-0 ${
+                        formErrors.email 
+                          ? 'border-red-300 focus:border-red-500' 
+                          : 'border-gray-200 focus:border-[#fea116ff] hover:border-gray-300'
+                      }`}
+                      placeholder="your@email.com"
+                    />
+                  {formErrors.email && (
+                    <motion.p 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-2 text-sm text-red-600 flex items-center"
+                    >
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      {formErrors.email}
+                    </motion.p>
+                  )}
                 </div>
               </div>
+
+              {/* Rating Section */}
               <div>
-                <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">Your Review</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Rating <span className="text-red-500">*</span>
+                </label>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div className="flex items-center space-x-1">
+                    {[1,2,3,4,5].map(star => (
+                      <button
+                        type="button"
+                        key={star}
+                        onClick={() => handleStarClick(star)}
+                        className="focus:outline-none transform hover:scale-110 transition-all duration-200 p-1 rounded-full hover:bg-[#fea116ff]/10"
+                        aria-label={`Rate ${star} star${star !== 1 ? 's' : ''}`}
+                      >
+                        <FaStar className={`text-2xl ${star <= feedback.rating ? 'text-[#fea116ff]' : 'text-gray-300'} transition-colors duration-200`} />
+                      </button>
+                    ))}
+                  </div>
+                  <div className="text-sm text-gray-600 font-medium">
+                    {feedback.rating === 1 && "Poor"}
+                    {feedback.rating === 2 && "Fair"}
+                    {feedback.rating === 3 && "Good"}
+                    {feedback.rating === 4 && "Very Good"}
+                    {feedback.rating === 5 && "Excellent"}
+                    {feedback.rating > 0 && ` (${feedback.rating}/5)`}
+                  </div>
+                </div>
+                {formErrors.rating && (
+                  <motion.p 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-2 text-sm text-red-600 flex items-center"
+                  >
+                    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    {formErrors.rating}
+                  </motion.p>
+                )}
+              </div>
+
+              {/* Review Message */}
+              <div>
+                <label htmlFor="message" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Your Review <span className="text-red-500">*</span>
+                </label>
                 <textarea
                   name="message"
                   id="message"
@@ -481,27 +622,69 @@ const Home = () => {
                   required
                   value={feedback.message}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-lg border-gray-300 text-black shadow-sm focus:border-[#fea116ff] focus:ring-[#fea116ff] transition-all duration-300"
-                  placeholder="Share your experience with us..."
+                  className={`block w-full px-3 py-2 rounded-lg border-2 text-gray-900 placeholder-gray-400 shadow-sm transition-all duration-300 focus:outline-none focus:ring-0 resize-none ${
+                    formErrors.message 
+                      ? 'border-red-300 focus:border-red-500' 
+                      : 'border-gray-200 focus:border-[#fea116ff] hover:border-gray-300'
+                  }`}
+                  placeholder="Tell us about your experience... What did you enjoy most? How was the service? Would you recommend us to others?"
                 />
+                <div className="flex justify-between items-center mt-2">
+                  {formErrors.message ? (
+                    <motion.p 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-sm text-red-600 flex items-center"
+                    >
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      {formErrors.message}
+                    </motion.p>
+                  ) : (
+                    <div></div>
+                  )}
+                  <span className={`text-sm ${feedback.message.length < 10 ? 'text-gray-400' : 'text-gray-600'}`}>
+                    {feedback.message.length}/500
+                  </span>
+                </div>
               </div>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className={`w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#fea116ff] hover:bg-[#e8920eff] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#fea116ff] transition-all duration-300 transform hover:scale-[1.02] ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                {isSubmitting ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Submitting...
-                  </>
-                ) : (
-                  'Submit Review'
-                )}
-              </button>
+
+              {/* Submit Button */}
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className={`w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-[#fea116ff] to-[#e8920eff] hover:from-[#e8920eff] hover:to-[#d4810eff] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#fea116ff] transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl ${
+                    isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Submitting Your Review...
+                    </>
+                  ) : (
+                    <>
+                      Submit Review
+                      <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                      </svg>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Privacy Notice */}
+              <div className="pt-1">
+                <p className="text-xs text-gray-500 text-center leading-relaxed">
+                  By submitting this review, you agree that your feedback may be published on our website after moderation. 
+                  We respect your privacy and will not share your email address publicly.
+                </p>
+              </div>
             </form>
           </motion.div>
         </div>
