@@ -188,12 +188,20 @@ router.get("/", async (req, res) => {
     if (!token) {
       // If no token, return only upcoming reservations (public view)
       const today = new Date().toISOString().split("T")[0];
-      const reservations = await Reservation.find({ date: { $gte: today } }).sort({ date: 1 });
+      const reservations = await Reservation.find({ date: { $gte: today } }).populate('restaurant', 'restaurantName').sort({ date: 1 });
       return res.json(reservations);
+      
     }
 
     // For admin, return all reservations
     const reservations = await Reservation.find().sort({ date: -1, time: -1 });
+    const restaurantIds = reservations.map(reservation => reservation.restaurant);
+    const restaurants = await User.find({ _id: { $in: restaurantIds } });
+    const reservationsWithRestaurant = reservations.map(reservation => ({
+      ...reservation.toObject(),
+      restaurant: restaurants.find(restaurant => restaurant._id.toString() === reservation.restaurant.toString())
+    }));
+    console.log(reservationsWithRestaurant);
     res.json(reservations);
   } catch (error) {
     console.error("Error fetching reservations:", error);

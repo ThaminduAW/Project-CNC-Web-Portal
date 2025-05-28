@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import AdminSideBar from "../../components/AdminSideBar";
 import { baseURL } from "../../utils/baseURL";
+import axios from "axios";
 
 const PartnerReservations = () => {
   const [reservations, setReservations] = useState([]);
@@ -11,12 +12,10 @@ const PartnerReservations = () => {
   useEffect(() => {
     const fetchReservations = async () => {
       try {
-        const response = await fetch(`${baseURL}/reservations`);
-        const data = await response.json();
+        const response = await axios.get(`${baseURL}/reservations`);
+        const data = response.data;
+        console.log(data);
 
-        if (!response.ok) {
-          throw new Error(data.message || "Failed to fetch reservations");
-        }
 
         setReservations(data);
       } catch (err) {
@@ -29,7 +28,7 @@ const PartnerReservations = () => {
     fetchReservations();
   }, []);
 
-  const restaurantNames = [...new Set(reservations.map(res => res.restaurant))];
+  const restaurantNames = [...new Set(reservations.map(res => res.restaurant.restaurantName))];
   const filteredReservations = selectedRestaurant === "all"
     ? reservations
     : reservations.filter(res => res.restaurant === selectedRestaurant);
@@ -82,9 +81,9 @@ const PartnerReservations = () => {
                 {filteredReservations.map((reservation) => (
                   <tr key={reservation._id} className="transition border-b hover:bg-gray-100">
                     <td className="p-3">{reservation.name}</td>
-                    <td className="p-3">{reservation.restaurant}</td>
+                    <td className="p-3">{reservation.restaurant.restaurantName}</td>
                     <td className="p-3">{new Date(reservation.date).toLocaleDateString()}</td>
-                    <td className="p-3">{reservation.time}</td>
+                    <td className="p-3">{reservation.timeSlot.startTime} - {reservation.timeSlot.endTime}</td>
                     <td className="p-3">{reservation.instructions || "N/A"}</td>
                   </tr>
                 ))}
