@@ -156,7 +156,7 @@ router.patch("/partners/approve/:id", authMiddleware, async (req, res) => {
               </div>
               
               <div style="text-align: center; margin: 30px 0;">
-                <a href="http://localhost:5173/signin" style="display: inline-block; background-color: #fea116; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Access Your Dashboard</a>
+                <a href="https://cnc-web-portal.vercel.app/signin" style="display: inline-block; background-color: #fea116; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Access Your Dashboard</a>
               </div>
               
               <div style="text-align: center; margin-top: 30px;">
@@ -304,7 +304,7 @@ router.post("/partners/add", async (req, res) => {
               </div>
               
               <div style="text-align: center; margin: 30px 0;">
-                <a href="http://localhost:5173/signin" style="display: inline-block; background-color: #fea116; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Access Your Dashboard</a>
+                <a href="https://cnc-web-portal.vercel.app/signin" style="display: inline-block; background-color: #fea116; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Access Your Dashboard</a>
               </div>
               
               <div style="text-align: center; margin-top: 30px;">
