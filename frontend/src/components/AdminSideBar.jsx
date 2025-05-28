@@ -133,7 +133,7 @@ const AdminSideBar = () => {
     { path: "/admin/dashboard", icon: FaHome, label: "Dashboard" },
     { path: "/admin/partners", icon: FaBuilding, label: "Partners" },
     { path: "/admin/requests", icon: FaBell, label: "Requests", badge: pendingRequests },
-    { path: "/admin/tours", icon: FaCalendarAlt, label: "Tours" },
+    // { path: "/admin/tours", icon: FaCalendarAlt, label: "Tours" },
     { path: "/admin/reservations", icon: FaCalendarCheck, label: "Reservations" },
     { path: "/admin/messages", icon: FaComments, label: "Messages", badge: showBadge && unreadCount },
     { path: "/admin/feedback", icon: FaStar, label: "Feedback" },
