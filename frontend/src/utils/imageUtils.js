@@ -11,4 +11,4 @@ export const getImageUrl = (imagePath) => {
 export const handleImageError = (e) => {
   e.target.style.display = 'none';
   e.target.onerror = null;
-}; 
+};
