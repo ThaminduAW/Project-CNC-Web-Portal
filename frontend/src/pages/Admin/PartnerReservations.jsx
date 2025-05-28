@@ -31,7 +31,7 @@ const PartnerReservations = () => {
   const restaurantNames = [...new Set(reservations.map(res => res.restaurant.restaurantName))];
   const filteredReservations = selectedRestaurant === "all"
     ? reservations
-    : reservations.filter(res => res.restaurant === selectedRestaurant);
+    : reservations.filter(res => res.restaurant.restaurantName === selectedRestaurant);
 
   return (
     <div className="flex bg-[#fdfcdcff] min-h-screen">
