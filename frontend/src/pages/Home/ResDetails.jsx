@@ -331,7 +331,7 @@ const ResDetails = () => {
                                 {item.image && (
                                   <div className="relative h-48">
                                     <img 
-                                      src={getImageUrl(item.image)} 
+                                      src={item.image} 
                                       alt={item.name}
                                       className="w-full h-full object-cover"
                                       onError={handleImageError}
