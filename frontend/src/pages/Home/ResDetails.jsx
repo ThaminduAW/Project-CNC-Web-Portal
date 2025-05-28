@@ -327,11 +327,12 @@ const ResDetails = () => {
                           </h3>
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {categoryItems.map((item, index) => (
+                              console.log(item.image),
                               <div key={index} className="bg-gray-50 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300">
                                 {item.image && (
                                   <div className="relative h-48">
                                     <img 
-                                      src={item.image} 
+                                      src={getImageUrl(item.image)} 
                                       alt={item.name}
                                       className="w-full h-full object-cover"
                                       onError={handleImageError}

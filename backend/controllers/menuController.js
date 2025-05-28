@@ -16,7 +16,22 @@ export const addMenuItem = async (req, res) => {
   try {
     const partnerId = req.user.id;
     const { name, description, ingredients, price, spicyLevel, dietaryTags, category, image } = req.body;
+    console.log(req.body);
     
+    let imageUrl = image;
+
+    if (req.body.image) {
+      // Clean the URL - extract just the path portion from any URL
+      try {
+        const url = new URL(req.body.image);
+        imageUrl = url.pathname;
+        console.log('Cleaned image URL:', imageUrl);
+      } catch (error) {
+        // If it's not a valid URL, assume it's already a path
+        imageUrl = req.body.image;
+        console.log('Using image path as-is:', imageUrl);
+      }
+    }
     // Create menu item
     const menuItem = new Menu({ 
       partner: partnerId,
@@ -27,7 +42,7 @@ export const addMenuItem = async (req, res) => {
       spicyLevel,
       dietaryTags,
       category,
-      image
+      image: imageUrl
     });
     await menuItem.save();
     res.status(201).json(menuItem);

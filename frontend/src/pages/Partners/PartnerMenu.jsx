@@ -349,6 +349,7 @@ const PartnerMenu = () => {
                     {filteredMenuItems.map((item, idx) => (
                       <div key={idx} className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300">
                         {item.image && (
+                          console.log(getImageUrl(item.image)),
                           <div className="relative h-48">
                             <img 
                               src={getImageUrl(item.image)}
