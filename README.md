@@ -1,43 +1,105 @@
-# Project-CNC-Web-Portal
+# CNC Web Portal
 
-# Server.js
-import express from "express";
-import dotenv from "dotenv";
-import cors from "cors";
-import mongoose from "mongoose";
-import authRoutes from "./routes/authRoutes.js";
-import contactRoutes from "./routes/contactRoutes.js";
-import partnerRoutes from "./routes/partnerRoutes.js";
-import reservationRoutes from "./routes/reservationRoutes.js";
-import adminRoutes from "./routes/adminRoutes.js";
+## Project Overview
+The CNC Web Portal is a comprehensive web application designed to streamline and manage partner restaurants. This platform provides a modern interface for managing CNC-related tasks, user authentication, and efficient workflow management.
 
-dotenv.config();
-console.log("MONGODB_URI:", process.env.MONGODB_URI); // Add this line to check if the variable is loaded
+## Team Information
+- **Team Name:** WebWave
+- **GitHub Repository:** [Project-CNC-Web-Portal](https://github.com/ThaminduAW/Project-CNC-Web-Portal)
+- **Live Deployment:** [CNC Web Portal](https://cnc-web-portal.vercel.app/)
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+## Technology Stack
+- **Frontend:** React.js + VITE
+- **Backend:** Node.js, Express.js
+- **Database:** MongoDB Atlas
+- **Authentication:** JWT (JSON Web Tokens)
+- **Email Service:** Gmail SMTP
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+## Environment Setup
 
-// Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/contact", contactRoutes);
-app.use("/api/partners", partnerRoutes);
-app.use("/api/reservations", reservationRoutes);
-app.use("/api/admin", adminRoutes);
+### Backend Environment Variables
+Create a `.env` file in the backend directory with the following variables:
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log("MongoDB connected"))
-.catch((err) => console.error("MongoDB connection error:", err));
+```env
+MONGO_URI=add your MONGO_URI here
+JWT_SECRET=2ce3d74197fa4459316688d7b56b97a1a1f0d3b8d4784e4cfdf472357f175087
+EMAIL_USER=add your EMAIL here
+EMAIL_PASS=add your email APP PASSWORD here
+```
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+## Installation and Setup
 
-# .env
-MONGODB_URI=mongodb://localhost:27017/CNC_Database
-JWT_SECRET=6516619849
+1. Clone the repository:
+```bash
+git clone https://github.com/ThaminduAW/Project-CNC-Web-Portal.git
+```
+
+2. Install dependencies:
+```bash
+# Install backend dependencies
+cd backend
+npm install
+
+# Install frontend dependencies
+cd ../frontend
+npm install
+```
+
+3. Start the development servers:
+```bash
+# Start backend server
+cd backend
+npm run dev
+
+# Start frontend server
+cd frontend
+npm start
+```
+
+## Project Structure
+```
+Project-CNC-Web-Portal/
+├── backend/
+│   ├── controllers/
+│   ├── models/
+│   ├── routes/
+│   ├── middleware/
+│   └── server.js
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   └── App.js
+│   └── public/
+└── README.md
+```
+
+## Features
+- User Authentication and Authorization
+- CNC Operation Management
+- Real-time Updates
+- Email Notifications
+- Responsive Design
+- Secure Data Management
+
+## Security Guidelines
+1. Never commit sensitive information like API keys or credentials
+2. Keep the JWT secret key secure and rotate it periodically
+3. Use environment variables for all sensitive configurations
+4. Implement proper input validation and sanitization
+5. Follow secure coding practices and regular security audits
+
+## Contributing Guidelines
+1. Fork the repository
+2. Create a new branch for your feature
+3. Make your changes
+4. Submit a pull request
+5. Ensure all tests pass
+6. Follow the existing code style
+
+## Support
+For support and queries, please open an issue in the GitHub repository or contact the development team.
+
+---
+*Last updated: [5/06/2025]*
